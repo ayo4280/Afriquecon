@@ -1,5 +1,6 @@
 import { Navigation } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
   const { t } = useTranslation();
@@ -16,9 +17,9 @@ export default function Footer() {
         <div>
           <h4 className="font-display font-bold text-lg text-white mb-4">{t('footer.services')}</h4>
           <ul className="space-y-2 text-sm">
-            <li><a href="/cargo" className="hover:text-white">{t('footer.shipCargo')}</a></li>
-            <li><a href="/passenger" className="hover:text-white">{t('footer.bookTravel')}</a></li>
-            <li><a href="/track" className="hover:text-white">{t('footer.trackShipment')}</a></li>
+            <li><Link to="/cargo" className="hover:text-white">{t('footer.shipCargo')}</Link></li>
+            <li><Link to="/passenger" className="hover:text-white">{t('footer.bookTravel')}</Link></li>
+            <li><Link to="/track" className="hover:text-white">{t('footer.trackShipment')}</Link></li>
           </ul>
         </div>
         <div>

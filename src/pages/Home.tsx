@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import CoverageMap from '../components/CoverageMap';
 import { ArrowRight, Package, Users, MapPin, Search, AlertCircle, CheckCircle, Star } from 'lucide-react';
@@ -8,8 +8,19 @@ import type { CargoQuoteResponse } from '../services/cargoService';
 
 export default function Home() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
-  const [serviceMode, setServiceMode] = useState<'cargo' | 'passenger'>('cargo');
+  
+  const initialMode = location.pathname.includes('passenger') ? 'passenger' : 'cargo';
+  const [serviceMode, setServiceMode] = useState<'cargo' | 'passenger'>(initialMode);
+
+  useEffect(() => {
+    if (location.pathname.includes('passenger')) {
+      setServiceMode('passenger');
+    } else if (location.pathname.includes('cargo')) {
+      setServiceMode('cargo');
+    }
+  }, [location.pathname]);
 
   const [cargoOrigin, setCargoOrigin] = useState('Douala');
   const [cargoDestination, setCargoDestination] = useState('Lagos');
