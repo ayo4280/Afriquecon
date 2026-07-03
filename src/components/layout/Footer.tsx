@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className="bg-gray-900 text-gray-300 py-8 mt-12">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
-          <h3 className="font-display font-bold text-xl text-white mb-4">Afrique-con Plc</h3>
+          <img src="/logo.png" alt="Afrique-con Plc" className="h-14 object-contain bg-white px-2 py-1 rounded-md mb-4" />
           <p className="text-sm">
             {t('footer.tagline')}
           </p>

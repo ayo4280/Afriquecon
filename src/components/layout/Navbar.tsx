@@ -16,9 +16,8 @@ export default function Navbar() {
   return (
     <nav className="bg-primary text-white p-4 shadow-md sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center gap-2 text-xl font-display font-bold">
-          <Truck className="w-6 h-6" />
-          Afrique-con
+        <Link to="/" className="flex items-center">
+          <img src="/logo.png" alt="Afrique-con" className="h-12 object-contain bg-white px-2 py-1 rounded-md" />
         </Link>
         <div className="hidden md:flex gap-6 items-center">
           <Link to="/cargo" className="hover:text-neutral transition-colors">{t('nav.shipCargo')}</Link>
