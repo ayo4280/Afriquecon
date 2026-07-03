@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Truck, Navigation, UserCircle, LogOut, Shield } from 'lucide-react';
+import { Navigation, UserCircle, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
