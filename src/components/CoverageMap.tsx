@@ -14,19 +14,29 @@ L.Icon.Default.mergeOptions({
 const locations = [
   { id: 'douala', name: 'Douala', country: 'Cameroon', coords: [4.0511, 9.7679] as [number, number] },
   { id: 'yaounde', name: 'Yaoundé', country: 'Cameroon', coords: [3.8480, 11.5021] as [number, number] },
+  { id: 'buea', name: 'Buea', country: 'Cameroon', coords: [4.1550, 9.2405] as [number, number] },
+  { id: 'kumba', name: 'Kumba', country: 'Cameroon', coords: [4.6300, 9.4460] as [number, number] },
   { id: 'lagos', name: 'Lagos', country: 'Nigeria', coords: [6.5244, 3.3792] as [number, number] },
   { id: 'abuja', name: 'Abuja', country: 'Nigeria', coords: [9.0765, 7.3986] as [number, number] },
   { id: 'onitsha', name: 'Onitsha', country: 'Nigeria', coords: [6.1452, 6.7820] as [number, number] },
+  { id: 'enugu', name: 'Enugu', country: 'Nigeria', coords: [6.4584, 7.5464] as [number, number] },
+  { id: 'abakaliki', name: 'Abakaliki', country: 'Nigeria', coords: [6.3249, 8.1137] as [number, number] },
+  { id: 'ikom', name: 'Ikom', country: 'Nigeria', coords: [5.9610, 8.7118] as [number, number] },
 ];
 
 // Routes connecting the hubs (simplified straight lines for the map)
 const routes = [
   { from: 'douala', to: 'lagos' },
-  { from: 'douala', to: 'onitsha' },
+  { from: 'douala', to: 'buea' },
+  { from: 'buea', to: 'kumba' },
+  { from: 'kumba', to: 'ikom' },
+  { from: 'ikom', to: 'abakaliki' },
+  { from: 'abakaliki', to: 'enugu' },
+  { from: 'enugu', to: 'onitsha' },
   { from: 'douala', to: 'yaounde' },
   { from: 'yaounde', to: 'abuja' },
   { from: 'onitsha', to: 'lagos' },
-  { from: 'onitsha', to: 'abuja' },
+  { from: 'enugu', to: 'abuja' },
 ];
 
 export default function CoverageMap() {
