@@ -219,11 +219,17 @@ export default function Home() {
                           <div className="relative">
                             <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4" />
                             <select value={cargoOrigin} onChange={e => setCargoOrigin(e.target.value)} className={`${inputCls} pl-10`}>
-                              <option>Douala</option>
-                              <option>Yaoundé</option>
-                              <option>Buea</option>
-                              <option>Kumba</option>
-                              <option>Ikom</option>
+                              <optgroup label="Cameroon">
+                                <option>Douala</option>
+                                <option>Yaoundé</option>
+                                <option>Buea</option>
+                                <option>Kumba</option>
+                              </optgroup>
+                              <optgroup label="Nigeria">
+                                <option>Lagos</option>
+                                <option>Abuja</option>
+                                <option>Ikom</option>
+                              </optgroup>
                             </select>
                           </div>
                         </div>
@@ -232,8 +238,17 @@ export default function Home() {
                           <div className="relative">
                             <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-500 w-4 h-4" />
                             <select value={cargoDestination} onChange={e => setCargoDestination(e.target.value)} className={`${inputCls} pl-10`}>
-                              <option>Lagos</option>
-                              <option>Abuja</option>
+                              <optgroup label="Cameroon">
+                                <option>Douala</option>
+                                <option>Yaoundé</option>
+                                <option>Buea</option>
+                                <option>Kumba</option>
+                              </optgroup>
+                              <optgroup label="Nigeria">
+                                <option>Lagos</option>
+                                <option>Abuja</option>
+                                <option>Ikom</option>
+                              </optgroup>
                             </select>
                           </div>
                         </div>
@@ -292,10 +307,17 @@ export default function Home() {
                         <div className="relative">
                           <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-500 w-4 h-4" />
                           <select value={passengerOrigin} onChange={e => setPassengerOrigin(e.target.value)} className={`${inputCls} pl-10`}>
-                            <option>Douala</option>
-                            <option>Yaoundé</option>
-                            <option>Lagos</option>
-                            <option>Abuja</option>
+                            <optgroup label="Cameroon">
+                              <option>Douala</option>
+                              <option>Yaoundé</option>
+                              <option>Buea</option>
+                              <option>Kumba</option>
+                            </optgroup>
+                            <optgroup label="Nigeria">
+                              <option>Lagos</option>
+                              <option>Abuja</option>
+                              <option>Ikom</option>
+                            </optgroup>
                           </select>
                         </div>
                       </div>
@@ -304,10 +326,17 @@ export default function Home() {
                         <div className="relative">
                           <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4" />
                           <select value={passengerDestination} onChange={e => setPassengerDestination(e.target.value)} className={`${inputCls} pl-10`}>
-                            <option>Lagos</option>
-                            <option>Abuja</option>
-                            <option>Douala</option>
-                            <option>Yaoundé</option>
+                            <optgroup label="Cameroon">
+                              <option>Douala</option>
+                              <option>Yaoundé</option>
+                              <option>Buea</option>
+                              <option>Kumba</option>
+                            </optgroup>
+                            <optgroup label="Nigeria">
+                              <option>Lagos</option>
+                              <option>Abuja</option>
+                              <option>Ikom</option>
+                            </optgroup>
                           </select>
                         </div>
                       </div>
