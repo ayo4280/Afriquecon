@@ -291,9 +291,8 @@ export default function Home() {
                             <Zap className="w-4 h-4 text-amber-500" />
                             {t('home.expressBooking')}
                           </label>
-                          <p className="text-xs text-slate-500">Priority handling &amp; faster delivery</p>
+                          <p className="text-xs text-slate-500">Priority handling &amp; faster delivery (Max 50kg)</p>
                         </div>
-                      </div>
 
                       <button type="submit" className="mt-6 w-full bg-[#0A1628] hover:bg-[#1a2d4e] text-white py-4 rounded-xl font-bold text-base transition-all flex justify-center items-center gap-2 shadow-xl shadow-slate-900/20 group">
                         {t('home.calculateQuote')}
