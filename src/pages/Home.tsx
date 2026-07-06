@@ -60,7 +60,7 @@ export default function Home() {
     setQuoteResult(null);
     const weightKg = parseFloat(cargoWeight);
     if (isNaN(weightKg) || weightKg <= 0) {
-      setQuoteError(t('home.weight') + ': ' + t('errors.invalidWeight', 'Please enter a valid weight.'));
+      setQuoteError(t('home.weight') + ': ' + t('errors.invalidWeight', 'Please enter a valid weight.') + (isExpress ? ' (Max 50kg for Express)' : ''));
       return;
     }
     if (isExpress && weightKg > 50) {
@@ -270,7 +270,10 @@ export default function Home() {
                           </select>
                         </div>
                         <div>
-                          <label className={labelCls}>{t('home.weight')} (kg)</label>
+                          <label className={labelCls}>
+                            {t('home.weight')} (kg)
+                            {isExpress && <span className="text-amber-600 ml-1 lowercase font-bold tracking-normal">(Max 50kg)</span>}
+                          </label>
                           <input
                             type="number"
                             value={cargoWeight}
