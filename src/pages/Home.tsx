@@ -63,6 +63,10 @@ export default function Home() {
       setQuoteError(t('home.weight') + ': ' + t('errors.invalidWeight', 'Please enter a valid weight.'));
       return;
     }
+    if (isExpress && weightKg > 50) {
+      setQuoteError(t('errors.expressWeight', 'Express cargo weight cannot exceed 50kg.'));
+      return;
+    }
     try {
       const quote = cargoService.calculateQuote({ origin: cargoOrigin, destination: cargoDestination, weightKg, cargoType, isExpress });
       setQuoteResult(quote);
