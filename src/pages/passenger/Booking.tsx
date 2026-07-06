@@ -8,6 +8,7 @@ import { CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { usePaystackPayment } from 'react-paystack';
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
+import TermsModal from '../../components/TermsModal';
 
 export default function PassengerBooking() {
   const { user } = useAuth();
@@ -20,6 +21,8 @@ export default function PassengerBooking() {
   const selectedSeats = location.state?.selectedSeats as number[];
 
   const [paymentMethod, setPaymentMethod] = useState<'paystack' | 'flutterwave'>('paystack');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -102,6 +105,10 @@ export default function PassengerBooking() {
     e.preventDefault();
     if (!user) {
       setError("You must be logged in to complete a booking.");
+      return;
+    }
+    if (!acceptedTerms) {
+      setError("You must accept the Terms and Conditions to proceed.");
       return;
     }
 
@@ -330,10 +337,27 @@ export default function PassengerBooking() {
                   </div>
                 </div>
 
+                <div className="flex items-start gap-3 mt-6">
+                  <input 
+                    type="checkbox" 
+                    id="terms" 
+                    checked={acceptedTerms}
+                    onChange={e => setAcceptedTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+                  />
+                  <label htmlFor="terms" className="text-sm text-gray-700">
+                    I have read and agree to the{' '}
+                    <button type="button" onClick={() => setIsTermsModalOpen(true)} className="text-primary font-bold underline decoration-primary decoration-2 underline-offset-2">
+                      Terms and Conditions
+                    </button>
+                    .
+                  </label>
+                </div>
+
                 <button 
                   type="submit" 
-                  disabled={!user || isSubmitting}
-                  className="w-full bg-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-600 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!user || isSubmitting || !acceptedTerms}
+                  className="w-full mt-4 bg-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-600 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? t('cargoBooking.processing') : `${t('passengerBooking.pay')} ${totalFCFA.toLocaleString()} FCFA`}
                 </button>
@@ -385,6 +409,12 @@ export default function PassengerBooking() {
           </div>
         </div>
       </div>
+      
+      <TermsModal 
+        isOpen={isTermsModalOpen} 
+        onClose={() => setIsTermsModalOpen(false)} 
+        type="passenger" 
+      />
     </div>
   );
 }

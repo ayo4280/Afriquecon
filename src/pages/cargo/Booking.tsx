@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { usePaystackPayment } from 'react-paystack';
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
+import TermsModal from '../../components/TermsModal';
 
 export default function CargoBooking() {
   const { user } = useAuth();
@@ -27,6 +28,8 @@ export default function CargoBooking() {
   const [recipientPhone, setRecipientPhone] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'paystack' | 'flutterwave'>('paystack');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -67,7 +70,11 @@ export default function CargoBooking() {
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) { setError('You must be logged in to complete a booking.'); return; }
+    if (!user || !quoteResult || !requestDetails) return;
+    if (!acceptedTerms) {
+      setError('You must accept the Terms and Conditions to proceed.');
+      return;
+    }
     if (!senderName || !senderPhone) { setError('Please fill in the sender name and phone number.'); return; }
     if (!recipientName || !recipientPhone || !deliveryAddress) { setError('Please fill in all recipient details.'); return; }
     setIsSubmitting(true);
@@ -290,9 +297,26 @@ export default function CargoBooking() {
                 </div>
               </div>
 
+              <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <input 
+                  type="checkbox" 
+                  id="terms" 
+                  checked={acceptedTerms}
+                  onChange={e => setAcceptedTerms(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-amber-500 rounded border-slate-300 focus:ring-amber-500"
+                />
+                <label htmlFor="terms" className="text-sm text-slate-600">
+                  I have read and agree to the{' '}
+                  <button type="button" onClick={() => setIsTermsModalOpen(true)} className="text-[#0A1628] font-bold underline decoration-amber-400 decoration-2 underline-offset-2">
+                    Terms and Conditions of Carriage
+                  </button>
+                  .
+                </label>
+              </div>
+
               <button
                 type="submit"
-                disabled={!user || isSubmitting}
+                disabled={!user || isSubmitting || !acceptedTerms}
                 className="w-full bg-[#0A1628] hover:bg-[#1a2d4e] text-white py-4 rounded-2xl font-bold text-base transition-all shadow-xl shadow-slate-900/15 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
               >
                 {isSubmitting ? (
@@ -357,6 +381,12 @@ export default function CargoBooking() {
           </div>
         </div>
       </div>
+      
+      <TermsModal 
+        isOpen={isTermsModalOpen} 
+        onClose={() => setIsTermsModalOpen(false)} 
+        type="cargo" 
+      />
     </div>
   );
 }
