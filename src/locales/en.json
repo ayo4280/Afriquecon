@@ -13,6 +13,9 @@
     "tagline": "Connecting Cameroon & Nigeria through reliable, digital transport.",
     "services": "Services",
     "support": "Support",
+    "shipCargo": "Ship Cargo",
+    "bookTravel": "Book Travel",
+    "trackShipment": "Track Shipment",
     "telegramBot": "Telegram Bot",
     "contactUs": "Contact Us",
     "faqs": "FAQs",
@@ -79,7 +82,11 @@
     "faq3q": "How much luggage can I bring on the bus?",
     "faq3a": "Each passenger is allowed 2 pieces of luggage free. Additional bags incur a fee of ₦2,000 / 3,000 FCFA per item.",
     "faq4q": "Can I change my ticket date after booking?",
-    "faq4a": "Yes! Contact support via Telegram up to 24 hours before departure to reschedule, subject to availability."
+    "faq4a": "Yes! Contact support via Telegram up to 24 hours before departure to reschedule, subject to availability.",
+    "trackTitle": "Track Your Shipment",
+    "trackSubtitle": "Enter your tracking ID to get real-time status updates.",
+    "trackPlaceholder": "e.g. AFCON-20240629-0001",
+    "trackBtn": "Track"
   },
   "auth": {
     "loginTitle": "Welcome Back",
@@ -89,6 +96,7 @@
     "signIn": "Sign In",
     "signingIn": "Signing in...",
     "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
     "createOne": "Create one",
     "registerTitle": "Create an Account",
     "registerSubtitle": "Join thousands of customers shipping and traveling with us.",
@@ -104,12 +112,14 @@
     "redirecting": "Redirecting to homepage...",
     "country": "Country",
     "creatingAccount": "Creating account...",
-    "registerBtn": "Register"
+    "registerBtn": "Create Account"
   },
   "profile": {
     "title": "My Profile",
     "myShipments": "My Cargo Shipments",
     "myTickets": "My Tickets",
+    "cargoShipments": "Cargo Shipments",
+    "signOut": "Sign Out",
     "editProfile": "Edit Profile",
     "fullName": "Full Name",
     "phone": "Phone Number",
@@ -126,8 +136,15 @@
     "payment": "Payment",
     "date": "Date",
     "noShipments": "No cargo shipments found.",
-    "noTickets": "No tickets found.",
+    "noTickets": "No tickets yet.",
+    "noCargo": "No cargo shipments yet.",
+    "bookFirstTrip": "Book your first trip to see your tickets here.",
+    "shipFirstCargo": "Ship your first cargo to see shipments here.",
+    "bookTripBtn": "Book a Trip",
+    "shipCargoBtn": "Ship Cargo",
     "viewETicket": "View E-Ticket",
+    "ticket": "ticket",
+    "schedule": "Schedule",
     "track": "Track"
   },
   "cargoBooking": {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Shield, Printer, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import { Printer, ArrowLeft, Loader2, CheckCircle2, MapPin, Calendar } from 'lucide-react';
 
 interface TicketDetails {
   ticket_id: string;
@@ -29,7 +29,6 @@ export default function ETicket() {
           .select('*')
           .eq('ticket_id', ticket_id)
           .single();
-
         if (error) throw error;
         setTicket(data);
       } catch (err: any) {
@@ -43,134 +42,180 @@ export default function ETicket() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      <div className="min-h-screen bg-[#F4F6FA] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-10 h-10 text-amber-400 animate-spin" />
+          <p className="text-slate-500 font-medium">Loading your ticket...</p>
+        </div>
       </div>
     );
   }
 
   if (error || !ticket) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center text-white">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Ticket Not Found</h2>
-          <p className="text-gray-400 mb-6">We couldn't find a ticket with that ID.</p>
-          <Link to="/profile" className="text-primary hover:underline">Return to Profile</Link>
+      <div className="min-h-screen bg-[#F4F6FA] flex items-center justify-center">
+        <div className="bg-white rounded-3xl p-10 text-center shadow-xl border border-slate-100 max-w-md w-full mx-4">
+          <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl">🎫</span>
+          </div>
+          <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">Ticket Not Found</h2>
+          <p className="text-slate-500 mb-6">We couldn't find a ticket with that ID.</p>
+          <Link to="/profile" className="bg-[#0A1628] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1a2d4e] transition-colors inline-block">
+            Return to Profile
+          </Link>
         </div>
       </div>
     );
   }
 
-  const qrData = JSON.stringify({
-    id: ticket.ticket_id,
-    name: ticket.passenger_name,
-    seat: ticket.seat_number,
-    status: ticket.payment_status
-  });
-
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}&color=0ea5e9&bgcolor=030712`;
+  const isPaid = ticket.payment_status === 'paid';
+  const qrData = JSON.stringify({ id: ticket.ticket_id, name: ticket.passenger_name, seat: ticket.seat_number, status: ticket.payment_status });
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}&color=0A1628&bgcolor=FFFFFF`;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white font-sans selection:bg-primary/30 py-8 px-4 sm:px-6 print:bg-white print:text-black print:p-0">
-      
-      {/* Hide on print */}
-      <div className="max-w-2xl mx-auto mb-8 flex justify-between items-center print:hidden">
-        <Link to="/profile" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-          <ArrowLeft className="w-5 h-5" />
+    <div className="min-h-screen bg-[#F4F6FA] py-10 px-4 print:bg-white print:p-0">
+
+      {/* Action bar */}
+      <div className="max-w-2xl mx-auto mb-6 flex justify-between items-center print:hidden animate-fade-up">
+        <Link to="/profile" className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors font-medium group">
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
           Back to Profile
         </Link>
         <button
           onClick={() => window.print()}
-          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-blue-600 transition-colors shadow-lg shadow-primary/20"
+          className="flex items-center gap-2 bg-[#0A1628] hover:bg-[#1a2d4e] text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg group"
         >
-          <Printer className="w-5 h-5" />
-          Print / Download PDF
+          <Printer className="w-4 h-4" />
+          Print / Save PDF
         </button>
       </div>
 
-      {/* Ticket Container */}
-      <div className="max-w-2xl mx-auto bg-gray-900 border border-gray-800 rounded-3xl overflow-hidden shadow-2xl print:bg-white print:border-gray-300 print:shadow-none print:rounded-none">
-        
-        {/* Header */}
-        <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-8 border-b border-gray-800 flex justify-between items-center print:bg-white print:border-b-2 print:border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center print:bg-black">
-              <Shield className="w-7 h-7 text-white" />
+      {/* Boarding pass card */}
+      <div className="max-w-2xl mx-auto animate-fade-up print:max-w-full" style={{ animationDelay: '0.1s' }}>
+        <div className="bg-white rounded-3xl overflow-hidden shadow-2xl shadow-slate-900/15 border border-slate-100 print:shadow-none print:rounded-none print:border-0">
+
+          {/* Header gradient band */}
+          <div className="bg-gradient-to-r from-[#0A1628] via-[#1a2d4e] to-[#0d3354] p-8 relative overflow-hidden print:bg-[#0A1628]">
+            <div className="absolute inset-0 opacity-20" style={{
+              backgroundImage: 'radial-gradient(circle, rgba(245,158,11,0.4) 1px, transparent 1px)',
+              backgroundSize: '28px 28px',
+            }} />
+            <div className="relative flex justify-between items-start">
+              <div className="flex items-center gap-4">
+                <img src="/logo.png" alt="Afrique-con" className="h-10 object-contain bg-white px-2 py-1 rounded-lg" />
+                <div>
+                  <div className="text-amber-400 text-xs font-bold uppercase tracking-widest">Boarding Pass</div>
+                  <div className="text-white text-xl font-display font-extrabold mt-0.5">Afrique-con PLC</div>
+                </div>
+              </div>
+              {isPaid && (
+                <div className="flex items-center gap-1.5 bg-teal-400/20 border border-teal-400/40 text-teal-300 px-3 py-1.5 rounded-xl text-xs font-bold">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  CONFIRMED
+                </div>
+              )}
             </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight print:text-black">Afrique-con</h1>
-              <p className="text-primary font-medium print:text-gray-600">Boarding Pass</p>
+
+            {/* Route display */}
+            <div className="relative mt-8 flex items-center justify-center gap-6">
+              <div className="text-center">
+                <div className="text-4xl font-display font-extrabold text-white">
+                  {ticket.schedule_id.split('-')[0] || 'DLA'}
+                </div>
+                <div className="text-slate-400 text-xs mt-1 uppercase tracking-wider">Origin</div>
+              </div>
+              <div className="flex-1 flex flex-col items-center gap-1 max-w-[120px]">
+                <div className="text-amber-400 text-xs font-semibold">✈ Direct</div>
+                <div className="w-full h-px bg-gradient-to-r from-amber-400/50 via-amber-400 to-teal-400/50" />
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-display font-extrabold text-white">
+                  {ticket.schedule_id.split('-')[1] || 'LOS'}
+                </div>
+                <div className="text-slate-400 text-xs mt-1 uppercase tracking-wider">Destination</div>
+              </div>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-400 uppercase tracking-widest font-semibold print:text-gray-500">Ticket No.</p>
-            <p className="text-xl font-mono font-bold text-white print:text-black">{ticket.ticket_id}</p>
+
+          {/* Perforated divider */}
+          <div className="flex items-center px-0 -my-0 relative z-10">
+            <div className="w-7 h-7 bg-[#F4F6FA] rounded-full flex-shrink-0 -ml-3.5 print:bg-white" />
+            <div className="flex-1 border-t-2 border-dashed border-slate-200" />
+            <div className="w-7 h-7 bg-[#F4F6FA] rounded-full flex-shrink-0 -mr-3.5 print:bg-white" />
           </div>
-        </div>
 
-        {/* Body */}
-        <div className="p-8 flex flex-col md:flex-row gap-8 items-center justify-between">
-          
-          {/* Details */}
-          <div className="flex-1 space-y-6 w-full">
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-gray-500 mb-1 print:text-gray-600">Passenger Name</p>
-                <p className="text-lg font-bold print:text-black">{ticket.passenger_name}</p>
+          {/* Ticket body */}
+          <div className="p-8 flex flex-col md:flex-row gap-8">
+            {/* Details */}
+            <div className="flex-1 space-y-5">
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Passenger</p>
+                  <p className="font-bold text-slate-900 text-lg">{ticket.passenger_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Seat</p>
+                  <p className="font-extrabold text-amber-500 text-3xl font-display">{ticket.seat_number}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1 print:text-gray-600">Seat Number</p>
-                <p className="text-2xl font-black text-primary print:text-black">{ticket.seat_number}</p>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-gray-800 print:border-gray-200">
-              <div>
-                <p className="text-sm text-gray-500 mb-1 print:text-gray-600">Trip Schedule</p>
-                <p className="text-md font-bold print:text-black">{ticket.schedule_id}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1 print:text-gray-600">Ticket Type</p>
-                <p className="text-md font-semibold capitalize print:text-black">{ticket.ticket_type}</p>
-              </div>
-            </div>
+              <div className="h-px bg-slate-100" />
 
-            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-gray-800 print:border-gray-200">
-              <div>
-                <p className="text-sm text-gray-500 mb-1 print:text-gray-600">Booking Date</p>
-                <p className="text-md font-medium print:text-black">{new Date(ticket.created_at).toLocaleDateString()}</p>
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Schedule ID</p>
+                  <p className="font-mono font-bold text-slate-800 text-sm">{ticket.schedule_id}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Class</p>
+                  <p className="font-bold text-slate-800 capitalize">{ticket.ticket_type}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1 print:text-gray-600">Payment Status</p>
-                <div className="flex items-center gap-1">
-                  {ticket.payment_status === 'paid' ? (
-                    <span className="flex items-center gap-1 text-green-500 font-bold print:text-green-700">
-                      <CheckCircle2 className="w-5 h-5" /> Paid
+
+              <div className="h-px bg-slate-100" />
+
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <Calendar className="w-3 h-3" /> Booking Date
+                  </p>
+                  <p className="font-semibold text-slate-700 text-sm">{new Date(ticket.created_at).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Payment</p>
+                  {isPaid ? (
+                    <span className="inline-flex items-center gap-1 bg-teal-50 text-teal-700 font-bold text-sm px-3 py-1 rounded-full border border-teal-200">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> PAID
                     </span>
                   ) : (
-                    <span className="text-yellow-500 font-bold capitalize print:text-gray-800">{ticket.payment_status}</span>
+                    <span className="text-amber-600 font-bold capitalize">{ticket.payment_status}</span>
                   )}
                 </div>
               </div>
+
+              <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 flex items-center justify-between">
+                <span className="text-slate-500 text-sm font-medium">Total Amount</span>
+                <span className="text-xl font-display font-extrabold text-[#0A1628]">{ticket.total_fcfa?.toLocaleString()} FCFA</span>
+              </div>
+            </div>
+
+            {/* QR code section */}
+            <div className="flex flex-col items-center justify-center gap-3 shrink-0">
+              <div className="bg-white p-3 rounded-2xl border-2 border-slate-100 shadow-inner animate-pulse-ring">
+                <img src={qrUrl} alt="Ticket QR Code" className="w-40 h-40 rounded-xl" crossOrigin="anonymous" />
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-slate-400 font-mono">Scan to verify</p>
+                <p className="text-xs text-slate-300 font-mono mt-0.5">{ticket.ticket_id.slice(0, 12)}...</p>
+              </div>
             </div>
           </div>
 
-          {/* QR Code */}
-          <div className="bg-gray-950 p-4 rounded-2xl border border-gray-800 flex flex-col items-center justify-center shrink-0 print:border-none print:p-0">
-            <img 
-              src={qrUrl} 
-              alt="Ticket QR Code" 
-              className="w-40 h-40 rounded-lg mb-3 print:w-48 print:h-48"
-              crossOrigin="anonymous" 
-            />
-            <p className="text-xs text-gray-500 font-mono text-center print:text-black">Scan to verify</p>
+          {/* Ticket footer */}
+          <div className="bg-slate-50 px-8 py-5 border-t border-slate-100 flex items-center gap-3 print:bg-white">
+            <MapPin className="w-4 h-4 text-amber-500 flex-shrink-0" />
+            <p className="text-xs text-slate-500">Please arrive 30 minutes before departure. This ticket is non-transferable. Present this QR code at boarding.</p>
           </div>
-
-        </div>
-
-        {/* Footer */}
-        <div className="bg-gray-950 px-8 py-6 text-center border-t border-gray-800 print:bg-white print:border-t-2 print:border-gray-200">
-          <p className="text-sm text-gray-500 print:text-gray-600">Please arrive 30 minutes before departure time. This ticket is non-transferable.</p>
         </div>
       </div>
     </div>

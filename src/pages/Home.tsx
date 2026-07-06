@@ -2,40 +2,51 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import CoverageMap from '../components/CoverageMap';
-import { ArrowRight, Package, Users, MapPin, Search, AlertCircle, CheckCircle, Star } from 'lucide-react';
+import {
+  ArrowRight, Package, Users, MapPin, Search,
+  AlertCircle, CheckCircle, Star, Zap, Shield,
+  Clock, TrendingUp, ChevronDown
+} from 'lucide-react';
 import { cargoService } from '../services/cargoService';
 import type { CargoQuoteResponse } from '../services/cargoService';
+
+const STATS = [
+  { value: '2,400+', label: 'Shipments Delivered', icon: <Package className="w-5 h-5" /> },
+  { value: '98%',    label: 'On-Time Rate',        icon: <Clock className="w-5 h-5" /> },
+  { value: '4',      label: 'Countries Connected', icon: <TrendingUp className="w-5 h-5" /> },
+  { value: '24/7',   label: 'Telegram Support',    icon: <Shield className="w-5 h-5" /> },
+];
 
 export default function Home() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  
+
   const initialMode = location.pathname.includes('passenger') ? 'passenger' : 'cargo';
   const [serviceMode, setServiceMode] = useState<'cargo' | 'passenger'>(initialMode);
 
   useEffect(() => {
-    if (location.pathname.includes('passenger')) {
-      setServiceMode('passenger');
-    } else if (location.pathname.includes('cargo')) {
-      setServiceMode('cargo');
-    }
+    if (location.pathname.includes('passenger')) setServiceMode('passenger');
+    else if (location.pathname.includes('cargo')) setServiceMode('cargo');
   }, [location.pathname]);
 
+  // Cargo state
   const [cargoOrigin, setCargoOrigin] = useState('Douala');
   const [cargoDestination, setCargoDestination] = useState('Lagos');
   const [cargoType, setCargoType] = useState<'general' | 'heavy_equipment'>('general');
   const [cargoWeight, setCargoWeight] = useState<string>('');
   const [isExpress, setIsExpress] = useState(false);
-  
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [quoteResult, setQuoteResult] = useState<CargoQuoteResponse | null>(null);
 
-  // Passenger Form State
+  // Passenger state
   const [passengerOrigin, setPassengerOrigin] = useState('Douala');
   const [passengerDestination, setPassengerDestination] = useState('Lagos');
-  const [passengerDate, setPassengerDate] = useState<string>(new Date().toISOString().slice(0,10));
+  const [passengerDate, setPassengerDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [passengerCount, setPassengerCount] = useState<number>(1);
+
+  // FAQ open state
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const handlePassengerSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,307 +58,359 @@ export default function Home() {
     e.preventDefault();
     setQuoteError(null);
     setQuoteResult(null);
-
     const weightKg = parseFloat(cargoWeight);
     if (isNaN(weightKg) || weightKg <= 0) {
       setQuoteError(t('home.weight') + ': ' + t('errors.invalidWeight', 'Please enter a valid weight.'));
       return;
     }
-
     try {
-      const quote = cargoService.calculateQuote({
-        origin: cargoOrigin,
-        destination: cargoDestination,
-        weightKg,
-        cargoType,
-        isExpress
-      });
+      const quote = cargoService.calculateQuote({ origin: cargoOrigin, destination: cargoDestination, weightKg, cargoType, isExpress });
       setQuoteResult(quote);
     } catch (err: any) {
-      setQuoteError(err.message || "An error occurred while calculating the quote.");
+      setQuoteError(err.message || 'An error occurred while calculating the quote.');
     }
   };
 
+  const inputCls = "w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition-all text-slate-800 font-medium appearance-none";
+  const labelCls = "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5";
+
   return (
-    <div className="min-h-screen bg-neutral flex flex-col">
-      {/* Hero Section */}
-      <section className="bg-primary text-white py-16 px-4">
-        <div className="container mx-auto text-center max-w-3xl">
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-6">
-            {t('home.heroTitle')}
+    <div className="min-h-screen bg-[#F4F6FA] flex flex-col">
+
+      {/* ─── HERO SECTION ─── */}
+      <section className="relative overflow-hidden hero-gradient pt-16 pb-40">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-10 left-10 w-72 h-72 bg-amber-400/5 rounded-full blur-3xl animate-float" />
+          <div className="absolute bottom-10 right-10 w-96 h-96 bg-teal-400/5 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
+          {/* Dot grid pattern */}
+          <div className="absolute inset-0 opacity-20" style={{
+            backgroundImage: 'radial-gradient(circle, rgba(245,158,11,0.3) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }} />
+        </div>
+
+        <div className="relative container mx-auto px-4 lg:px-6 text-center max-w-4xl">
+          {/* Top badge */}
+          <div className="inline-flex items-center gap-2 bg-teal-400/15 border border-teal-400/30 text-teal-300 px-4 py-1.5 rounded-full text-sm font-semibold mb-6 animate-fade-up">
+            <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+            {t('home.telegramBadge')}
+          </div>
+
+          <h1 className="text-4xl md:text-6xl font-display font-extrabold text-white mb-5 leading-tight animate-fade-up" style={{ animationDelay: '0.1s' }}>
+            {t('home.heroTitle').split(' ').slice(0, -2).join(' ')}{' '}
+            <span className="gradient-text">{t('home.heroTitle').split(' ').slice(-2).join(' ')}</span>
           </h1>
-          <p className="text-lg md:text-xl mb-6 text-blue-100">
+
+          <p className="text-base md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto animate-fade-up" style={{ animationDelay: '0.2s' }}>
             {t('home.heroSubtitle')}
           </p>
-          <span className="inline-block mb-10 text-primary text-sm bg-blue-100 font-bold px-4 py-1.5 rounded-full border border-blue-200">
-            {t('home.telegramBadge')}
-          </span>
-          
-          {/* Dual Service Switcher */}
-          <div className="bg-white rounded-lg p-1 max-w-md mx-auto flex shadow-lg">
-            <button 
+
+          {/* Service Switcher */}
+          <div className="relative bg-white/10 backdrop-blur-sm rounded-2xl p-1.5 max-w-xs mx-auto flex border border-white/15 animate-fade-up" style={{ animationDelay: '0.3s' }}>
+            {/* sliding indicator */}
+            <div
+              className="absolute top-1.5 bottom-1.5 w-[calc(50%-3px)] rounded-xl bg-amber-400 transition-all duration-300 ease-in-out"
+              style={{ left: serviceMode === 'cargo' ? '6px' : 'calc(50% + 0px)' }}
+            />
+            <button
               onClick={() => { setServiceMode('cargo'); setQuoteResult(null); }}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-md font-semibold transition-all ${serviceMode === 'cargo' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${serviceMode === 'cargo' ? 'text-[#0A1628]' : 'text-slate-300 hover:text-white'}`}
             >
-              <Package className="w-5 h-5" />
+              <Package className="w-4 h-4" />
               {t('home.shipCargo')}
             </button>
-            <button 
+            <button
               onClick={() => setServiceMode('passenger')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-md font-semibold transition-all ${serviceMode === 'passenger' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${serviceMode === 'passenger' ? 'text-[#0A1628]' : 'text-slate-300 hover:text-white'}`}
             >
-              <Users className="w-5 h-5" />
+              <Users className="w-4 h-4" />
               {t('home.bookTravel')}
             </button>
           </div>
         </div>
       </section>
 
-      {/* Main Content Area */}
-      <section className="flex-grow container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden -mt-16 border border-gray-100">
-          <div className="p-8">
-            {serviceMode === 'cargo' ? (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <h2 className="text-2xl font-display font-bold mb-6 text-gray-800">{t('home.cargoTitle')}</h2>
-                
-                {quoteResult ? (
-                  <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-primary">Quote: {quoteResult.quoteId}</h3>
-                        <p className="text-sm text-gray-600">Expires: {new Date(quoteResult.expiresAt).toLocaleString()}</p>
-                      </div>
-                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-bold">
-                        {quoteResult.isExpress ? t('home.express') : t('home.standard')}
-                      </span>
+      {/* ─── FLOATING FORM CARD ─── */}
+      <section className="flex-grow container mx-auto px-4 lg:px-6">
+        <div className="max-w-4xl mx-auto -mt-28 relative z-10">
+          <div className="bg-white rounded-3xl shadow-2xl shadow-slate-900/15 overflow-hidden border border-slate-100 animate-fade-up" style={{ animationDelay: '0.4s' }}>
+            <div className="p-8">
+              {serviceMode === 'cargo' ? (
+                <div>
+                  <div className="flex items-center gap-3 mb-7">
+                    <div className="w-10 h-10 rounded-xl bg-amber-400/15 flex items-center justify-center">
+                      <Package className="w-5 h-5 text-amber-500" />
                     </div>
-                    
-                    <div className="space-y-2 mb-6 text-gray-700">
-                      <div className="flex justify-between">
-                        <span>{t('home.baseRate')}:</span>
-                        <span>{quoteResult.baseFCFA.toLocaleString()} FCFA</span>
-                      </div>
-                      {quoteResult.surchargesFCFA > 0 && (
-                        <div className="flex justify-between text-orange-600">
-                          <span>{t('home.surcharges')}:</span>
-                          <span>+ {quoteResult.surchargesFCFA.toLocaleString()} FCFA</span>
-                        </div>
-                      )}
-                      {quoteResult.discountsFCFA > 0 && (
-                        <div className="flex justify-between text-green-600">
-                          <span>{t('home.discounts')}:</span>
-                          <span>- {quoteResult.discountsFCFA.toLocaleString()} FCFA</span>
-                        </div>
-                      )}
-                      <div className="border-t pt-2 mt-2 font-bold text-lg flex justify-between">
-                        <span>{t('home.totalFCFA')}:</span>
-                        <span>{quoteResult.totalFCFA.toLocaleString()} FCFA</span>
-                      </div>
-                      <div className="flex justify-between text-sm font-semibold text-gray-500">
-                        <span>{t('home.equivalentNGN')}:</span>
-                        <span>₦ {quoteResult.totalNGN.toLocaleString()}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4">
-                      <button onClick={() => setQuoteResult(null)} className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-bold hover:bg-gray-300 transition-colors">
-                        {t('home.recalculate')}
-                      </button>
-                      <button 
-                        onClick={() => navigate('/cargo/booking', { state: { quote: quoteResult, request: { origin: cargoOrigin, destination: cargoDestination, weightKg: parseFloat(cargoWeight), cargoType } } })}
-                        className="flex-1 bg-success text-white py-3 rounded-lg font-bold hover:bg-green-600 transition-colors flex justify-center items-center gap-2 shadow-lg"
-                      >
-                        {t('home.bookNow')}
-                        <CheckCircle className="w-5 h-5" />
-                      </button>
-                    </div>
+                    <h2 className="text-2xl font-display font-bold text-slate-900">{t('home.cargoTitle')}</h2>
                   </div>
-                ) : (
-                  <form onSubmit={handleCargoQuote}>
-                    {quoteError && (
-                      <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5" />
-                        {quoteError}
-                      </div>
-                    )}
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('home.origin')}</label>
-                        <div className="relative">
-                          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                          <select 
-                            value={cargoOrigin} 
-                            onChange={(e) => setCargoOrigin(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
+
+                  {quoteResult ? (
+                    <div className="animate-fade-up">
+                      {/* Quote Result */}
+                      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-amber-400/20">
+                        <div className="flex justify-between items-start mb-5">
+                          <div>
+                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-1">Quote Reference</p>
+                            <h3 className="text-lg font-bold text-white font-mono">{quoteResult.quoteId}</h3>
+                            <p className="text-xs text-slate-500 mt-1">Expires: {new Date(quoteResult.expiresAt).toLocaleString()}</p>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${quoteResult.isExpress ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'bg-teal-400/20 text-teal-300 border border-teal-400/30'}`}>
+                            {quoteResult.isExpress ? <><Zap className="w-3 h-3 inline mr-1" />{t('home.express')}</> : t('home.standard')}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2.5 mb-6 text-sm">
+                          <div className="flex justify-between text-slate-300">
+                            <span>{t('home.baseRate')}</span>
+                            <span>{quoteResult.baseFCFA.toLocaleString()} FCFA</span>
+                          </div>
+                          {quoteResult.surchargesFCFA > 0 && (
+                            <div className="flex justify-between text-orange-400">
+                              <span>{t('home.surcharges')}</span>
+                              <span>+ {quoteResult.surchargesFCFA.toLocaleString()} FCFA</span>
+                            </div>
+                          )}
+                          {quoteResult.discountsFCFA > 0 && (
+                            <div className="flex justify-between text-teal-400">
+                              <span>{t('home.discounts')}</span>
+                              <span>- {quoteResult.discountsFCFA.toLocaleString()} FCFA</span>
+                            </div>
+                          )}
+                          <div className="border-t border-white/15 pt-3 mt-2 flex justify-between font-bold text-xl text-white">
+                            <span>{t('home.totalFCFA')}</span>
+                            <span>{quoteResult.totalFCFA.toLocaleString()} FCFA</span>
+                          </div>
+                          <div className="flex justify-between text-slate-500 text-xs">
+                            <span>{t('home.equivalentNGN')}</span>
+                            <span>₦ {quoteResult.totalNGN.toLocaleString()}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => setQuoteResult(null)}
+                            className="flex-1 bg-white/10 hover:bg-white/15 text-white py-3 rounded-xl font-semibold transition-colors border border-white/15"
                           >
-                            <option>Douala</option>
-                            <option>Yaoundé</option>
-                            <option>Buea</option>
-                            <option>Kumba</option>
-                            <option>Ikom</option>
+                            {t('home.recalculate')}
+                          </button>
+                          <button
+                            onClick={() => navigate('/cargo/booking', { state: { quote: quoteResult, request: { origin: cargoOrigin, destination: cargoDestination, weightKg: parseFloat(cargoWeight), cargoType } } })}
+                            className="flex-1 bg-amber-400 hover:bg-amber-300 text-[#0A1628] py-3 rounded-xl font-bold transition-all flex justify-center items-center gap-2 shadow-lg shadow-amber-400/30"
+                          >
+                            {t('home.bookNow')}
+                            <CheckCircle className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleCargoQuote}>
+                      {quoteError && (
+                        <div className="mb-5 p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-2 border border-red-100">
+                          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                          {quoteError}
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                          <label className={labelCls}>{t('home.origin')}</label>
+                          <div className="relative">
+                            <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4" />
+                            <select value={cargoOrigin} onChange={e => setCargoOrigin(e.target.value)} className={`${inputCls} pl-10`}>
+                              <option>Douala</option>
+                              <option>Yaoundé</option>
+                              <option>Buea</option>
+                              <option>Kumba</option>
+                              <option>Ikom</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className={labelCls}>{t('home.destination')}</label>
+                          <div className="relative">
+                            <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-500 w-4 h-4" />
+                            <select value={cargoDestination} onChange={e => setCargoDestination(e.target.value)} className={`${inputCls} pl-10`}>
+                              <option>Lagos</option>
+                              <option>Abuja</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className={labelCls}>{t('home.cargoType')}</label>
+                          <select value={cargoType} onChange={e => setCargoType(e.target.value as any)} className={inputCls}>
+                            <option value="general">{t('home.generalGoods')}</option>
+                            <option value="heavy_equipment">{t('home.heavyEquipment')}</option>
                           </select>
                         </div>
+                        <div>
+                          <label className={labelCls}>{t('home.weight')} (kg)</label>
+                          <input
+                            type="number"
+                            value={cargoWeight}
+                            onChange={e => setCargoWeight(e.target.value)}
+                            placeholder={t('home.weightPlaceholder')}
+                            className={inputCls}
+                          />
+                        </div>
                       </div>
+
+                      <div className="mt-5 flex items-center gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100 cursor-pointer group" onClick={() => setIsExpress(!isExpress)}>
+                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${isExpress ? 'bg-amber-400 border-amber-400' : 'bg-white border-slate-300 group-hover:border-amber-400'}`}>
+                          {isExpress && <CheckCircle className="w-3 h-3 text-white" />}
+                        </div>
+                        <input type="checkbox" id="express" checked={isExpress} onChange={e => setIsExpress(e.target.checked)} className="sr-only" />
+                        <div>
+                          <label htmlFor="express" className="text-sm font-bold text-slate-800 cursor-pointer flex items-center gap-1.5">
+                            <Zap className="w-4 h-4 text-amber-500" />
+                            {t('home.expressBooking')}
+                          </label>
+                          <p className="text-xs text-slate-500">Priority handling &amp; faster delivery</p>
+                        </div>
+                      </div>
+
+                      <button type="submit" className="mt-6 w-full bg-[#0A1628] hover:bg-[#1a2d4e] text-white py-4 rounded-xl font-bold text-base transition-all flex justify-center items-center gap-2 shadow-xl shadow-slate-900/20 group">
+                        {t('home.calculateQuote')}
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </form>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center gap-3 mb-7">
+                    <div className="w-10 h-10 rounded-xl bg-teal-400/15 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-teal-500" />
+                    </div>
+                    <h2 className="text-2xl font-display font-bold text-slate-900">{t('home.passengerTitle')}</h2>
+                  </div>
+                  <form onSubmit={handlePassengerSearch}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('home.destination')}</label>
+                        <label className={labelCls}>{t('home.from')}</label>
                         <div className="relative">
-                          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                          <select 
-                            value={cargoDestination} 
-                            onChange={(e) => setCargoDestination(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
-                          >
+                          <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-500 w-4 h-4" />
+                          <select value={passengerOrigin} onChange={e => setPassengerOrigin(e.target.value)} className={`${inputCls} pl-10`}>
+                            <option>Douala</option>
+                            <option>Yaoundé</option>
                             <option>Lagos</option>
                             <option>Abuja</option>
                           </select>
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('home.cargoType')}</label>
-                        <select 
-                          value={cargoType} 
-                          onChange={(e) => setCargoType(e.target.value as any)}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                        >
-                          <option value="general">{t('home.generalGoods')}</option>
-                          <option value="heavy_equipment">{t('home.heavyEquipment')}</option>
-                        </select>
+                        <label className={labelCls}>{t('home.to')}</label>
+                        <div className="relative">
+                          <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4" />
+                          <select value={passengerDestination} onChange={e => setPassengerDestination(e.target.value)} className={`${inputCls} pl-10`}>
+                            <option>Lagos</option>
+                            <option>Abuja</option>
+                            <option>Douala</option>
+                            <option>Yaoundé</option>
+                          </select>
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('home.weight')}</label>
-                        <input 
-                          type="number" 
-                          value={cargoWeight}
-                          onChange={(e) => setCargoWeight(e.target.value)}
-                          placeholder={t('home.weightPlaceholder')} 
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" 
-                        />
+                        <label className={labelCls}>{t('home.date')}</label>
+                        <input type="date" required value={passengerDate} onChange={e => setPassengerDate(e.target.value)} className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>{t('home.passengers')}</label>
+                        <select value={passengerCount} onChange={e => setPassengerCount(Number(e.target.value))} className={inputCls}>
+                          <option value={1}>{t('home.adult1')}</option>
+                          <option value={2}>{t('home.adult2')}</option>
+                          <option value={3}>{t('home.adult3')}</option>
+                          <option value={4}>{t('home.adult4')}</option>
+                        </select>
                       </div>
                     </div>
-                    
-                    <div className="mt-4 flex items-center gap-2">
-                      <input 
-                        type="checkbox" 
-                        id="express" 
-                        checked={isExpress}
-                        onChange={(e) => setIsExpress(e.target.checked)}
-                        className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary"
-                      />
-                      <label htmlFor="express" className="text-sm font-medium text-gray-700">
-                        {t('home.expressBooking')}
-                      </label>
-                    </div>
-
-                    <button type="submit" className="mt-8 w-full bg-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-600 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-blue-500/30">
-                      {t('home.calculateQuote')}
-                      <ArrowRight className="w-5 h-5" />
+                    <button type="submit" className="mt-6 w-full bg-teal-500 hover:bg-teal-400 text-white py-4 rounded-xl font-bold text-base transition-all flex justify-center items-center gap-2 shadow-xl shadow-teal-500/20 group">
+                      <Search className="w-5 h-5" />
+                      {t('home.searchTrips')}
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </form>
-                )}
-              </div>
-            ) : (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <h2 className="text-2xl font-display font-bold mb-6 text-gray-800">{t('home.passengerTitle')}</h2>
-                <form onSubmit={handlePassengerSearch}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('home.from')}</label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <select value={passengerOrigin} onChange={e => setPassengerOrigin(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none">
-                          <option>Douala</option>
-                          <option>Yaoundé</option>
-                          <option>Lagos</option>
-                          <option>Abuja</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('home.to')}</label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <select value={passengerDestination} onChange={e => setPassengerDestination(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none">
-                          <option>Lagos</option>
-                          <option>Abuja</option>
-                          <option>Douala</option>
-                          <option>Yaoundé</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('home.date')}</label>
-                      <input type="date" required value={passengerDate} onChange={e => setPassengerDate(e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('home.passengers')}</label>
-                      <select value={passengerCount} onChange={e => setPassengerCount(Number(e.target.value))} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                        <option value={1}>{t('home.adult1')}</option>
-                        <option value={2}>{t('home.adult2')}</option>
-                        <option value={3}>{t('home.adult3')}</option>
-                        <option value={4}>{t('home.adult4')}</option>
-                      </select>
-                    </div>
-                  </div>
-                  <button type="submit" className="mt-8 w-full bg-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-600 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-blue-500/30">
-                    <Search className="w-5 h-5" />
-                    {t('home.searchTrips')}
-                  </button>
-                </form>
-              </div>
-            )}
-          </div>
-          
-          <div className="bg-blue-50 p-6 flex items-center justify-between border-t border-blue-100">
-            <div>
-              <h4 className="font-semibold text-primary">{t('home.needHelp')}</h4>
-              <p className="text-sm text-gray-600">{t('home.supportSubtitle')}</p>
+                </div>
+              )}
             </div>
-            <a href="https://t.me/Afriquecon" target="_blank" rel="noreferrer" className="text-primary font-bold hover:underline">
-              {t('home.openTelegram')}&rarr;
-            </a>
+
+            {/* Help strip */}
+            <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-8 py-4 flex items-center justify-between border-t border-white/5">
+              <div>
+                <p className="text-sm font-semibold text-white">{t('home.needHelp')}</p>
+                <p className="text-xs text-slate-400">{t('home.supportSubtitle')}</p>
+              </div>
+              <a href="https://t.me/Afriquecon" target="_blank" rel="noreferrer"
+                className="flex items-center gap-1.5 text-teal-400 hover:text-teal-300 font-bold text-sm transition-colors group">
+                {t('home.openTelegram')}
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Coverage Map Section */}
-      <section className="py-20 bg-gray-50 border-t border-gray-200 px-4 sm:px-6">
+      {/* ─── STATS STRIP ─── */}
+      <section className="py-16 px-4 lg:px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {STATS.map((stat, i) => (
+              <div key={i} className="bg-white rounded-2xl p-5 text-center border border-slate-100 shadow-sm card-hover">
+                <div className="w-10 h-10 rounded-xl bg-amber-400/10 flex items-center justify-center mx-auto mb-3 text-amber-500">
+                  {stat.icon}
+                </div>
+                <div className="text-2xl font-display font-extrabold text-slate-900">{stat.value}</div>
+                <div className="text-xs text-slate-500 font-medium mt-0.5">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── COVERAGE MAP ─── */}
+      <section className="py-16 bg-white border-y border-slate-100 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold text-gray-900 mb-4">{t('home.mapTitle')}</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto font-medium">
-              {t('home.mapSubtitle')}
-              <span className="block mt-4 text-blue-600 text-sm bg-blue-100 w-fit mx-auto px-5 py-2 rounded-full border border-blue-200 shadow-inner">
-                {t('home.telegramBadge')}
-              </span>
-            </p>
+            <div className="inline-flex items-center gap-2 bg-amber-400/10 border border-amber-400/20 text-amber-600 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+              <MapPin className="w-4 h-4" /> Coverage
+            </div>
+            <h2 className="text-3xl md:text-4xl font-display font-extrabold text-slate-900 mb-4">{t('home.mapTitle')}</h2>
+            <p className="text-slate-500 max-w-xl mx-auto">{t('home.mapSubtitle')}</p>
           </div>
           <CoverageMap />
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-white border-t border-gray-200 px-4 sm:px-6">
+      {/* ─── TESTIMONIALS ─── */}
+      <section className="py-20 px-4 sm:px-6 bg-[#F4F6FA]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold text-gray-900 mb-4">{t('home.testimonialsTitle')}</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">{t('home.testimonialsSubtitle')}</p>
+            <div className="inline-flex items-center gap-2 bg-teal-400/10 border border-teal-400/20 text-teal-600 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+              <Star className="w-4 h-4 fill-teal-500" /> Customer Stories
+            </div>
+            <h2 className="text-3xl md:text-4xl font-display font-extrabold text-slate-900 mb-4">{t('home.testimonialsTitle')}</h2>
+            <p className="text-slate-500 max-w-xl mx-auto">{t('home.testimonialsSubtitle')}</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { name: t('home.t1name'), role: t('home.t1role'), text: t('home.t1text'), service: t('home.t1service') },
-              { name: t('home.t2name'), role: t('home.t2role'), text: t('home.t2text'), service: t('home.t2service') },
-              { name: t('home.t3name'), role: t('home.t3role'), text: t('home.t3text'), service: t('home.t3service') }
+              { name: t('home.t1name'), role: t('home.t1role'), text: t('home.t1text'), service: t('home.t1service'), initials: 'AE' },
+              { name: t('home.t2name'), role: t('home.t2role'), text: t('home.t2text'), service: t('home.t2service'), initials: 'MC' },
+              { name: t('home.t3name'), role: t('home.t3role'), text: t('home.t3text'), service: t('home.t3service'), initials: 'FO' },
             ].map((testimonial, i) => (
-              <div key={i} className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:border-primary/30 transition-colors shadow-sm">
-                <div className="flex gap-1 mb-4">
-                  {[1,2,3,4,5].map(s => <Star key={s} className="w-5 h-5 text-yellow-400 fill-yellow-400" />)}
+              <div key={i} className="bg-white rounded-3xl p-7 border border-slate-100 shadow-sm card-hover group">
+                <div className="flex gap-1 mb-5">
+                  {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 text-amber-400 fill-amber-400" />)}
                 </div>
-                <p className="text-gray-700 mb-6 italic">"{testimonial.text}"</p>
-                <div>
-                  <p className="font-bold text-gray-900">{testimonial.name}</p>
-                  <p className="text-sm text-gray-500">{testimonial.role} • <span className="text-primary font-medium">{testimonial.service}</span></p>
+                <p className="text-slate-600 mb-6 italic leading-relaxed">"{testimonial.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    {testimonial.initials}
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900">{testimonial.name}</p>
+                    <p className="text-xs text-slate-500">{testimonial.role} · <span className="text-teal-600 font-medium">{testimonial.service}</span></p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -355,31 +418,41 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-20 bg-gray-900 text-white px-4 sm:px-6">
-        <div className="max-w-3xl mx-auto">
+      {/* ─── FAQ ─── */}
+      <section className="py-20 bg-[#0A1628] text-white px-4 sm:px-6 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none opacity-30" style={{
+          backgroundImage: 'radial-gradient(circle, rgba(245,158,11,0.15) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }} />
+        <div className="relative max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold mb-4">{t('home.faqTitle')}</h2>
-            <p className="text-gray-400">{t('home.faqSubtitle')}</p>
+            <div className="inline-flex items-center gap-2 bg-amber-400/15 border border-amber-400/25 text-amber-400 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+              FAQ
+            </div>
+            <h2 className="text-3xl md:text-4xl font-display font-extrabold mb-3">{t('home.faqTitle')}</h2>
+            <p className="text-slate-400">{t('home.faqSubtitle')}</p>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {[
               { q: t('home.faq1q'), a: t('home.faq1a') },
               { q: t('home.faq2q'), a: t('home.faq2a') },
               { q: t('home.faq3q'), a: t('home.faq3a') },
-              { q: t('home.faq4q'), a: t('home.faq4a') }
+              { q: t('home.faq4q'), a: t('home.faq4a') },
             ].map((faq, i) => (
-              <details key={i} className="group bg-gray-800 rounded-xl border border-gray-700 [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex items-center justify-between p-6 cursor-pointer font-semibold text-lg text-gray-100">
-                  {faq.q}
-                  <span className="transition group-open:rotate-180">
-                    <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                  </span>
-                </summary>
-                <div className="px-6 pb-6 text-gray-400 border-t border-gray-700 pt-4">
-                  {faq.a}
+              <div key={i} className={`rounded-2xl border transition-all duration-200 overflow-hidden ${openFaq === i ? 'border-amber-400/40 bg-amber-400/5' : 'border-white/10 bg-white/5 hover:border-white/20'}`}>
+                <button
+                  className="w-full flex items-center justify-between px-6 py-5 cursor-pointer font-semibold text-left text-slate-100"
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                >
+                  <span>{faq.q}</span>
+                  <ChevronDown className={`w-5 h-5 text-amber-400 flex-shrink-0 transition-transform duration-300 ${openFaq === i ? 'rotate-180' : ''}`} />
+                </button>
+                <div className={`transition-all duration-300 ${openFaq === i ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
+                  <div className="px-6 pb-5 text-slate-400 text-sm leading-relaxed border-t border-white/10 pt-4">
+                    {faq.a}
+                  </div>
                 </div>
-              </details>
+              </div>
             ))}
           </div>
         </div>

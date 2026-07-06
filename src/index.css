@@ -1,20 +1,215 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0088CC;
-  --color-success: #34C759;
-  --color-warning: #FF9500;
-  --color-danger: #FF3B30;
-  --color-neutral: #F5F5F5;
-  --font-display: "Poppins", sans-serif;
+  /* Brand Colours */
+  --color-primary: #0A1628;
+  --color-primary-mid: #1a2d4e;
+  --color-primary-light: #243d68;
+  --color-accent: #F59E0B;
+  --color-accent-dark: #D97706;
+  --color-teal: #0DCFB4;
+  --color-teal-dark: #09b39b;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-neutral: #F4F6FA;
+  --color-card: #FFFFFF;
+
+  /* Typography */
+  --font-display: "Outfit", sans-serif;
   --font-body: "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
+}
+
+/* ───────────────────────────────────────────
+   BASE RESET & GLOBALS
+─────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: var(--font-body);
   background-color: var(--color-neutral);
+  color: #1a1a2e;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
+}
+
+::selection {
+  background-color: #F59E0B44;
+  color: #0A1628;
+}
+
+:focus-visible {
+  outline: 2px solid #F59E0B;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ───────────────────────────────────────────
+   KEYFRAME ANIMATIONS
+─────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13,207,180,0.5); }
+  70%  { transform: scale(1);    box-shadow: 0 0 0 14px rgba(13,207,180,0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13,207,180,0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+@keyframes particle-move {
+  0%   { transform: translateY(0) translateX(0); opacity: 0.6; }
+  50%  { opacity: 1; }
+  100% { transform: translateY(-80px) translateX(20px); opacity: 0; }
+}
+
+/* ───────────────────────────────────────────
+   UTILITY CLASSES
+─────────────────────────────────────────── */
+.animate-fade-up {
+  animation: fadeUp 0.6s ease both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease both;
+}
+
+.animate-slide-left {
+  animation: slideInLeft 0.6s ease both;
+}
+
+.animate-slide-right {
+  animation: slideInRight 0.6s ease both;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* Shimmer loading */
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Glass morphism */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.glass-dark {
+  background: rgba(10, 22, 40, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #F59E0B 0%, #0DCFB4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hero background gradient */
+.hero-gradient {
+  background: linear-gradient(135deg, #0A1628 0%, #1a2d4e 50%, #0d2540 100%);
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(10, 22, 40, 0.15);
+}
+
+/* ───────────────────────────────────────────
+   FORM INPUT PREMIUM STYLE
+─────────────────────────────────────────── */
+.input-premium {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: #0A1628;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  outline: none;
+}
+
+.input-premium:focus {
+  border-color: #F59E0B;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+  background: #FFFFFF;
+}
+
+.input-premium::placeholder {
+  color: #94A3B8;
+}
+
+/* ───────────────────────────────────────────
+   SCROLLBAR
+─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ───────────────────────────────────────────
+   PRINT OVERRIDES
+─────────────────────────────────────────── */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
 }
