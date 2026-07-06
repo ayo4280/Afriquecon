@@ -44,13 +44,32 @@ export default function Home() {
   const [passengerDestination, setPassengerDestination] = useState('Lagos');
   const [passengerDate, setPassengerDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [passengerCount, setPassengerCount] = useState<number>(1);
+  const [passengerError, setPassengerError] = useState<string | null>(null);
+
+  // Nigerian origin cities — departures to Cameroon only on Tuesdays (2) & Fridays (5)
+  const NIGERIA_CITIES = ['Lagos', 'Abuja', 'Ikom', 'Enugu', 'Abakaliki', 'Onitsha'];
+  const CAMEROON_CITIES = ['Douala', 'Yaoundé', 'Buea', 'Kumba'];
+
+  const isNigeriaToCamera = NIGERIA_CITIES.includes(passengerOrigin) && CAMEROON_CITIES.includes(passengerDestination);
 
   // FAQ open state
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const handlePassengerSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setPassengerError(null);
     if (!passengerOrigin || !passengerDestination || !passengerDate) return;
+
+    if (isNigeriaToCamera) {
+      // Use UTC date to avoid timezone shifting the day
+      const [year, month, day] = passengerDate.split('-').map(Number);
+      const dayOfWeek = new Date(year, month - 1, day).getDay(); // 0=Sun,2=Tue,5=Fri
+      if (dayOfWeek !== 2 && dayOfWeek !== 5) {
+        setPassengerError('Departures from Nigeria to Cameroon are only available on Tuesdays and Fridays. Please select a valid date.');
+        return;
+      }
+    }
+
     navigate(`/passenger/results?origin=${passengerOrigin}&destination=${passengerDestination}&date=${passengerDate}&passengers=${passengerCount}`);
   };
 
@@ -314,12 +333,18 @@ export default function Home() {
                     <h2 className="text-2xl font-display font-bold text-slate-900">{t('home.passengerTitle')}</h2>
                   </div>
                   <form onSubmit={handlePassengerSearch}>
+                    {passengerError && (
+                      <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-2 border border-red-100 text-sm">
+                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                        {passengerError}
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
                         <label className={labelCls}>{t('home.from')}</label>
                         <div className="relative">
                           <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-500 w-4 h-4" />
-                          <select value={passengerOrigin} onChange={e => setPassengerOrigin(e.target.value)} className={`${inputCls} pl-10`}>
+                          <select value={passengerOrigin} onChange={e => { setPassengerOrigin(e.target.value); setPassengerError(null); }} className={`${inputCls} pl-10`}>
                             <optgroup label="Cameroon">
                               <option>Douala</option>
                               <option>Yaoundé</option>
@@ -341,7 +366,7 @@ export default function Home() {
                         <label className={labelCls}>{t('home.to')}</label>
                         <div className="relative">
                           <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4" />
-                          <select value={passengerDestination} onChange={e => setPassengerDestination(e.target.value)} className={`${inputCls} pl-10`}>
+                          <select value={passengerDestination} onChange={e => { setPassengerDestination(e.target.value); setPassengerError(null); }} className={`${inputCls} pl-10`}>
                             <optgroup label="Cameroon">
                               <option>Douala</option>
                               <option>Yaoundé</option>
@@ -360,8 +385,16 @@ export default function Home() {
                         </div>
                       </div>
                       <div>
-                        <label className={labelCls}>{t('home.date')}</label>
-                        <input type="date" required value={passengerDate} onChange={e => setPassengerDate(e.target.value)} className={inputCls} />
+                        <label className={labelCls}>
+                          {t('home.date')}
+                          {isNigeriaToCamera && <span className="ml-2 text-teal-600 font-bold normal-case tracking-normal">(Tue & Fri only)</span>}
+                        </label>
+                        <input type="date" required value={passengerDate} onChange={e => { setPassengerDate(e.target.value); setPassengerError(null); }} className={inputCls} />
+                        {isNigeriaToCamera && (
+                          <p className="mt-1.5 text-xs text-teal-700 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2">
+                            🗓️ Nigeria → Cameroon departures run every <strong>Tuesday</strong> and <strong>Friday</strong>.
+                          </p>
+                        )}
                       </div>
                       <div>
                         <label className={labelCls}>{t('home.passengers')}</label>
