@@ -301,6 +301,7 @@ export default function CargoBooking() {
                 <input 
                   type="checkbox" 
                   id="terms" 
+                  required
                   checked={acceptedTerms}
                   onChange={e => setAcceptedTerms(e.target.checked)}
                   className="mt-1 w-4 h-4 text-amber-500 rounded border-slate-300 focus:ring-amber-500"

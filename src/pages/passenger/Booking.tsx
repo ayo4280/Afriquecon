@@ -341,6 +341,7 @@ export default function PassengerBooking() {
                   <input 
                     type="checkbox" 
                     id="terms" 
+                    required
                     checked={acceptedTerms}
                     onChange={e => setAcceptedTerms(e.target.checked)}
                     className="mt-1 w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
