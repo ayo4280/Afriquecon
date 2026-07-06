@@ -229,6 +229,9 @@ export default function Home() {
                                 <option>Lagos</option>
                                 <option>Abuja</option>
                                 <option>Ikom</option>
+                                <option>Enugu</option>
+                                <option>Abakaliki</option>
+                                <option>Onitsha</option>
                               </optgroup>
                             </select>
                           </div>
@@ -248,6 +251,9 @@ export default function Home() {
                                 <option>Lagos</option>
                                 <option>Abuja</option>
                                 <option>Ikom</option>
+                                <option>Enugu</option>
+                                <option>Abakaliki</option>
+                                <option>Onitsha</option>
                               </optgroup>
                             </select>
                           </div>
@@ -317,6 +323,9 @@ export default function Home() {
                               <option>Lagos</option>
                               <option>Abuja</option>
                               <option>Ikom</option>
+                              <option>Enugu</option>
+                              <option>Abakaliki</option>
+                              <option>Onitsha</option>
                             </optgroup>
                           </select>
                         </div>
@@ -336,6 +345,9 @@ export default function Home() {
                               <option>Lagos</option>
                               <option>Abuja</option>
                               <option>Ikom</option>
+                              <option>Enugu</option>
+                              <option>Abakaliki</option>
+                              <option>Onitsha</option>
                             </optgroup>
                           </select>
                         </div>
