@@ -271,7 +271,7 @@ export default function Home() {
                         </div>
                         <div>
                           <label className={labelCls}>
-                            {t('home.weight')} (kg)
+                            {t('home.weight')}
                             {isExpress && <span className="text-amber-600 ml-1 lowercase font-bold tracking-normal">(Max 50kg)</span>}
                           </label>
                           <input
