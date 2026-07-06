@@ -42,6 +42,10 @@ export const cargoService = {
       throw new Error(`Route not supported: ${routeKey}`);
     }
 
+    if (request.isExpress && request.weightKg > 50) {
+      throw new Error('Express cargo weight cannot exceed 50kg.');
+    }
+
     let surchargesFCFA = 0;
 
     // Weight surcharge: >20kg = +5000 FCFA per 10kg
