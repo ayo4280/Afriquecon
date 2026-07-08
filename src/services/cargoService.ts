@@ -4,86 +4,115 @@ export interface CargoQuoteRequest {
   weightKg: number;
   cargoType: 'general' | 'heavy_equipment';
   isExpress?: boolean;
-  isCameroonShipper?: boolean;
-  volumeDiscount?: boolean;
-  loyaltyDiscount?: boolean;
 }
 
 export interface CargoQuoteResponse {
   quoteId: string;
   baseFCFA: number;
-  surchargesFCFA: number;
-  discountsFCFA: number;
   totalFCFA: number;
   totalNGN: number;
   isExpress: boolean;
   reservationRequired: string;
   expiresAt: string;
+  status: 'INSTANT_QUOTE' | 'PENDING_REVIEW';
+  message?: string;
 }
 
-// Mock database for base rates (Origin-Destination -> Base Rate FCFA)
+// Route base rates (Origin-Destination -> min base rate FCFA)
+// Pricing is symmetric: same rate applies in both directions
 const baseRates: Record<string, number> = {
+  // Cameroon → Nigeria
   'Yaoundé-Lagos': 95000,
   'Yaoundé-Abuja': 100000,
+  'Yaoundé-Enugu': 65000,
+  'Yaoundé-Onitsha': 65000,
+  'Yaoundé-Abakaliki': 65000,
+  'Yaoundé-Ikom': 60000,
   'Douala-Lagos': 90000,
   'Douala-Abuja': 90000,
+  'Douala-Enugu': 55000,
+  'Douala-Onitsha': 55000,
+  'Douala-Abakaliki': 55000,
+  'Douala-Ikom': 50000,
   'Buea-Lagos': 90000,
+  'Buea-Abuja': 90000,
+  'Buea-Enugu': 55000,
+  'Buea-Onitsha': 55000,
+  'Buea-Abakaliki': 55000,
+  'Buea-Ikom': 50000,
   'Kumba-Lagos': 85000,
   'Kumba-Abuja': 85000,
-  'Ikom-Lagos': 40000,
+  'Kumba-Enugu': 50000,
+  'Kumba-Onitsha': 50000,
+  'Kumba-Abakaliki': 50000,
+  'Kumba-Ikom': 40000,
+  'Mamfe-Lagos': 60000,
+  'Mamfe-Abuja': 65000,
+  'Mamfe-Enugu': 55000,
+  'Mamfe-Onitsha': 55000,
+  'Mamfe-Abakaliki': 50000,
+  'Mamfe-Ikom': 30000,
+  // Nigeria → Cameroon (symmetric)
+  'Lagos-Yaoundé': 95000,
+  'Abuja-Yaoundé': 100000,
+  'Enugu-Yaoundé': 65000,
+  'Onitsha-Yaoundé': 65000,
+  'Abakaliki-Yaoundé': 65000,
+  'Ikom-Yaoundé': 60000,
+  'Lagos-Douala': 90000,
+  'Abuja-Douala': 90000,
+  'Enugu-Douala': 55000,
+  'Onitsha-Douala': 55000,
+  'Abakaliki-Douala': 55000,
+  'Ikom-Douala': 50000,
+  'Lagos-Buea': 90000,
+  'Abuja-Buea': 90000,
+  'Enugu-Buea': 55000,
+  'Onitsha-Buea': 55000,
+  'Abakaliki-Buea': 55000,
+  'Ikom-Buea': 50000,
+  'Lagos-Kumba': 85000,
+  'Abuja-Kumba': 85000,
+  'Enugu-Kumba': 50000,
+  'Onitsha-Kumba': 50000,
+  'Abakaliki-Kumba': 50000,
+  'Ikom-Kumba': 40000,
+  'Lagos-Mamfe': 60000,
+  'Abuja-Mamfe': 65000,
+  'Enugu-Mamfe': 55000,
+  'Onitsha-Mamfe': 55000,
+  'Abakaliki-Mamfe': 50000,
+  'Ikom-Mamfe': 30000,
 };
 
 export const cargoService = {
   calculateQuote: (request: CargoQuoteRequest): CargoQuoteResponse => {
     const routeKey = `${request.origin}-${request.destination}`;
-    const baseFCFA = baseRates[routeKey];
+    let baseFCFA = baseRates[routeKey];
+    let status: 'INSTANT_QUOTE' | 'PENDING_REVIEW' = 'INSTANT_QUOTE';
+    let message = '';
 
     if (!baseFCFA) {
       throw new Error(`Route not supported: ${routeKey}`);
     }
 
-    if (request.isExpress && request.weightKg > 50) {
-      throw new Error('Express cargo weight cannot exceed 50kg.');
+    if (request.weightKg >= 100) {
+      status = 'PENDING_REVIEW';
+      message = 'Your quote >=100kg requires management approval. Expect response within 24hrs.';
+      baseFCFA = 0; // Management will determine
+    } else {
+      // Below 100kg: 1,000 FCFA per kg, with minimum being the route base rate
+      baseFCFA = Math.max(request.weightKg * 1000, baseFCFA);
     }
 
-    let surchargesFCFA = 0;
-
-    // Weight surcharge: >20kg = +5000 FCFA per 10kg
-    if (request.weightKg > 20) {
-      const extraWeight = request.weightKg - 20;
-      const extraBlocks = Math.ceil(extraWeight / 10);
-      surchargesFCFA += extraBlocks * 5000;
-    }
-
-    // Heavy equipment surcharge: +15% of base
-    if (request.cargoType === 'heavy_equipment') {
-      surchargesFCFA += baseFCFA * 0.15;
-    }
-
-    // Cameroon Shipper markup: +5% of base
-    if (request.isCameroonShipper) {
-      surchargesFCFA += baseFCFA * 0.05;
-    }
-
-    // Express surcharge: +25000 FCFA
     if (request.isExpress) {
-      surchargesFCFA += 25000;
+      status = 'PENDING_REVIEW';
+      message = message 
+        ? message + ' Also, express booking requires management approval.'
+        : 'Your express booking requires management approval. Express surcharge will be determined based on urgency and capacity. Expect response within 24 hours.';
     }
 
-    const subtotalFCFA = baseFCFA + surchargesFCFA;
-    let discountsFCFA = 0;
-
-    // Volume discount: -10% of subtotal
-    if (request.volumeDiscount) {
-      discountsFCFA += subtotalFCFA * 0.10;
-    }
-
-    // Loyalty discount: -5% of subtotal
-    if (request.loyaltyDiscount) {
-      discountsFCFA += subtotalFCFA * 0.05;
-    }
-
-    const totalFCFA = subtotalFCFA - discountsFCFA;
+    const totalFCFA = baseFCFA;
     const totalNGN = totalFCFA * 2.5; // Fixed conversion rate
 
     // Generate random quote ID for MVP
@@ -95,13 +124,13 @@ export const cargoService = {
     return {
       quoteId,
       baseFCFA,
-      surchargesFCFA,
-      discountsFCFA,
       totalFCFA,
       totalNGN,
       isExpress: !!request.isExpress,
       reservationRequired: "48 hours before departure",
-      expiresAt
+      expiresAt,
+      status,
+      ...(message && { message })
     };
   }
 };

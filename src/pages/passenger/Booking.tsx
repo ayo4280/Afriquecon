@@ -28,7 +28,7 @@ export default function PassengerBooking() {
   const [success, setSuccess] = useState(false);
 
   // Array of passenger details state
-  const [passengerDetails, setPassengerDetails] = useState<{name: string, idNumber: string, ticketType: TicketType, extraLuggage: number, telegramId?: string}[]>([]);
+  const [passengerDetails, setPassengerDetails] = useState<{name: string, idNumber: string, ticketType: TicketType, extraLuggage: number, isNigerian: boolean, telegramId?: string}[]>([]);
   const [pricingResults, setPricingResults] = useState<PassengerPricingResponse[]>([]);
 
   useEffect(() => {
@@ -44,6 +44,7 @@ export default function PassengerBooking() {
         idNumber: '',
         ticketType: 'adult' as TicketType,
         extraLuggage: 0,
+        isNigerian: true,
         telegramId: ''
       }));
       setPassengerDetails(initialDetails);
@@ -56,8 +57,10 @@ export default function PassengerBooking() {
     
     const newPricing = passengerDetails.map(p => passengerService.calculatePricing({
       baseFareFCFA: trip.baseFareFCFA,
+      baseFareFCFANonNigerian: trip.baseFareFCFANonNigerian,
       ticketType: p.ticketType,
-      extraLuggageCount: p.extraLuggage
+      isNigerian: p.isNigerian,
+      extraLuggageKg: p.extraLuggage
     }));
     
     setPricingResults(newPricing);
@@ -132,13 +135,15 @@ export default function PassengerBooking() {
         return {
           ticket_id: ticketId,
           user_id: user.id,
-          schedule_id: trip.scheduleId,   // TEXT column - mock schedule ID string
+          schedule_id: trip.scheduleId,
           passenger_name: p.name,
           id_number: p.idNumber || null,
           ticket_type: p.ticketType,
+          is_nigerian: p.isNigerian,
           seat_number: selectedSeats[i].toString(),
           base_fare_fcfa: pricing.baseFareFCFA,
           discount_fcfa: pricing.discountAmountFCFA,
+          discount_percent: pricing.discountPercent,
           luggage_fee_fcfa: pricing.extraLuggageFeeFCFA,
           total_fcfa: pricing.finalPriceFCFA,
           final_price_fcfa: pricing.finalPriceFCFA, // Satisfies legacy NOT NULL DB constraint
@@ -285,14 +290,15 @@ export default function PassengerBooking() {
                           onChange={e => handleDetailChange(index, 'ticketType', e.target.value)}
                           className="w-full px-4 py-2 bg-white border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                         >
-                          <option value="adult">Adult (Standard Fare)</option>
-                          <option value="student">Student (10% Off)</option>
-                          <option value="senior">Senior 60+ (15% Off)</option>
-                          <option value="child">Child &lt;12 (20% Off)</option>
+                          <option value="adult">Adult</option>
+                          <option value="student">Student</option>
+                          <option value="senior">Senior</option>
+                          <option value="child_under_5">Child &lt; 5 (30% Off)</option>
+                          <option value="child_under_2">Child &lt; 2 (Free)</option>
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('passengerBooking.luggagePieces')}</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('passengerBooking.luggageKg', 'Luggage (kg)')}</label>
                         <input 
                           type="number"
                           min={0}
@@ -300,8 +306,18 @@ export default function PassengerBooking() {
                           onChange={e => handleDetailChange(index, 'extraLuggage', parseInt(e.target.value) || 0)}
                           className="w-full px-4 py-2 bg-white border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary" 
                         />
-                        <p className="text-xs text-gray-500 mt-1">{t('passengerBooking.luggageHint')}</p>
+                        <p className="text-xs text-gray-500 mt-1">20kg free, +1000 FCFA/kg above</p>
                       </div>
+                    </div>
+                    <div className="mt-3 flex items-center">
+                      <input 
+                        type="checkbox"
+                        id={`isNigerian-${index}`}
+                        checked={p.isNigerian}
+                        onChange={e => handleDetailChange(index, 'isNigerian', e.target.checked)}
+                        className="mr-2 h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                      />
+                      <label htmlFor={`isNigerian-${index}`} className="text-sm font-medium text-gray-700">Passenger is a Nigerian Citizen</label>
                     </div>
                     
                     {index === 0 && (

@@ -93,7 +93,7 @@ END $$;
 ALTER TABLE public.cargo_bookings
   ADD COLUMN IF NOT EXISTS is_express BOOLEAN DEFAULT FALSE;
 ALTER TABLE public.cargo_bookings
-  ADD COLUMN IF NOT EXISTS discounts_fcfa DECIMAL(10,2) DEFAULT 0;
+  ADD COLUMN IF NOT EXISTS surcharges_fcfa DECIMAL(10,2) DEFAULT 0;
 
 ALTER TABLE public.cargo_bookings ENABLE ROW LEVEL SECURITY;
 
@@ -108,7 +108,17 @@ BEGIN
 END $$;
 
 -- ─────────────────────────────────────────────
--- STEP 4: Enable RLS on public lookup tables
+-- STEP 4: Add New Nigerian/Non-Nigerian columns
+-- ─────────────────────────────────────────────
+
+ALTER TABLE public.bus_schedules
+  ADD COLUMN IF NOT EXISTS base_fare_fcfa_non_nigerian DECIMAL(10,2) DEFAULT 0;
+
+ALTER TABLE public.passenger_tickets
+  ADD COLUMN IF NOT EXISTS is_nigerian BOOLEAN DEFAULT TRUE;
+
+-- ─────────────────────────────────────────────
+-- STEP 5: Enable RLS on public lookup tables
 -- ─────────────────────────────────────────────
 
 ALTER TABLE public.routes ENABLE ROW LEVEL SECURITY;

@@ -8,16 +8,19 @@ export interface TripSchedule {
   arrivalTime: string;
   durationHours: number;
   baseFareFCFA: number;
+  baseFareFCFANonNigerian: number;
   availableSeats: number;
   busNumber: string;
 }
 
-export type TicketType = 'adult' | 'student' | 'senior' | 'child';
+export type TicketType = 'adult' | 'student' | 'senior' | 'child_under_5' | 'child_under_2';
 
 export interface PassengerPricingRequest {
   baseFareFCFA: number;
+  baseFareFCFANonNigerian?: number;
   ticketType: TicketType;
-  extraLuggageCount?: number;
+  isNigerian?: boolean;
+  extraLuggageKg?: number;
 }
 
 export interface PassengerPricingResponse {
@@ -45,6 +48,7 @@ export const passengerService = {
           departure_time,
           arrival_time,
           base_fare_fcfa,
+          base_fare_fcfa_non_nigerian,
           available_seats,
           buses (
             bus_number
@@ -79,6 +83,7 @@ export const passengerService = {
           arrivalTime: schedule.arrival_time,
           durationHours: durationHours,
           baseFareFCFA: schedule.base_fare_fcfa,
+          baseFareFCFANonNigerian: schedule.base_fare_fcfa_non_nigerian || schedule.base_fare_fcfa,
           availableSeats: schedule.available_seats,
           busNumber: busNumber || 'Standard Bus'
         };
@@ -90,30 +95,42 @@ export const passengerService = {
   },
 
   calculatePricing: (request: PassengerPricingRequest): PassengerPricingResponse => {
+    // Default to Nigerian price if isNigerian is undefined or true, else use Non-Nigerian price if provided
+    let applicableBaseFare = request.baseFareFCFA;
+    if (request.isNigerian === false && request.baseFareFCFANonNigerian) {
+      applicableBaseFare = request.baseFareFCFANonNigerian;
+    }
+
     let discountPercent = 0;
     
     switch (request.ticketType) {
-      case 'student': discountPercent = 10; break;
-      case 'senior': discountPercent = 15; break;
-      case 'child': discountPercent = 20; break;
-      case 'adult': default: discountPercent = 0; break;
+      case 'child_under_5': discountPercent = 30; break;
+      case 'child_under_2': discountPercent = 100; break;
+      case 'adult': 
+      case 'student': 
+      case 'senior': 
+      default: discountPercent = 0; break;
     }
 
-    const discountAmountFCFA = (request.baseFareFCFA * discountPercent) / 100;
-    const subtotalFCFA = request.baseFareFCFA - discountAmountFCFA;
-
-    // Extra Luggage: >2 items = +2000 NGN per item (which is 800 FCFA since NGN = FCFA * 2.5)
+    // Extra Luggage: >20kg = +1000 FCFA per kg
     let extraLuggageFeeFCFA = 0;
-    if (request.extraLuggageCount && request.extraLuggageCount > 2) {
-      const extraItems = request.extraLuggageCount - 2;
-      extraLuggageFeeFCFA = extraItems * 800; 
+    if (request.extraLuggageKg && request.extraLuggageKg > 20) {
+      const extraKg = request.extraLuggageKg - 20;
+      extraLuggageFeeFCFA = extraKg * 1000; 
     }
 
-    const finalPriceFCFA = subtotalFCFA + extraLuggageFeeFCFA;
+    const discountAmountFCFA = (applicableBaseFare * discountPercent) / 100;
+    let finalPriceFCFA = applicableBaseFare - discountAmountFCFA + extraLuggageFeeFCFA;
+
+    // Free ticket logic for children under 2
+    if (request.ticketType === 'child_under_2') {
+      finalPriceFCFA = extraLuggageFeeFCFA; // Only charge for extra luggage
+    }
+
     const finalPriceNGN = finalPriceFCFA * 2.5;
 
     return {
-      baseFareFCFA: request.baseFareFCFA,
+      baseFareFCFA: applicableBaseFare,
       discountPercent,
       discountAmountFCFA,
       extraLuggageFeeFCFA,

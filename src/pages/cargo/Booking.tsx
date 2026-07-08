@@ -86,7 +86,6 @@ export default function CargoBooking() {
         origin: requestDetails?.origin || 'Unknown', destination: requestDetails?.destination || 'Unknown',
         weight_kg: requestDetails?.weightKg || 0, cargo_type: requestDetails?.cargoType || 'general',
         is_express: quoteResult.isExpress, base_rate_fcfa: quoteResult.baseFCFA,
-        surcharges_fcfa: quoteResult.surchargesFCFA, discounts_fcfa: quoteResult.discountsFCFA,
         total_fcfa: quoteResult.totalFCFA, currency_used: 'FCFA',
         customer_name: senderName, customer_email: user.email, customer_phone: senderPhone,
         customer_telegram_id: senderTelegram, recipient_name: recipientName,
@@ -352,18 +351,6 @@ export default function CargoBooking() {
                   <span>{t('home.baseRate')}</span>
                   <span>{quoteResult.baseFCFA.toLocaleString()} FCFA</span>
                 </div>
-                {quoteResult.surchargesFCFA > 0 && (
-                  <div className="flex justify-between text-orange-400">
-                    <span>{t('home.surcharges')}</span>
-                    <span>+ {quoteResult.surchargesFCFA.toLocaleString()} FCFA</span>
-                  </div>
-                )}
-                {quoteResult.discountsFCFA > 0 && (
-                  <div className="flex justify-between text-teal-400">
-                    <span>{t('home.discounts')}</span>
-                    <span>- {quoteResult.discountsFCFA.toLocaleString()} FCFA</span>
-                  </div>
-                )}
               </div>
 
               <div className="border-t border-white/10 pt-4">

@@ -48,7 +48,7 @@ export default function Home() {
 
   // Nigerian origin cities — departures to Cameroon only on Tuesdays (2) & Fridays (5)
   const NIGERIA_CITIES = ['Lagos', 'Abuja', 'Ikom', 'Enugu', 'Abakaliki', 'Onitsha'];
-  const CAMEROON_CITIES = ['Douala', 'Yaoundé', 'Buea', 'Kumba'];
+  const CAMEROON_CITIES = ['Yaoundé', 'Douala', 'Buea', 'Kumba', 'Mamfe'];
 
   const isNigeriaToCamera = NIGERIA_CITIES.includes(passengerOrigin) && CAMEROON_CITIES.includes(passengerDestination);
 
@@ -188,16 +188,9 @@ export default function Home() {
                             <span>{t('home.baseRate')}</span>
                             <span>{quoteResult.baseFCFA.toLocaleString()} FCFA</span>
                           </div>
-                          {quoteResult.surchargesFCFA > 0 && (
-                            <div className="flex justify-between text-orange-400">
-                              <span>{t('home.surcharges')}</span>
-                              <span>+ {quoteResult.surchargesFCFA.toLocaleString()} FCFA</span>
-                            </div>
-                          )}
-                          {quoteResult.discountsFCFA > 0 && (
-                            <div className="flex justify-between text-teal-400">
-                              <span>{t('home.discounts')}</span>
-                              <span>- {quoteResult.discountsFCFA.toLocaleString()} FCFA</span>
+                          {quoteResult.status === 'PENDING_REVIEW' && (
+                            <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                              <p className="text-sm font-medium text-amber-800">{quoteResult.message}</p>
                             </div>
                           )}
                           <div className="border-t border-white/15 pt-3 mt-2 flex justify-between font-bold text-xl text-white">
@@ -247,6 +240,7 @@ export default function Home() {
                                 <option>Yaoundé</option>
                                 <option>Buea</option>
                                 <option>Kumba</option>
+                                <option>Mamfe</option>
                               </optgroup>
                               <optgroup label="Nigeria">
                                 <option>Lagos</option>
@@ -269,6 +263,7 @@ export default function Home() {
                                 <option>Yaoundé</option>
                                 <option>Buea</option>
                                 <option>Kumba</option>
+                                <option>Mamfe</option>
                               </optgroup>
                               <optgroup label="Nigeria">
                                 <option>Lagos</option>
@@ -350,6 +345,7 @@ export default function Home() {
                               <option>Yaoundé</option>
                               <option>Buea</option>
                               <option>Kumba</option>
+                              <option>Mamfe</option>
                             </optgroup>
                             <optgroup label="Nigeria">
                               <option>Lagos</option>
@@ -372,6 +368,7 @@ export default function Home() {
                               <option>Yaoundé</option>
                               <option>Buea</option>
                               <option>Kumba</option>
+                              <option>Mamfe</option>
                             </optgroup>
                             <optgroup label="Nigeria">
                               <option>Lagos</option>

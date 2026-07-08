@@ -88,7 +88,7 @@ Afrique-con Plc is building an integrated digital platform for cross-border tran
 ### 3.1 Cargo Customers
 
 **Persona A: Small Business Shipper**
-- Age: 25-45 | Location: Lagos, Abuja, Douala, Yaoundé
+- Age: All ages | Location: All locations
 - Profile: Traders, small importers, e-commerce businesses
 - Tech Comfort: Medium (mobile-first, messaging app-savvy)
 - Monthly Shipments: 2-5
@@ -97,16 +97,16 @@ Afrique-con Plc is building an integrated digital platform for cross-border tran
 - Preferred Communication: Telegram (instant updates, files)
 
 **Persona B: Corporate Account Manager**
-- Age: 30-55 | Location: City-based offices
+- Age: All ages | Location: All locations
 - Profile: Large logistics firms, importers, exporters, manufacturers
 - Tech Comfort: High (Excel-fluent, API-aware)
 - Monthly Shipments: 20+
-- Goals: Volume discounts, API integrations, reporting, invoicing
+- Goals: Custom pricing negotiation, API integrations, reporting, invoicing
 - Pain Points: Complex contracts, custom pricing needs, batch scheduling
 - Preferred Communication: Email + Telegram for urgent updates
 
 **Persona C: Individual Shipper**
-- Age: 18-50 | Location: Cross-border traders, diaspora
+- Age: All ages | Location: All locations
 - Profile: Personal item senders, small traders
 - Tech Comfort: Medium
 - Monthly Shipments: 1-2
@@ -117,7 +117,7 @@ Afrique-con Plc is building an integrated digital platform for cross-border tran
 ### 3.2 Passenger Customers
 
 **Persona D: Individual Traveler (Business & Leisure)**
-- Age: 18-70 | Location: Both countries
+- Age: All ages | Location: All locations
 - Profile: Professionals, students, family visitors, tourists
 - Tech Comfort: Medium-High (smartphone-dependent)
 - Trip Frequency: Monthly to quarterly
@@ -153,7 +153,7 @@ Discovery → Browse Trips → Select Seat → Book → Pay
 - **Warehousing:** Storage at branch locations
 
 **Routes Covered:**
-- Cameroon: Yaoundé, Douala, Buea, Kumba
+- Cameroon: Yaoundé, Douala, Buea, Kumba, Mamfe
 - Nigeria: Lagos, Abuja, Onitsha, Enugu, Abakaliki, Ikom
 
 #### **Service 2: Passenger Ticketing**
@@ -178,16 +178,15 @@ CRITICAL RULES:
 • Base Currency: FCFA — ALL calculations done in FCFA first
 • NGN Conversion: Fixed rate: NGN = FCFA × 2.5 (e.g. 40,000 FCFA = 100,000 NGN)
 • Reservation Rule: Bookings MUST be confirmed 48 hours before departure
-• Express Surcharge: +25,000 FCFA if booking is made within 48 hours of departure
+• Express Surcharge: Determined by the management if booking is made within 48 hours of departure
 
-Surcharges (Applied on top of Base Rate):
-• Overweight (>20kg): +5,000 FCFA per 10kg
-• Heavy Equipment: +15% of base rate
-• Cameroon Shipper: +5% domestic markup
-
-Discounts (Deducted from subtotal):
-• Volume (10+ shipments/month): -10%
-• Loyalty (5+ completed shipments): -5%
+WEIGHT-BASED PRICING (Replaces base rate for small shipments):
+• Cargo Below 100kg: 1,000 FCFA per kg
+  - Minimum charge applies (equal to base route rate)
+  - Example: 50kg cargo = 50 × 1,000 = 50,000 FCFA (or route minimum, whichever is higher)
+• Cargo Above 100kg: Charged per negotiations with management
+  - Quote request flagged for management review
+  - Customer receives custom quote within 24 hours
 ```
 
 #### **Cargo Pricing — Sample Routes (FCFA ↔ NGN)**
@@ -212,15 +211,15 @@ Reservation Rule: 48 hours before departure required
 
 Passenger Discounts:
 • Adult: No discount
-• Student (with ID): -10%
-• Senior (60+): -15%
-• Child (under 12): -20%
+• Student: No discount
+• Senior: No discount
+• Child (under 5): -30%
+• Child (under 2): FREE
 
 Extra Fees:
-• Luggage >2 items: +2,000 NGN per item
-• Early bird booking (>7 days): -10%
-• Group booking (5+ passengers): -5%
-```
+• Extra Load (above 20kg): +1,000 FCFA per kg
+• Early bird booking (>7 days): Determine by the management`
+• Group booking (5+ passengers): Determine by the management```
 
 #### **Sample Passenger Routes (FCFA ↔ NGN)**
 
@@ -352,30 +351,25 @@ Input: origin, destination, weight_kg, cargoType, customerNationality
 
 Processing:
 1. Validate route exists in routes table
-2. Fetch base_rate_fcfa from database
-3. Check if booking within 48 hours → add express surcharge
-4. Calculate all surcharges (in FCFA):
-   - IF weight > 20kg: +5,000 FCFA per 10kg
-   - IF heavy_equipment: +15% of base
-   - IF cameroon_shipper: +5% of base
-5. Apply discounts (if applicable):
-   - IF volume >= 10: -10%
-   - IF loyalty >= 5: -5%
-6. Calculate FCFA total
-7. Convert to NGN: × 2.5 (fixed multiplier)
-8. Return quote with 24-hour validity
+2. Check weight category:
+   - IF weight < 100kg: Calculate base price = weight × 1,000 FCFA
+   - IF weight >= 100kg: Flag for management review, return PENDING_REVIEW status
+3. Check if booking within 48 hours → flag for management to determine express surcharge
+4. Calculate FCFA total
+5. Convert to NGN: × 2.5 (fixed multiplier)
+6. Return quote with 24-hour validity
 
 Output: JSON response with FCFA + NGN + 48hr warning
+For large shipments (≥100kg): Return PENDING status with 24hr management SLA
 ```
 
 **Quote Response Example:**
 ```json
 {
   "quoteId": "QUOTE-20240629-001",
-  "baseFCFA": 90000,
-  "surcharges": 5000,
-  "totalFCFA": 95000,
-  "totalNGN": 237500,
+  "baseFCFA": 50000,
+  "totalFCFA": 50000,
+  "totalNGN": 125000,
   "isExpress": false,
   "estimatedHours": 28,
   "reservationRequired": "48 hours before departure",
@@ -510,7 +504,7 @@ Output: JSON response with FCFA + NGN + 48hr warning
 - How do I request a quote?
 - How do I track my shipment via Telegram?
 - What happens if my delivery is late?
-- Do you offer volume discounts?
+- How is cargo pricing calculated?
 - What is your insurance policy?
 - How do I file a claim?
 
@@ -925,17 +919,19 @@ PROCESSES:
 
 **Steps:**
 1. Validate route exists
-2. Fetch base_rate_fcfa
-3. Check if within 48hrs → add express surcharge (+25,000 FCFA)
-4. Calculate all surcharges (FCFA):
-   - Weight: +5,000 per 10kg if > 20kg
-   - Equipment: +15% if heavy
-   - Markup: +5% if Cameroon shipper
-5. Apply discounts (volume, loyalty)
-6. Calculate FCFA total
-7. Convert to NGN: × 2.5
-8. Store quote in database
-9. **Return JSON with 24-hour validity**
+2. Check cargo weight:
+   - IF weight < 100kg: Calculate price = weight × 1,000 FCFA (use as base)
+   - IF weight >= 100kg: Flag for management review, return pending status with 24hr SLA
+3. Check if within 48hrs → flag for management to determine express surcharge
+4. Calculate FCFA total
+5. Convert to NGN: × 2.5
+6. Store quote in database
+7. **Return JSON with 24-hour validity**
+
+**For Large Shipments (≥100kg):**
+- Trigger management notification via Telegram
+- Send customer message: "Your quote >100kg requires management approval. Expect response within 24hrs."
+- Management reviews and provides custom quote
 
 **Error Handling:**
 - Route not found → 404
@@ -1447,7 +1443,7 @@ REACT_APP_ANALYTICS_DOMAIN          = afrique-con.com
 | **Booking ID** | Cargo reference: AFCON-YYYYMMDD-XXXXX |
 | **Ticket ID** | Passenger reference: AFCON-TKT-YYYYMMDD-XXXXX |
 | **48-hr Rule** | Bookings must be confirmed 48 hours before departure |
-| **Express Surcharge** | +25,000 FCFA for bookings within 48-hour window |
+| **Express Surcharge** | Determined by management for bookings within 48-hour window |
 | **Telegram Bot** | Automated bot (@afrique_con_bot) for notifications |
 | **Telegram ID** | User's unique Telegram identifier for notifications |
 | **E-Ticket** | Electronic ticket (PDF + QR code via Telegram) |
@@ -1461,32 +1457,75 @@ REACT_APP_ANALYTICS_DOMAIN          = afrique-con.com
 
 ### Cargo Pricing Examples
 
-**Example 1: Standard Shipment**
+**Example 1: Small Shipment (Below 100kg)**
 ```
 Origin: Douala
 Destination: Lagos
-Weight: 2,500 kg (exceeds 20kg limit)
+Weight: 50 kg
 Cargo Type: General
 Customer: Nigerian
 
-Calculation:
-Base Rate (FCFA): 90,000
-Surcharge (2,500 kg = 250 kg over limit): 5 × 5,000 = 25,000 FCFA
-Total (FCFA): 115,000
-Total (NGN): 115,000 × 2.5 = 287,500
+Calculation (Weight-Based):
+Price = 50 kg × 1,000 FCFA/kg = 50,000 FCFA
+Total (FCFA): 50,000
+Total (NGN): 50,000 × 2.5 = 125,000
 
 Booking: Confirmed 48+ hours in advance → NO express surcharge
 Notification: "Shipment AFCON-20240629-001 confirmed. Track: [URL]" (Telegram)
 ```
 
-**Example 2: Express Shipment (within 48hrs)**
+**Example 2: Medium Shipment (Below 100kg)**
+```
+Origin: Douala
+Destination: Lagos
+Weight: 80 kg
+Cargo Type: General
+Customer: Nigerian
+
+Calculation (Weight-Based):
+Base Price = 80 kg × 1,000 FCFA/kg = 80,000 FCFA
+No additional surcharges
+Total (FCFA): 80,000
+Total (NGN): 80,000 × 2.5 = 200,000
+
+Notification: "Shipment AFCON-20240629-002 confirmed. Track: [URL]" (Telegram)
+```
+
+**Example 3: Large Shipment (Above 100kg - Negotiated)**
+```
+Origin: Douala
+Destination: Lagos
+Weight: 250 kg
+Cargo Type: General
+Customer: Nigerian
+
+Status: PENDING MANAGEMENT REVIEW
+Message: "Your shipment exceeds 100kg. Management will provide custom quote within 24 hours."
+
+Management receives Telegram notification with shipment details.
+Management responds with custom quote: e.g., 45,000 FCFA (180 FCFA/kg negotiated rate)
+Total (NGN): 45,000 × 2.5 = 112,500
+
+Notification: "Custom quote approved: QUOTE-20240629-003" (Telegram)
+```
+
+**Example 4: Express Shipment (within 48hrs)**
 ```
 Booking requested: 30 hours before departure
-Express Surcharge: +25,000 FCFA
-Total (FCFA): 115,000 + 25,000 = 140,000
-Total (NGN): 140,000 × 2.5 = 350,000
+Weight: 60 kg
 
-Notification: "EXPRESS booking confirmed. Higher cost due to 48-hr window." (Telegram)
+Base Price: 60 kg × 1,000 FCFA/kg = 60,000 FCFA
+
+Status: EXPRESS BOOKING - MANAGEMENT REVIEW REQUIRED
+Express Surcharge: To be determined by management
+Message: "Your express booking requires management approval. Express surcharge will be determined based on urgency and capacity. Expect response within 24 hours."
+
+Management receives Telegram notification with shipment details.
+Management confirms express surcharge amount (e.g., 35,000 FCFA for urgent handling)
+Total (FCFA): 60,000 + 35,000 = 95,000 (example with management-approved surcharge)
+Total (NGN): 95,000 × 2.5 = 237,500
+
+Notification: "EXPRESS booking approved. Surcharge: [Amount determined]. Track: [URL]" (Telegram)
 ```
 
 ### Passenger Pricing Examples
@@ -1504,14 +1543,40 @@ Notification: "Ticket AFCON-TKT-20240629-001. Seat 12B. Depart 7:00 AM" (Telegra
 Reminders: 24 hours before & 2 hours before (via Telegram)
 ```
 
-**Example 2: Student with Discount & Extra Luggage**
+**Example 2: Child (Under 5) with Discount & Extra Luggage**
 ```
+Route: Douala → Lagos
 Base Fare (FCFA): 48,000
-Discount (Student, -10%): -4,800 FCFA
-Subtotal (FCFA): 43,200
-Extra Luggage (1 item): +2,000 NGN = 800 FCFA
-Final Price (FCFA): 44,000
-Final Price (NGN): 44,000 × 2.5 = 110,000
+Passenger Type: Child under 5 (−30% discount): −14,400 FCFA
+Subtotal (FCFA): 33,600
+
+Extra Load (30kg total, exceeds 20kg allowance):
+Extra Load Weight: 30kg − 20kg = 10kg extra
+Extra Load Charge: 10kg × 1,000 FCFA/kg = 10,000 FCFA
+
+Final Price (FCFA): 33,600 + 10,000 = 43,600
+Final Price (NGN): 43,600 × 2.5 = 109,000
+
+Notification: "Ticket AFCON-TKT-20240629-002. Seat 12B. Child under 5. Extra luggage: 10kg. Depart 7:00 AM" (Telegram)
+```
+
+**Example 3: Child (Under 2) - FREE**
+```
+Route: Douala → Lagos
+Base Fare (FCFA): 48,000
+Passenger Type: Child under 2: FREE (100% discount)
+Subtotal (FCFA): 0
+
+Extra Load (25kg total, exceeds 20kg allowance):
+Extra Load Weight: 25kg − 20kg = 5kg extra
+Extra Load Charge: 5kg × 1,000 FCFA/kg = 5,000 FCFA
+
+Final Price (FCFA): 0 + 5,000 = 5,000
+Final Price (NGN): 5,000 × 2.5 = 12,500
+
+Note: Only extra luggage is charged; passenger travels free.
+
+Notification: "Ticket AFCON-TKT-20240629-003. Seat: Reserved with parent/guardian. Child under 2 (FREE). Extra luggage: 5kg. Depart 7:00 AM" (Telegram)
 ```
 
 ### Branch Contacts
