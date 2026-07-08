@@ -4,7 +4,7 @@ import { Navigation, UserCircle, LogOut, Shield, Menu, X, Package, Users, Search
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
-const ADMIN_EMAILS = ['testuser3@afrique-con.com', 'admin@afrique-con.com'];
+const ADMIN_EMAILS = ['testuser3@afrique-con.com', 'admin@afrique-con.com', 'ayodelesodiya@gmail.com'];
 
 export default function Navbar() {
   const { user, signOut } = useAuth();

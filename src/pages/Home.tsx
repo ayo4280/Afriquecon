@@ -497,7 +497,7 @@ export default function Home() {
       </section>
 
       {/* ─── FAQ ─── */}
-      <section className="py-20 bg-[#0A1628] text-white px-4 sm:px-6 relative overflow-hidden">
+      <section id="faqs" className="py-20 bg-[#0A1628] text-white px-4 sm:px-6 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-30" style={{
           backgroundImage: 'radial-gradient(circle, rgba(245,158,11,0.15) 1px, transparent 1px)',
           backgroundSize: '32px 32px',

@@ -7,7 +7,7 @@
     "login": "Login",
     "signup": "Sign Up",
     "signOut": "Sign Out",
-    "language": "FR"
+    "language": "French"
   },
   "footer": {
     "tagline": "Connecting Cameroon & Nigeria through reliable, digital transport.",
@@ -80,9 +80,9 @@
     "faq2q": "What items cannot be transported?",
     "faq2a": "We do not transport containerized cargo, refrigerated goods, hazardous materials, or restricted items.",
     "faq3q": "How much luggage can I bring on the bus?",
-    "faq3a": "Each passenger is allowed 2 pieces of luggage free. Additional bags incur a fee of ₦2,000 / 3,000 FCFA per item.",
+    "faq3a": "Each passenger is allowed up to 20kg of luggage free. Extra load above 20kg incurs a fee of ₦2,500 / 1,000 FCFA per kg.",
     "faq4q": "Can I change my ticket date after booking?",
-    "faq4a": "Yes! Contact support via Telegram up to 24 hours before departure to reschedule, subject to availability.",
+    "faq4a": "Yes! You must formally confirm any date changes at least 48 hours before departure. Tickets are valid for 1 month, but cancellations/reimbursements incur a 35% administrative fee.",
     "trackTitle": "Track Your Shipment",
     "trackSubtitle": "Enter your tracking ID to get real-time status updates.",
     "trackPlaceholder": "e.g. AFCON-20240629-0001",

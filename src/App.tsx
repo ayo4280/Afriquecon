@@ -12,6 +12,8 @@ import ETicket from './pages/passenger/ETicket';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/Dashboard';
 import TrackShipment from './pages/cargo/TrackShipment';
+import Terms from './pages/legal/Terms';
+import Privacy from './pages/legal/Privacy';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -27,6 +29,8 @@ function App() {
               <Route path="/passenger" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
               <Route path="/cargo/booking" element={<CargoBooking />} />
               <Route path="/track" element={<TrackShipment />} />
               <Route path="/passenger/results" element={<TripResults />} />

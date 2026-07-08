@@ -7,7 +7,7 @@
     "login": "Connexion",
     "signup": "S'inscrire",
     "signOut": "Déconnexion",
-    "language": "EN"
+    "language": "English"
   },
   "footer": {
     "tagline": "Connecter le Cameroun & le Nigeria grâce à un transport numérique fiable.",
@@ -80,9 +80,9 @@
     "faq2q": "Quels articles ne peuvent pas être transportés ?",
     "faq2a": "Nous ne transportons pas de fret conteneurisé, de marchandises réfrigérées, de matières dangereuses ou d'articles restreints.",
     "faq3q": "Combien de bagages puis-je emporter dans le bus ?",
-    "faq3a": "Chaque passager a droit à 2 bagages gratuits. Les sacs supplémentaires sont facturés ₦2 000 / 3 000 FCFA par article.",
+    "faq3a": "Chaque passager a droit à 20 kg de bagages gratuits. Les bagages supplémentaires au-delà de 20 kg entraînent des frais de 1 000 FCFA / 2 500 ₦ par kg.",
     "faq4q": "Puis-je changer la date de mon billet après réservation ?",
-    "faq4a": "Oui ! Contactez le support via Telegram jusqu'à 24 heures avant le départ pour reprogrammer, sous réserve de disponibilité.",
+    "faq4a": "Oui ! Vous devez confirmer formellement tout changement de date au moins 48 heures avant le départ. Les billets sont valables 1 mois, mais les annulations/remboursements entraînent des frais administratifs de 35 %.",
     "trackTitle": "Suivre votre Envoi",
     "trackSubtitle": "Saisissez votre numéro de suivi pour obtenir des mises à jour en temps réel.",
     "trackPlaceholder": "ex. AFCON-20240629-0001",

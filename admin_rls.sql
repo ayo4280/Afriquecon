@@ -11,7 +11,7 @@ BEGIN
     CREATE POLICY "Admin can view all tickets"
       ON public.passenger_tickets FOR SELECT
       USING (
-        auth.jwt() ->> 'email' IN ('testuser3@afrique-con.com', 'admin@afrique-con.com')
+        auth.jwt() ->> 'email' IN ('testuser3@afrique-con.com', 'admin@afrique-con.com', 'ayodelesodiya@gmail.com')
       );
   END IF;
 END $$;
@@ -23,7 +23,7 @@ BEGIN
     CREATE POLICY "Admin can view all cargo"
       ON public.cargo_bookings FOR SELECT
       USING (
-        auth.jwt() ->> 'email' IN ('testuser3@afrique-con.com', 'admin@afrique-con.com')
+        auth.jwt() ->> 'email' IN ('testuser3@afrique-con.com', 'admin@afrique-con.com', 'ayodelesodiya@gmail.com')
       );
   END IF;
 END $$;
@@ -35,7 +35,7 @@ BEGIN
     CREATE POLICY "Admin can view all profiles"
       ON public.profiles FOR SELECT
       USING (
-        auth.jwt() ->> 'email' IN ('testuser3@afrique-con.com', 'admin@afrique-con.com')
+        auth.jwt() ->> 'email' IN ('testuser3@afrique-con.com', 'admin@afrique-con.com', 'ayodelesodiya@gmail.com')
       );
   END IF;
 END $$;

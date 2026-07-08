@@ -19,11 +19,13 @@ export default function Footer() {
 
           {/* Brand column */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <img
-              src="/logo.png"
-              alt="Afrique-con PLC"
-              className="h-12 object-contain bg-white px-3 py-1.5 rounded-xl mb-5 shadow-lg"
-            />
+            <Link to="/" className="inline-block group">
+              <img
+                src="/logo.png"
+                alt="Afrique-con PLC"
+                className="h-12 object-contain bg-white px-3 py-1.5 rounded-xl mb-5 shadow-lg group-hover:shadow-amber-400/20 transition-shadow"
+              />
+            </Link>
             <p className="text-sm leading-relaxed text-slate-500 mb-5">
               {t('footer.tagline')}
             </p>
@@ -111,7 +113,12 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
           <span>{t('footer.copyright')}</span>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-2 sm:mt-0">
+            <Link to="/terms" className="hover:text-amber-400 transition-colors">Terms</Link>
+            <Link to="/privacy" className="hover:text-amber-400 transition-colors">Privacy Policy</Link>
+            <Link to="/#faqs" className="hover:text-amber-400 transition-colors">FAQs</Link>
+          </div>
+          <div className="flex items-center gap-4 mt-4 sm:mt-0">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
               All services operational

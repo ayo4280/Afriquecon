@@ -126,12 +126,12 @@ export default function TermsModal({ isOpen, onClose, type }: TermsModalProps) {
 
               <div>
                 <h3 className="text-lg font-bold text-slate-900 mb-2 border-l-4 border-teal-400 pl-3">3. Terminal Check-In Requirements</h3>
-                <p>Passengers must be physically present at the Afrique-Con Plc agency or terminal at least one hour (1H) before the scheduled departure time in order to successfully fulfill all administrative check-in, manifest entry, and embarkation formalities.</p>
+                <p>Passengers must be physically present at the Afrique-Con Plc agency or terminal at least 2 hours (2H) before the scheduled departure time in order to successfully fulfill all administrative check-in, manifest entry, and embarkation formalities.</p>
               </div>
 
               <div>
                 <h3 className="text-lg font-bold text-slate-900 mb-2 border-l-4 border-teal-400 pl-3">4. Departure Re-confirmation</h3>
-                <p>Passengers are required to re-confirm their scheduled departure status exactly one hour (1H) before the set time of vehicle movement.</p>
+                <p>Passengers are required to re-confirm their scheduled departure status exactly 48 hours (48H) before the set time of vehicle movement.</p>
               </div>
 
               <div>

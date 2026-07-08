@@ -63,7 +63,7 @@ interface Schedule {
 type Tab = 'overview' | 'users' | 'tickets' | 'cargo' | 'schedules' | 'reports';
 
 // ─── Admin emails ─────────────────────────────────────────────────────────────
-const ADMIN_EMAILS = ['testuser3@afrique-con.com', 'admin@afrique-con.com'];
+const ADMIN_EMAILS = ['testuser3@afrique-con.com', 'admin@afrique-con.com', 'ayodelesodiya@gmail.com'];
 
 export default function AdminDashboard() {
   const { user, signOut } = useAuth();
@@ -84,7 +84,9 @@ export default function AdminDashboard() {
   const [newStatus, setNewStatus] = useState('pending');
   const [statusLocation, setStatusLocation] = useState('');
   const [statusNotes, setStatusNotes] = useState('');
+  const [negotiatedPrice, setNegotiatedPrice] = useState('');
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [markPaidLoading, setMarkPaidLoading] = useState<string | null>(null);
 
   // Add Schedule Modal State
   const [addingSchedule, setAddingSchedule] = useState(false);
@@ -168,16 +170,22 @@ export default function AdminDashboard() {
     if (!updatingCargo) return;
     setUpdateLoading(true);
     try {
-      // 1. Update cargo_bookings status
-      const { error: updateErr } = await supabase.from('cargo_bookings').update({ status: newStatus }).eq('id', updatingCargo.id);
+      // 1. Build update payload
+      const updatePayload: Record<string, any> = { status: newStatus };
+      if (negotiatedPrice && parseFloat(negotiatedPrice) > 0) {
+        updatePayload.total_fcfa = parseFloat(negotiatedPrice);
+      }
+
+      // 2. Update cargo_bookings status (and price if provided)
+      const { error: updateErr } = await supabase.from('cargo_bookings').update(updatePayload).eq('id', updatingCargo.id);
       if (updateErr) throw updateErr;
 
-      // 2. Insert into cargo_status_log
+      // 3. Insert into cargo_status_log
       const { error: logErr } = await supabase.from('cargo_status_log').insert({
         booking_id: updatingCargo.id,
         status: newStatus,
         location: statusLocation,
-        notes: statusNotes,
+        notes: statusNotes + (negotiatedPrice ? ` | Agreed price: ${parseFloat(negotiatedPrice).toLocaleString()} FCFA` : ''),
         updated_by: user?.email
       });
       if (logErr) throw logErr;
@@ -185,11 +193,31 @@ export default function AdminDashboard() {
       // Refresh data and close modal
       await fetchAll();
       setUpdatingCargo(null);
+      setNegotiatedPrice('');
     } catch (err: any) {
       console.error(err);
       alert('Failed to update status: ' + err.message);
     } finally {
       setUpdateLoading(false);
+    }
+  };
+
+  const handleMarkAsPaid = async (booking: CargoBooking) => {
+    if (!window.confirm(`Mark booking ${booking.booking_id} as PAID? This will send a confirmation email to ${booking.customer_email}.`)) return;
+    setMarkPaidLoading(booking.id);
+    try {
+      const { error } = await supabase
+        .from('cargo_bookings')
+        .update({ payment_status: 'paid', status: booking.status === 'pending' ? 'confirmed' : booking.status })
+        .eq('id', booking.id);
+      if (error) throw error;
+      await fetchAll();
+      alert(`✅ Booking ${booking.booking_id} marked as paid! Confirmation email sent to ${booking.customer_email}.`);
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to mark as paid: ' + err.message);
+    } finally {
+      setMarkPaidLoading(null);
     }
   };
 
@@ -492,17 +520,32 @@ export default function AdminDashboard() {
                                 <div className="text-lg font-bold text-purple-400">{(c.total_fcfa || 0).toLocaleString()} FCFA</div>
                                 <div className="text-xs text-gray-500">{new Date(c.created_at).toLocaleDateString()}</div>
                               </div>
-                              <button
-                                onClick={() => {
-                                  setUpdatingCargo(c);
-                                  setNewStatus(c.status);
-                                  setStatusLocation('');
-                                  setStatusNotes('');
-                                }}
-                                className="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-xs font-semibold transition-colors"
-                              >
-                                {t('admin.updateStatus')}
-                              </button>
+                              <div className="flex flex-col gap-2">
+                                <button
+                                  onClick={() => {
+                                    setUpdatingCargo(c);
+                                    setNewStatus(c.status);
+                                    setStatusLocation('');
+                                    setStatusNotes('');
+                                    setNegotiatedPrice('');
+                                  }}
+                                  className="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-xs font-semibold transition-colors"
+                                >
+                                  {t('admin.updateStatus')}
+                                </button>
+                                {c.payment_status !== 'paid' && (
+                                  <button
+                                    onClick={() => handleMarkAsPaid(c)}
+                                    disabled={markPaidLoading === c.id}
+                                    className="px-3 py-1 bg-green-700 hover:bg-green-600 text-white rounded text-xs font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                                  >
+                                    {markPaidLoading === c.id ? '...' : '✅ Mark as Paid'}
+                                  </button>
+                                )}
+                                {c.payment_status === 'paid' && (
+                                  <span className="px-3 py-1 bg-green-900/50 text-green-400 rounded text-xs font-semibold text-center">✅ Paid</span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -670,6 +713,22 @@ export default function AdminDashboard() {
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>
+
+              {/* Negotiated Price — shown for large shipments or when price is 0 */}
+              {(updatingCargo && (updatingCargo.weight_kg >= 100 || !updatingCargo.total_fcfa)) && (
+                <div>
+                  <label className="block text-sm font-medium text-amber-400 mb-1">⚖️ Negotiated Price (FCFA) <span className="text-gray-500 font-normal">— required for ≥100kg</span></label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={negotiatedPrice}
+                    onChange={(e) => setNegotiatedPrice(e.target.value)}
+                    placeholder={`Current: ${(updatingCargo?.total_fcfa || 0).toLocaleString()} FCFA`}
+                    className="w-full bg-gray-800 border border-amber-600/50 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Enter the agreed price after negotiation with customer.</p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Location (Optional)</label>
