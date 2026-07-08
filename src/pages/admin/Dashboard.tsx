@@ -45,6 +45,7 @@ interface CargoBooking {
   status: string;
   payment_status: string;
   customer_name: string;
+  customer_email: string;
   recipient_name: string;
   created_at: string;
   user_id: string;
