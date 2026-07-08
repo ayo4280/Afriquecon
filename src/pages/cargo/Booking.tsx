@@ -101,7 +101,11 @@ export default function CargoBooking() {
       };
       const onClose = () => setIsSubmitting(false);
 
-      if (paymentMethod === 'paystack') {
+      if (quoteResult.totalFCFA === 0) {
+        // Requires management approval — skip payment gateways
+        setBookingId(newBookingId);
+        setSuccess(true);
+      } else if (paymentMethod === 'paystack') {
         initializePaystack({ onSuccess, onClose });
       } else {
         handleFlutterwave({
@@ -265,36 +269,38 @@ export default function CargoBooking() {
                 </div>
               </div>
 
-              {/* Payment method */}
-              <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
-                <h3 className="font-display font-bold text-lg text-slate-900 mb-5 flex items-center gap-2 pb-4 border-b border-slate-100">
-                  <div className="w-8 h-8 bg-amber-400/15 rounded-xl flex items-center justify-center">
-                    <CreditCard className="w-4 h-4 text-amber-500" />
+              {/* Payment method (Hidden if management approval required) */}
+              {quoteResult.totalFCFA > 0 && (
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-7">
+                  <h3 className="font-display font-bold text-lg text-slate-900 mb-5 flex items-center gap-2 pb-4 border-b border-slate-100">
+                    <div className="w-8 h-8 bg-amber-400/15 rounded-xl flex items-center justify-center">
+                      <CreditCard className="w-4 h-4 text-amber-500" />
+                    </div>
+                    {t('cargoBooking.paymentMethod')}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { value: 'paystack',    label: t('cargoBooking.payPaystack'),    desc: 'Nigeria · NGN', flag: '🇳🇬' },
+                      { value: 'flutterwave', label: t('cargoBooking.payFlutterwave'), desc: 'Cameroon · FCFA', flag: '🇨🇲' },
+                    ].map(({ value, label, desc, flag }) => (
+                      <label
+                        key={value}
+                        className={`relative cursor-pointer flex flex-col gap-1.5 p-4 rounded-2xl border-2 transition-all ${paymentMethod === value ? 'border-amber-400 bg-amber-50' : 'border-slate-200 hover:border-slate-300 bg-white'}`}
+                      >
+                        <input type="radio" name="payment" value={value} checked={paymentMethod === value} onChange={() => setPaymentMethod(value as any)} className="sr-only" />
+                        <span className="text-2xl">{flag}</span>
+                        <span className="font-bold text-slate-900 text-sm">{label}</span>
+                        <span className="text-xs text-slate-500">{desc}</span>
+                        {paymentMethod === value && (
+                          <div className="absolute top-3 right-3 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center">
+                            <CheckCircle className="w-3.5 h-3.5 text-white" />
+                          </div>
+                        )}
+                      </label>
+                    ))}
                   </div>
-                  {t('cargoBooking.paymentMethod')}
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { value: 'paystack',    label: t('cargoBooking.payPaystack'),    desc: 'Nigeria · NGN', flag: '🇳🇬' },
-                    { value: 'flutterwave', label: t('cargoBooking.payFlutterwave'), desc: 'Cameroon · FCFA', flag: '🇨🇲' },
-                  ].map(({ value, label, desc, flag }) => (
-                    <label
-                      key={value}
-                      className={`relative cursor-pointer flex flex-col gap-1.5 p-4 rounded-2xl border-2 transition-all ${paymentMethod === value ? 'border-amber-400 bg-amber-50' : 'border-slate-200 hover:border-slate-300 bg-white'}`}
-                    >
-                      <input type="radio" name="payment" value={value} checked={paymentMethod === value} onChange={() => setPaymentMethod(value as any)} className="sr-only" />
-                      <span className="text-2xl">{flag}</span>
-                      <span className="font-bold text-slate-900 text-sm">{label}</span>
-                      <span className="text-xs text-slate-500">{desc}</span>
-                      {paymentMethod === value && (
-                        <div className="absolute top-3 right-3 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center">
-                          <CheckCircle className="w-3.5 h-3.5 text-white" />
-                        </div>
-                      )}
-                    </label>
-                  ))}
                 </div>
-              </div>
+              )}
 
               <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
                 <input 
@@ -321,6 +327,8 @@ export default function CargoBooking() {
               >
                 {isSubmitting ? (
                   <><Loader2 className="w-5 h-5 animate-spin" /> {t('cargoBooking.processing')}</>
+                ) : quoteResult.totalFCFA === 0 ? (
+                  <><Truck className="w-5 h-5" /> Submit for Management Approval</>
                 ) : (
                   <><Truck className="w-5 h-5" /> {t('cargoBooking.confirmPay')} — {quoteResult.totalFCFA.toLocaleString()} FCFA</>
                 )}
