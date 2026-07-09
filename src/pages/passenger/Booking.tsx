@@ -322,6 +322,20 @@ export default function PassengerBooking() {
                     
                     {index === 0 && (
                       <div className="mt-4 pt-4 border-t border-gray-100">
+                        {/* Telegram Bot Notice */}
+                        <div className="mb-3 flex items-start gap-3 bg-amber-50 border border-amber-300 rounded-xl p-3.5">
+                          <span className="text-2xl leading-none mt-0.5">📣</span>
+                          <div>
+                            <p className="text-sm font-bold text-amber-800">Action Required for Telegram Updates</p>
+                            <p className="text-xs text-amber-700 mt-0.5">
+                              To receive your e-ticket and travel alerts on Telegram, you must first{' '}
+                              <a href="https://t.me/Afriquecon_bot" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-amber-900 hover:text-amber-700">
+                                open our Telegram bot and press Start
+                              </a>{' '}
+                              before booking.
+                            </p>
+                          </div>
+                        </div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('passengerBooking.telegramOptional')}</label>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">@</span>
@@ -329,7 +343,7 @@ export default function PassengerBooking() {
                             type="text" 
                             value={p.telegramId || ''} 
                             onChange={(e) => handleDetailChange(index, 'telegramId', e.target.value)} 
-                            placeholder="Afriquecon" 
+                            placeholder="your_telegram_username" 
                             className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary" 
                           />
                         </div>

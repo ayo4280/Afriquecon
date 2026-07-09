@@ -14,32 +14,39 @@ DECLARE
   admin_chat  TEXT := '8342562711';
   msg         TEXT;
   api_url     TEXT;
+  new_row     JSONB;
+  user_telegram_id TEXT;
 BEGIN
   api_url := 'https://api.telegram.org/bot' || bot_token || '/sendMessage';
+  new_row := to_jsonb(NEW);
 
   -- ── Passenger Ticket Notification ──────────────────────────────────────────
   IF TG_TABLE_NAME = 'passenger_tickets' THEN
     msg := '🎫 *New Ticket Booked!*' || E'\n' ||
            '━━━━━━━━━━━━━━━━━━━' || E'\n' ||
-           '👤 Passenger: *' || COALESCE(NEW.passenger_name, 'Unknown') || '*' || E'\n' ||
-           '💺 Seat: ' || COALESCE(NEW.seat_number, 'N/A') || E'\n' ||
-           '🎟 Type: ' || COALESCE(NEW.ticket_type, 'standard') || E'\n' ||
-           '💰 Amount: *' || COALESCE(NEW.total_fcfa::TEXT, '0') || ' FCFA*' || E'\n' ||
-           '📋 Ticket ID: `' || COALESCE(NEW.ticket_id, 'N/A') || '`' || E'\n' ||
+           '👤 Passenger: *' || COALESCE(new_row->>'passenger_name', 'Unknown') || '*' || E'\n' ||
+           '💺 Seat: ' || COALESCE(new_row->>'seat_number', 'N/A') || E'\n' ||
+           '🎟 Type: ' || COALESCE(new_row->>'ticket_type', 'standard') || E'\n' ||
+           '💰 Amount: *' || COALESCE(new_row->>'total_fcfa', '0') || ' FCFA*' || E'\n' ||
+           '📋 Ticket ID: `' || COALESCE(new_row->>'ticket_id', 'N/A') || '`' || E'\n' ||
            '━━━━━━━━━━━━━━━━━━━' || E'\n' ||
            '📅 ' || TO_CHAR(NOW(), 'DD Mon YYYY HH24:MI');
+           
+    user_telegram_id := new_row->>'passenger_telegram_id';
 
   -- ── Cargo Booking Notification ──────────────────────────────────────────────
   ELSIF TG_TABLE_NAME = 'cargo_bookings' THEN
     msg := '📦 *New Cargo Shipment!*' || E'\n' ||
            '━━━━━━━━━━━━━━━━━━━' || E'\n' ||
-           '👤 Sender: *' || COALESCE(NEW.customer_name, 'Unknown') || '*' || E'\n' ||
-           '📍 Route: ' || COALESCE(NEW.origin, '?') || ' → ' || COALESCE(NEW.destination, '?') || E'\n' ||
-           '⚖️ Weight: ' || COALESCE(NEW.weight_kg::TEXT, '0') || ' kg' || E'\n' ||
-           '💰 Amount: *' || COALESCE(NEW.total_fcfa::TEXT, '0') || ' FCFA*' || E'\n' ||
-           '📋 Booking ID: `' || COALESCE(NEW.booking_id, 'N/A') || '`' || E'\n' ||
+           '👤 Sender: *' || COALESCE(new_row->>'customer_name', 'Unknown') || '*' || E'\n' ||
+           '📍 Route: ' || COALESCE(new_row->>'origin', '?') || ' → ' || COALESCE(new_row->>'destination', '?') || E'\n' ||
+           '⚖️ Weight: ' || COALESCE(new_row->>'weight_kg', '0') || ' kg' || E'\n' ||
+           '💰 Amount: *' || COALESCE(new_row->>'total_fcfa', '0') || ' FCFA*' || E'\n' ||
+           '📋 Booking ID: `' || COALESCE(new_row->>'booking_id', 'N/A') || '`' || E'\n' ||
            '━━━━━━━━━━━━━━━━━━━' || E'\n' ||
            '📅 ' || TO_CHAR(NOW(), 'DD Mon YYYY HH24:MI');
+           
+    user_telegram_id := new_row->>'customer_telegram_id';
   END IF;
 
   -- Send to admin chat
@@ -52,6 +59,19 @@ BEGIN
                )::jsonb,
     headers := '{"Content-Type": "application/json"}'::jsonb
   );
+
+  -- Send to user chat (if provided)
+  IF user_telegram_id IS NOT NULL AND NULLIF(TRIM(user_telegram_id), '') IS NOT NULL THEN
+    PERFORM net.http_post(
+      url     := api_url,
+      body    := json_build_object(
+                   'chat_id',    user_telegram_id,
+                   'text',       '🎉 *Your booking is confirmed!*' || E'\n\n' || msg,
+                   'parse_mode', 'Markdown'
+                 )::jsonb,
+      headers := '{"Content-Type": "application/json"}'::jsonb
+    );
+  END IF;
 
   RETURN NEW;
 END;

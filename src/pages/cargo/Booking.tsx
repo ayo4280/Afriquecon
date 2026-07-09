@@ -231,10 +231,22 @@ export default function CargoBooking() {
                       </div>
                     </div>
                     <div className="md:col-span-2">
+                      {/* Telegram Bot Notice */}
+                      <div className="mb-3 flex items-start gap-3 bg-amber-50 border border-amber-300 rounded-xl p-3.5">
+                        <span className="text-2xl leading-none mt-0.5">📣</span>
+                        <div>
+                          <p className="text-sm font-bold text-amber-800">Action Required for Telegram Updates</p>
+                          <p className="text-xs text-amber-700 mt-0.5">
+                            To receive booking confirmations and tracking updates on Telegram, you must first
+                            {' '}<a href="https://t.me/Afriquecon_bot" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-amber-900 hover:text-amber-700">open our Telegram bot and press Start</a>{' '}
+                            before booking.
+                          </p>
+                        </div>
+                      </div>
                       <label className={labelCls}>{t('cargoBooking.telegramId')}</label>
                       <div className="relative">
                         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">@</span>
-                        <input type="text" value={senderTelegram} onChange={e => setSenderTelegram(e.target.value)} placeholder="Afriquecon" className={`${inputCls} pl-9`} />
+                        <input type="text" value={senderTelegram} onChange={e => setSenderTelegram(e.target.value)} placeholder="your_telegram_username" className={`${inputCls} pl-9`} />
                       </div>
                       <p className="text-xs text-amber-600 font-medium mt-1.5">{t('cargoBooking.telegramHint')}</p>
                     </div>
