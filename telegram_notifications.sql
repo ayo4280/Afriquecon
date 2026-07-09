@@ -10,7 +10,7 @@ CREATE EXTENSION IF NOT EXISTS pg_net;
 CREATE OR REPLACE FUNCTION public.notify_telegram()
 RETURNS trigger AS $$
 DECLARE
-  bot_token   TEXT := '8811953720:AAHb-PsCxdh4I2vpaL6tVw7_qbQrcKnjW9Y';
+  bot_token   TEXT := '8956955665:AAFluKJZCs5ZwRTLqjKjKP3NO_sjpaR-G5M';
   admin_chat  TEXT := '8342562711';
   msg         TEXT;
   api_url     TEXT;
