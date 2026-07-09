@@ -46,13 +46,13 @@ export default function Navbar() {
         <div className="container mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center group flex-shrink-0">
-            <div className="relative">
-              <div className="absolute inset-0 bg-amber-400/20 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Link to="/" className="flex items-center group flex-shrink-0" aria-label="Home">
+            <div className="relative flex items-center justify-center transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
+              <div className="absolute inset-0 bg-amber-400/30 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <img
                 src="/logo.png"
-                alt="Afrique-con"
-                className="relative h-10 object-contain bg-white px-2 py-1 rounded-lg shadow-md group-hover:shadow-amber-400/30 transition-shadow"
+                alt="Afrique-con Logo"
+                className="relative h-16 w-auto object-contain bg-white px-3 py-1.5 rounded-xl shadow-lg ring-1 ring-white/10 group-hover:shadow-amber-400/40 group-hover:ring-amber-400/50 transition-all duration-300"
               />
             </div>
           </Link>
