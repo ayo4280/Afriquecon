@@ -1,10 +1,12 @@
--- =============================================
--- AFRIQUE-CON — RESEND EMAIL NOTIFICATION TRIGGERS
+﻿-- =============================================
+-- AFRIQUE-CON — BREVO EMAIL NOTIFICATION TRIGGERS
 -- Paste this in: Supabase Dashboard > SQL Editor > Run
 -- =============================================
--- ⚠️  IMPORTANT: Replace 'onboarding@resend.dev' below with a verified domain sender
---    e.g. 'noreply@afriquecon.com' after adding your domain at https://resend.com/domains
---    Using onboarding@resend.dev only works for the Resend account owner's email.
+-- ⚠️  IMPORTANT INSTRUCTIONS FOR BREVO (Sendinblue):
+-- 1. Create a free account at https://www.brevo.com
+-- 2. Go to your Profile > SMTP & API > Generate a new API Key
+-- 3. Replace 'YOUR_BREVO_API_KEY' below with your actual API key
+-- 4. Replace 'your-email@gmail.com' with the email address you registered on Brevo with
 -- =============================================
 
 -- Ensure pg_net is enabled
@@ -13,12 +15,14 @@ CREATE EXTENSION IF NOT EXISTS pg_net;
 -- Ensure final_price_fcfa column exists (fixes silent INSERT failures)
 ALTER TABLE public.passenger_tickets ADD COLUMN IF NOT EXISTS final_price_fcfa DECIMAL(10,2);
 
--- Step 1: Create the Resend email notification function
-CREATE OR REPLACE FUNCTION public.notify_email_resend()
+-- Step 1: Create the Brevo email notification function
+CREATE OR REPLACE FUNCTION public.notify_email_brevo()
 RETURNS trigger AS $$
 DECLARE
-  resend_api_key TEXT := 're_U8VBNVXQ_BEZxNB2bTan1DPeu1c5MUJmK';
-  api_url        TEXT := 'https://api.resend.com/emails';
+  brevo_api_key  TEXT := 'YOUR_BREVO_API_KEY';
+  api_url        TEXT := 'https://api.brevo.com/v3/smtp/email';
+  sender_email   TEXT := 'your-email@gmail.com'; -- MUST be your Brevo registered email
+  sender_name    TEXT := 'Afrique-con';
   customer_email TEXT;
   email_subject  TEXT;
   email_html     TEXT;
@@ -76,20 +80,20 @@ BEGIN
       ';
     END IF;
 
-    -- Send HTTP POST to Resend API
+    -- Send HTTP POST to Brevo API
     IF customer_email IS NOT NULL THEN
       PERFORM net.http_post(
         url     := api_url,
         headers := jsonb_build_object(
-                     'Authorization', 'Bearer ' || resend_api_key,
-                     'Content-Type', 'application/json'
+                     'api-key', brevo_api_key,
+                     'accept', 'application/json',
+                     'content-type', 'application/json'
                    ),
         body    := jsonb_build_object(
-                     -- ⚠️ REPLACE with your verified domain: e.g. 'Afrique-con <noreply@afriquecon.com>'
-                     'from', 'Afrique-con <onboarding@resend.dev>',
-                     'to', jsonb_build_array(customer_email),
+                     'sender', jsonb_build_object('name', sender_name, 'email', sender_email),
+                     'to', jsonb_build_array(jsonb_build_object('email', customer_email)),
                      'subject', email_subject,
-                     'html', email_html
+                     'htmlContent', email_html
                    )
       );
     END IF;
@@ -100,18 +104,21 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Step 2: Attach trigger to passenger_tickets on UPDATE
+-- Step 2: Clean up old Resend triggers if they exist
 DROP TRIGGER IF EXISTS trg_notify_email_ticket ON public.passenger_tickets;
+DROP TRIGGER IF EXISTS trg_notify_email_cargo ON public.cargo_bookings;
+DROP FUNCTION IF EXISTS public.notify_email_resend();
+
+-- Step 3: Attach Brevo trigger to passenger_tickets on UPDATE
 CREATE TRIGGER trg_notify_email_ticket
   AFTER UPDATE ON public.passenger_tickets
   FOR EACH ROW
-  EXECUTE FUNCTION public.notify_email_resend();
+  EXECUTE FUNCTION public.notify_email_brevo();
 
--- Step 3: Attach trigger to cargo_bookings on UPDATE
-DROP TRIGGER IF EXISTS trg_notify_email_cargo ON public.cargo_bookings;
+-- Step 4: Attach Brevo trigger to cargo_bookings on UPDATE
 CREATE TRIGGER trg_notify_email_cargo
   AFTER UPDATE ON public.cargo_bookings
   FOR EACH ROW
-  EXECUTE FUNCTION public.notify_email_resend();
+  EXECUTE FUNCTION public.notify_email_brevo();
 
--- ✅ Done! Emails will now be sent automatically whenever a booking is marked as 'paid'
+-- ✅ Done! Emails will now be sent automatically via Brevo whenever a booking is marked as 'paid'
