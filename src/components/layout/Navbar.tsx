@@ -82,7 +82,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {/* Telegram */}
             <a
-              href="https://t.me/Afriquecon"
+              href="https://t.me/Afriquecon_bot"
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1.5 bg-teal-500/20 hover:bg-teal-400/30 text-teal-300 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all border border-teal-500/30 hover:border-teal-400/50"
@@ -188,7 +188,7 @@ export default function Navbar() {
 
             <div className="pt-3 mt-3 border-t border-white/10 flex flex-col gap-3">
               <a
-                href="https://t.me/Afriquecon"
+                href="https://t.me/Afriquecon_bot"
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 bg-teal-500/20 text-teal-300 px-4 py-3 rounded-xl text-sm font-semibold border border-teal-500/30"

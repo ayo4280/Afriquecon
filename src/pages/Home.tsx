@@ -419,7 +419,7 @@ export default function Home() {
                 <p className="text-sm font-semibold text-white">{t('home.needHelp')}</p>
                 <p className="text-xs text-slate-400">{t('home.supportSubtitle')}</p>
               </div>
-              <a href="https://t.me/Afriquecon" target="_blank" rel="noreferrer"
+              <a href="https://t.me/Afriquecon_bot" target="_blank" rel="noreferrer"
                 className="flex items-center gap-1.5 text-teal-400 hover:text-teal-300 font-bold text-sm transition-colors group">
                 {t('home.openTelegram')}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

@@ -30,7 +30,7 @@ export default function Footer() {
               {t('footer.tagline')}
             </p>
             <a
-              href="https://t.me/Afriquecon"
+              href="https://t.me/Afriquecon_bot"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 bg-teal-500/15 hover:bg-teal-400/25 border border-teal-500/30 text-teal-400 px-4 py-2 rounded-xl text-sm font-semibold transition-all group"
