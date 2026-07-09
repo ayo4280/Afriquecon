@@ -62,6 +62,8 @@ BEGIN
 
   -- Send to user chat (if provided)
   IF user_telegram_id IS NOT NULL AND NULLIF(TRIM(user_telegram_id), '') IS NOT NULL THEN
+    -- Ensure username has @ prefix; strip leading @ first to avoid double @@
+    user_telegram_id := '@' || LTRIM(TRIM(user_telegram_id), '@');
     PERFORM net.http_post(
       url     := api_url,
       body    := json_build_object(
