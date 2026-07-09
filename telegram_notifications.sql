@@ -1,4 +1,4 @@
--- =============================================
+﻿-- =============================================
 -- AFRIQUE-CON — TELEGRAM NOTIFICATION TRIGGERS
 -- Paste this in: Supabase Dashboard > SQL Editor > Run
 -- =============================================
@@ -10,12 +10,13 @@ CREATE EXTENSION IF NOT EXISTS pg_net;
 CREATE OR REPLACE FUNCTION public.notify_telegram()
 RETURNS trigger AS $$
 DECLARE
-  bot_token   TEXT := '8956955665:AAFluKJZCs5ZwRTLqjKjKP3NO_sjpaR-G5M';
-  admin_chat  TEXT := '8342562711';
-  msg         TEXT;
-  api_url     TEXT;
-  new_row     JSONB;
-  user_telegram_id TEXT;
+  bot_token        TEXT := '8956955665:AAFluKJZCs5ZwRTLqjKjKP3NO_sjpaR-G5M';
+  admin_chat       TEXT := '8342562711';
+  msg              TEXT;
+  api_url          TEXT;
+  new_row          JSONB;
+  raw_telegram_id  TEXT;
+  chat_id          TEXT; -- resolved chat_id to send to (numeric preferred)
 BEGIN
   api_url := 'https://api.telegram.org/bot' || bot_token || '/sendMessage';
   new_row := to_jsonb(NEW);
@@ -31,8 +32,8 @@ BEGIN
            '📋 Ticket ID: `' || COALESCE(new_row->>'ticket_id', 'N/A') || '`' || E'\n' ||
            '━━━━━━━━━━━━━━━━━━━' || E'\n' ||
            '📅 ' || TO_CHAR(NOW(), 'DD Mon YYYY HH24:MI');
-           
-    user_telegram_id := new_row->>'passenger_telegram_id';
+
+    raw_telegram_id := TRIM(new_row->>'passenger_telegram_id');
 
   -- ── Cargo Booking Notification ──────────────────────────────────────────────
   ELSIF TG_TABLE_NAME = 'cargo_bookings' THEN
@@ -45,11 +46,11 @@ BEGIN
            '📋 Booking ID: `' || COALESCE(new_row->>'booking_id', 'N/A') || '`' || E'\n' ||
            '━━━━━━━━━━━━━━━━━━━' || E'\n' ||
            '📅 ' || TO_CHAR(NOW(), 'DD Mon YYYY HH24:MI');
-           
-    user_telegram_id := new_row->>'customer_telegram_id';
+
+    raw_telegram_id := TRIM(new_row->>'customer_telegram_id');
   END IF;
 
-  -- Send to admin chat
+  -- ── Always notify admin ─────────────────────────────────────────────────────
   PERFORM net.http_post(
     url     := api_url,
     body    := json_build_object(
@@ -60,14 +61,22 @@ BEGIN
     headers := '{"Content-Type": "application/json"}'::jsonb
   );
 
-  -- Send to user chat (if provided)
-  IF user_telegram_id IS NOT NULL AND NULLIF(TRIM(user_telegram_id), '') IS NOT NULL THEN
-    -- Ensure username has @ prefix; strip leading @ first to avoid double @@
-    user_telegram_id := '@' || LTRIM(TRIM(user_telegram_id), '@');
+  -- ── Notify user if Telegram ID provided ─────────────────────────────────────
+  -- If it looks like a numeric chat_id (digits only, possibly with leading -), use directly.
+  -- Otherwise treat it as a @username (user MUST have started the bot first).
+  IF raw_telegram_id IS NOT NULL AND raw_telegram_id <> '' THEN
+    IF raw_telegram_id ~ '^-?[0-9]+$' THEN
+      -- Numeric chat_id — most reliable, works even if user hasn't messaged recently
+      chat_id := raw_telegram_id;
+    ELSE
+      -- Username fallback — prefix @ if missing. User must have /start-ed the bot.
+      chat_id := '@' || LTRIM(raw_telegram_id, '@');
+    END IF;
+
     PERFORM net.http_post(
       url     := api_url,
       body    := json_build_object(
-                   'chat_id',    user_telegram_id,
+                   'chat_id',    chat_id,
                    'text',       '🎉 *Your booking is confirmed!*' || E'\n\n' || msg,
                    'parse_mode', 'Markdown'
                  )::jsonb,
@@ -79,18 +88,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Step 3: Attach trigger to passenger_tickets
+-- Step 3: Attach trigger to passenger_tickets (fires on INSERT)
 DROP TRIGGER IF EXISTS trg_notify_telegram_ticket ON public.passenger_tickets;
 CREATE TRIGGER trg_notify_telegram_ticket
   AFTER INSERT ON public.passenger_tickets
   FOR EACH ROW
   EXECUTE FUNCTION public.notify_telegram();
 
--- Step 4: Attach trigger to cargo_bookings
+-- Step 4: Attach trigger to cargo_bookings (fires on INSERT)
 DROP TRIGGER IF EXISTS trg_notify_telegram_cargo ON public.cargo_bookings;
 CREATE TRIGGER trg_notify_telegram_cargo
   AFTER INSERT ON public.cargo_bookings
   FOR EACH ROW
   EXECUTE FUNCTION public.notify_telegram();
 
--- ✅ Done! Every new booking now sends a Telegram message to the admin.
+-- ✅ Done! Every new booking now sends a Telegram message to admin + user.

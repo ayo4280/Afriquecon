@@ -137,6 +137,7 @@ export default function PassengerBooking() {
           user_id: user.id,
           schedule_id: trip.scheduleId,
           passenger_name: p.name,
+          passenger_telegram_id: p.telegramId ? p.telegramId.replace(/^@+/, '') : null, // Fix: save to DB so trigger can notify user
           id_number: p.idNumber || null,
           ticket_type: p.ticketType,
           is_nigerian: p.isNigerian,
@@ -146,7 +147,7 @@ export default function PassengerBooking() {
           discount_percent: pricing.discountPercent,
           luggage_fee_fcfa: pricing.extraLuggageFeeFCFA,
           total_fcfa: pricing.finalPriceFCFA,
-          final_price_fcfa: pricing.finalPriceFCFA, // Satisfies legacy NOT NULL DB constraint
+          final_price_fcfa: pricing.finalPriceFCFA,
           payment_status: 'pending'
         };
       });

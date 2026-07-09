@@ -2,9 +2,16 @@
 -- AFRIQUE-CON — RESEND EMAIL NOTIFICATION TRIGGERS
 -- Paste this in: Supabase Dashboard > SQL Editor > Run
 -- =============================================
+-- ⚠️  IMPORTANT: Replace 'onboarding@resend.dev' below with a verified domain sender
+--    e.g. 'noreply@afriquecon.com' after adding your domain at https://resend.com/domains
+--    Using onboarding@resend.dev only works for the Resend account owner's email.
+-- =============================================
 
 -- Ensure pg_net is enabled
 CREATE EXTENSION IF NOT EXISTS pg_net;
+
+-- Ensure final_price_fcfa column exists (fixes silent INSERT failures)
+ALTER TABLE public.passenger_tickets ADD COLUMN IF NOT EXISTS final_price_fcfa DECIMAL(10,2);
 
 -- Step 1: Create the Resend email notification function
 CREATE OR REPLACE FUNCTION public.notify_email_resend()
@@ -78,6 +85,7 @@ BEGIN
                      'Content-Type', 'application/json'
                    ),
         body    := jsonb_build_object(
+                     -- ⚠️ REPLACE with your verified domain: e.g. 'Afrique-con <noreply@afriquecon.com>'
                      'from', 'Afrique-con <onboarding@resend.dev>',
                      'to', jsonb_build_array(customer_email),
                      'subject', email_subject,
