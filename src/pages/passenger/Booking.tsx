@@ -329,7 +329,7 @@ export default function PassengerBooking() {
                             <p className="text-sm font-bold text-amber-800">Action Required for Telegram Updates</p>
                             <p className="text-xs text-amber-700 mt-0.5">
                               To receive your e-ticket and travel alerts on Telegram, you must first{' '}
-                              <a href="https://t.me/Afriquecon_bot" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-amber-900 hover:text-amber-700">
+                              <a href="https://t.me/Afriquecon" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-amber-900 hover:text-amber-700">
                                 open our Telegram bot and press Start
                               </a>{' '}
                               before booking.
