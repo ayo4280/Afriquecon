@@ -21,7 +21,7 @@ RETURNS trigger AS $$
 DECLARE
   brevo_api_key  TEXT;
   api_url        TEXT := 'https://api.brevo.com/v3/smtp/email';
-  sender_email   TEXT := 'your-email@gmail.com'; -- MUST be your Brevo registered email
+  sender_email   TEXT := 'asodiya99@gmail.com';
   sender_name    TEXT := 'Afrique-con';
   customer_email TEXT;
   email_subject  TEXT;
