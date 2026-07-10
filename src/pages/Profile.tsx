@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Package, Bus, LogOut, Loader2, Ticket, ArrowRight, MapPin } from 'lucide-react';
+import { Package, Bus, LogOut, Loader2, Ticket, ArrowRight, MapPin, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface Profile {
@@ -252,9 +252,18 @@ export default function Profile() {
                       </p>
                       <p className="text-sm text-slate-500 mt-0.5">{booking.weight_kg} kg · {booking.cargo_type?.replace('_', ' ')}</p>
                     </div>
-                    <div className="text-right">
-                      <div className="text-xl font-display font-extrabold text-[#0A1628]">{booking.total_fcfa?.toLocaleString()} FCFA</div>
-                      <div className="text-xs text-slate-400 mt-0.5">{new Date(booking.created_at).toLocaleDateString()}</div>
+                    <div className="flex flex-col items-end justify-between gap-3">
+                      <div className="text-right">
+                        <div className="text-xl font-display font-extrabold text-[#0A1628]">{booking.total_fcfa?.toLocaleString()} FCFA</div>
+                        <div className="text-xs text-slate-400 mt-0.5">{new Date(booking.created_at).toLocaleDateString()}</div>
+                      </div>
+                      <Link
+                        to={`/track?id=${booking.booking_id}`}
+                        className="flex items-center gap-1.5 text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-2 rounded-xl transition-colors"
+                      >
+                        <Search className="w-3.5 h-3.5" />
+                        {t('profile.track')}
+                      </Link>
                     </div>
                   </div>
                 </div>

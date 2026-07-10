@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Search, Package, MapPin, Calendar, Clock, AlertCircle, CheckCircle, Truck, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -33,32 +34,43 @@ const STATUS_META: Record<string, { colour: string; bg: string; border: string; 
 };
 
 export default function TrackShipment() {
-  const [trackingId, setTrackingId] = useState('');
+  const [searchParams] = useSearchParams();
+  const [trackingId, setTrackingId] = useState(() => searchParams.get('id') || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cargo, setCargo] = useState<CargoDetails | null>(null);
   const { t } = useTranslation();
 
-  const handleTrack = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!trackingId.trim()) return;
+  const runTrack = async (id: string) => {
+    if (!id.trim()) return;
     setLoading(true);
     setError(null);
     setCargo(null);
     try {
       const { data, error: rpcError } = await supabase
-        .rpc('track_cargo_shipment', { p_booking_id: trackingId.trim() });
+        .rpc('track_cargo_shipment', { p_booking_id: id.trim() });
       if (rpcError) throw rpcError;
       if (!data || data.length === 0) {
         setError(t('track.notFound', 'No shipment found with that tracking ID.'));
       } else {
         setCargo(data[0] as CargoDetails);
       }
-    } catch (err: any) {
+    } catch {
       setError(t('track.error', 'An error occurred while tracking the shipment.'));
     } finally {
       setLoading(false);
     }
+  };
+
+  // Auto-track if ?id= is in the URL (deep-link from Profile page)
+  useEffect(() => {
+    const idParam = searchParams.get('id');
+    if (idParam) runTrack(idParam);
+  }, []);
+
+  const handleTrack = async (e: React.FormEvent) => {
+    e.preventDefault();
+    runTrack(trackingId);
   };
 
   const statusMeta = cargo ? (STATUS_META[cargo.status] || STATUS_META['pending']) : null;
