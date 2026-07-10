@@ -39,11 +39,11 @@ export default function Navbar() {
       <nav
         className={`sticky top-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-[#0A1628]/95 backdrop-blur-lg shadow-xl shadow-black/20'
-            : 'bg-[#0A1628]'
+            ? 'bg-blue-700/95 backdrop-blur-lg shadow-xl shadow-black/20'
+            : 'bg-blue-700'
         }`}
       >
-        <div className="container mx-auto px-4 lg:px-6 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-4 lg:px-6 h-24 flex items-center justify-between">
 
           {/* Logo */}
           <Link to="/" className="flex items-center group flex-shrink-0" aria-label="Home">
@@ -52,7 +52,7 @@ export default function Navbar() {
               <img
                 src="/logo.png"
                 alt="Afrique-con Logo"
-                className="relative h-16 w-auto object-contain bg-white px-3 py-1.5 rounded-xl shadow-lg ring-1 ring-white/10 group-hover:shadow-amber-400/40 group-hover:ring-amber-400/50 transition-all duration-300"
+                className="relative h-20 w-auto object-contain bg-white px-3 py-1.5 rounded-xl shadow-lg ring-1 ring-white/10 group-hover:shadow-amber-400/40 group-hover:ring-amber-400/50 transition-all duration-300"
               />
             </div>
           </Link>
@@ -65,10 +65,10 @@ export default function Navbar() {
                 <Link
                   key={to}
                   to={to}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center gap-2 px-5 py-3 rounded-xl text-base font-bold transition-all duration-200 ${
                     active
-                      ? 'bg-amber-400/15 text-amber-400'
-                      : 'text-slate-300 hover:text-white hover:bg-white/8'
+                      ? 'bg-amber-400 text-blue-900 shadow-md scale-105'
+                      : 'text-blue-100 hover:text-white hover:bg-white/10'
                   }`}
                 >
                   {icon}
@@ -85,20 +85,20 @@ export default function Navbar() {
               href="https://t.me/Afriquecon_bot"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 bg-teal-500/20 hover:bg-teal-400/30 text-teal-300 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all border border-teal-500/30 hover:border-teal-400/50"
+              className="flex items-center gap-2 bg-teal-500 hover:bg-teal-400 text-white px-5 py-2.5 rounded-xl text-base font-bold transition-all shadow-md hover:shadow-lg"
             >
-              <Navigation className="w-3.5 h-3.5" />
+              <Navigation className="w-5 h-5" />
               {t('nav.telegramSupport')}
             </a>
 
             {/* Language toggle */}
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-1.5 bg-white/8 hover:bg-white/15 border border-white/15 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2.5 rounded-xl text-base font-bold transition-all"
               title="Switch Language"
             >
-              <span className="text-base">{i18n.language === 'en' ? '🇫🇷' : '🇬🇧'}</span>
-              {t('nav.language')}
+              <span className="text-xl">{i18n.language === 'en' ? '🇫🇷' : '🇬🇧'}</span>
+              <span className="hidden lg:inline">{i18n.language === 'en' ? 'FR' : 'EN'}</span>
             </button>
 
             {/* Auth section */}

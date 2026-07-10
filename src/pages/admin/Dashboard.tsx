@@ -503,7 +503,7 @@ export default function AdminDashboard() {
 
       <div className="flex min-h-[calc(100vh-57px)]">
         {/* Sidebar */}
-        <aside className="w-72 bg-gray-900 border-r border-gray-800 py-6 flex-shrink-0 hidden md:block shadow-2xl z-10">
+        <aside className="w-72 bg-white border-r border-slate-200 py-6 flex-shrink-0 hidden md:block shadow-2xl z-10">
           <nav className="space-y-2 px-4">
             {tabs.map(tab => (
               <button
@@ -512,7 +512,7 @@ export default function AdminDashboard() {
                 className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-base font-semibold transition-all duration-200 ${
                   activeTab === tab.id
                     ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-[1.02]'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
                 <span className="flex items-center gap-3">
@@ -520,7 +520,7 @@ export default function AdminDashboard() {
                   {tab.label}
                 </span>
                 {tab.count !== undefined && (
-                  <span className={`text-sm px-2 py-0.5 rounded-full font-bold ${activeTab === tab.id ? 'bg-white/20' : 'bg-gray-700 text-gray-200'}`}>
+                  <span className={`text-sm px-2 py-0.5 rounded-full font-bold ${activeTab === tab.id ? 'bg-white/20' : 'bg-slate-200 text-slate-700'}`}>
                     {tab.count}
                   </span>
                 )}
