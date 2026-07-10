@@ -118,3 +118,17 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Step 3: Attach trigger to passenger_tickets (fires on UPDATE)
+DROP TRIGGER IF EXISTS trg_notify_telegram_ticket ON public.passenger_tickets;
+CREATE TRIGGER trg_notify_telegram_ticket
+  AFTER UPDATE ON public.passenger_tickets
+  FOR EACH ROW
+  EXECUTE FUNCTION public.notify_telegram();
+
+-- Step 4: Attach trigger to cargo_bookings (fires on UPDATE)
+DROP TRIGGER IF EXISTS trg_notify_telegram_cargo ON public.cargo_bookings;
+CREATE TRIGGER trg_notify_telegram_cargo
+  AFTER UPDATE ON public.cargo_bookings
+  FOR EACH ROW
+  EXECUTE FUNCTION public.notify_telegram();
