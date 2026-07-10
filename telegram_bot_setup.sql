@@ -23,7 +23,7 @@ CREATE POLICY "Enable update access for all users" ON public.telegram_users FOR 
 CREATE OR REPLACE FUNCTION public.notify_telegram()
 RETURNS trigger AS $$
 DECLARE
-  bot_token        TEXT := '8956955665:AAFluKJZCs5ZwRTLqjKjKP3NO_sjpaR-G5M';
+  bot_token        TEXT;
   admin_chat       TEXT := '8342562711';
   msg              TEXT;
   api_url          TEXT;
@@ -31,6 +31,17 @@ DECLARE
   raw_telegram_id  TEXT;
   resolved_chat_id BIGINT;
 BEGIN
+  -- Read bot token from Supabase Vault
+  SELECT decrypted_secret INTO bot_token
+  FROM vault.decrypted_secrets
+  WHERE name = 'telegram_bot_token'
+  LIMIT 1;
+
+  IF bot_token IS NULL THEN
+    RAISE WARNING 'notify_telegram: telegram_bot_token not found in Vault. Skipping Telegram notification.';
+    RETURN NEW;
+  END IF;
+
   api_url := 'https://api.telegram.org/bot' || bot_token || '/sendMessage';
   new_row := to_jsonb(NEW);
 

@@ -48,7 +48,7 @@ serve(async (req) => {
             console.error("Error upserting mapping:", error);
           } else {
             // Reply back to user
-            const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN") || "8956955665:AAFluKJZCs5ZwRTLqjKjKP3NO_sjpaR-G5M";
+            const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
             await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
               method: "POST",
               headers: {
@@ -62,7 +62,7 @@ serve(async (req) => {
           }
         } else {
             // Tell user they need a username
-            const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN") || "8956955665:AAFluKJZCs5ZwRTLqjKjKP3NO_sjpaR-G5M";
+            const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
             await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
               method: "POST",
               headers: {
