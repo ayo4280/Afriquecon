@@ -34,7 +34,7 @@ BEGIN
     v_ticket_id,
     v_user_id,
     'Test Passenger',
-    '@your_telegram_username', -- REPLACE THIS WITH YOUR USERNAME IF YOU WANT TO TEST CUSTOMER ALERT
+    '@', -- REPLACE THIS WITH YOUR USERNAME IF YOU WANT TO TEST CUSTOMER ALERT
     '12A',
     'Economy',
     15000,

@@ -220,6 +220,12 @@ export default function PassengerBooking() {
           <p className="text-gray-600 mb-6">
             Your {passengersCount} ticket(s) have been reserved. You would normally be redirected to {paymentMethod === 'paystack' ? 'Paystack' : 'Flutterwave'} to complete the payment of <strong>{totalFCFA.toLocaleString()} FCFA</strong> (₦ {totalNGN.toLocaleString()}).
           </p>
+
+          <a href="https://t.me/AfriqueCon_Bot" target="_blank" rel="noopener noreferrer" className="block w-full bg-[#0088cc] hover:bg-[#0077b5] text-white font-bold py-3 px-4 rounded-xl mb-4 transition-colors flex items-center justify-center gap-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.674c.223-.198-.054-.309-.346-.116l-6.405 4.02-2.766-.86c-.6-.188-.614-.6.126-.89l10.816-4.17c.504-.18.948.112.787.89h-.001z"/></svg>
+            Click here to get live tracking updates on Telegram!
+          </a>
+
           <button onClick={() => navigate('/')} className="text-primary font-bold hover:underline">
             {t('passengerBooking.returnHome')}
           </button>
