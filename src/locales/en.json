@@ -288,7 +288,22 @@
     "notesOptional": "Notes (Optional)",
     "notesPlaceholder": "e.g. Cleared customs, out for delivery...",
     "saveUpdate": "Save Update",
-    "markingPaid": "Marking..."
+    "markingPaid": "Marking...",
+    "settings": "Settings",
+    "pricingManagement": "Route Pricing Management",
+    "staffManagement": "Staff Account Management",
+    "addAdmin": "Add Admin",
+    "baseRate": "Base Rate (FCFA)",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "role": "Role",
+    "branch": "Branch",
+    "adminUsers": "Admin Users",
+    "routes": "Routes",
+    "updateRate": "Update Rate",
+    "addNewAdmin": "Add New Admin",
+    "adminRole": "Admin Role",
+    "saveSettings": "Save Settings"
   },
   "track": {
     "title": "Track Your Shipment",

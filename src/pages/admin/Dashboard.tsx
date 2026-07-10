@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import {
   Users, Package, Ticket, Bus, TrendingUp, LogOut,
   Loader2, ArrowRight, RefreshCw, Shield,
-  MapPin, Calendar, Phone, Mail, Plus, BarChart3, Download
+  MapPin, Calendar, Phone, Mail, Plus, BarChart3, Download, Settings
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -61,7 +61,24 @@ interface Schedule {
   status: string;
 }
 
-type Tab = 'overview' | 'users' | 'tickets' | 'cargo' | 'schedules' | 'reports';
+interface Route {
+  id: string;
+  origin: string;
+  destination: string;
+  base_rate_fcfa: number;
+  active: boolean;
+}
+
+interface AdminUser {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  branch: string;
+  active: boolean;
+}
+
+type Tab = 'overview' | 'users' | 'tickets' | 'cargo' | 'schedules' | 'reports' | 'settings';
 
 // ─── Admin emails ─────────────────────────────────────────────────────────────
 const ADMIN_EMAILS = ['testuser3@afrique-con.com', 'admin@afrique-con.com', 'ayodelesodiya@gmail.com'];
@@ -79,6 +96,8 @@ export default function AdminDashboard() {
   const [tickets, setTickets] = useState<PassengerTicket[]>([]);
   const [cargo, setCargo] = useState<CargoBooking[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [routesList, setRoutesList] = useState<Route[]>([]);
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
 
   // Cargo Update Modal State
   const [updatingCargo, setUpdatingCargo] = useState<CargoBooking | null>(null);
@@ -106,17 +125,21 @@ export default function AdminDashboard() {
     if (showRefresh) setRefreshing(true);
     else setLoading(true);
 
-    const [profilesRes, ticketsRes, cargoRes, schedulesRes] = await Promise.all([
+    const [profilesRes, ticketsRes, cargoRes, schedulesRes, routesRes, adminUsersRes] = await Promise.all([
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
       supabase.from('passenger_tickets').select('*').order('created_at', { ascending: false }),
       supabase.from('cargo_bookings').select('*').order('created_at', { ascending: false }),
       supabase.from('bus_schedules').select('*').order('departure_time', { ascending: true }),
+      supabase.from('routes').select('*').order('origin', { ascending: true }),
+      supabase.from('admin_users').select('*').order('created_at', { ascending: false }),
     ]);
 
     if (profilesRes.data) setProfiles(profilesRes.data);
     if (ticketsRes.data) setTickets(ticketsRes.data);
     if (cargoRes.data) setCargo(cargoRes.data);
     if (schedulesRes.data) setSchedules(schedulesRes.data);
+    if (routesRes.data) setRoutesList(routesRes.data);
+    if (adminUsersRes.data) setAdminUsers(adminUsersRes.data);
 
     setLoading(false);
     setRefreshing(false);
@@ -290,6 +313,84 @@ export default function AdminDashboard() {
     }
   };
 
+  const handlePrintManifest = (schedule: Schedule) => {
+    const scheduleTickets = tickets.filter(t => t.schedule_id === schedule.id);
+    const totalRevenue = scheduleTickets.reduce((sum, t) => sum + (t.total_fcfa || 0), 0);
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    const html = `
+      <html>
+        <head>
+          <title>Bus Manifest - ${schedule.origin} to ${schedule.destination}</title>
+          <style>
+            body { font-family: 'Inter', sans-serif; padding: 40px; color: #333; }
+            .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
+            .header h1 { margin: 0 0 10px 0; font-size: 24px; text-transform: uppercase; }
+            .meta { display: flex; justify-content: space-between; margin-bottom: 30px; font-weight: bold; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background-color: #f8f9fa; font-weight: bold; text-transform: uppercase; font-size: 12px; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .summary { text-align: right; font-size: 18px; font-weight: bold; }
+            @media print {
+              body { padding: 0; }
+              button { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>AFRIQUE-CON - DRIVER'S MANIFEST</h1>
+            <p>Route: ${schedule.origin} to ${schedule.destination}</p>
+          </div>
+          
+          <div class="meta">
+            <div>Departure: ${new Date(schedule.departure_time).toLocaleString()}</div>
+            <div>Total Passengers: ${scheduleTickets.length}</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Seat</th>
+                <th>Passenger Name</th>
+                <th>Ticket ID</th>
+                <th>Type</th>
+                <th>Phone/Email</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${scheduleTickets.length > 0 ? scheduleTickets.map(t => `
+                <tr>
+                  <td><strong>${t.seat_number || 'N/A'}</strong></td>
+                  <td>${t.passenger_name}</td>
+                  <td style="font-family: monospace;">${t.ticket_id}</td>
+                  <td style="text-transform: capitalize;">${t.ticket_type}</td>
+                  <td>N/A</td>
+                  <td>${t.payment_status === 'paid' ? 'PAID' : 'PENDING'}</td>
+                </tr>
+              `).join('') : '<tr><td colspan="6" style="text-align: center;">No passengers booked yet.</td></tr>'}
+            </tbody>
+          </table>
+          
+          <div class="summary">
+            Total Revenue: ${totalRevenue.toLocaleString()} FCFA
+          </div>
+
+          <div style="margin-top: 40px; text-align: center;">
+            <button onclick="window.print()" style="padding: 10px 20px; background: #0A1628; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Print Manifest</button>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
+
   // ─── Helpers ────────────────────────────────────────────────────────────────
   const statusBadge = (status: string, type: 'payment' | 'status' = 'status') => {
     const paymentColors: Record<string, string> = {
@@ -316,7 +417,56 @@ export default function AdminDashboard() {
     { id: 'cargo', label: t('admin.cargo'), icon: <Package className="w-4 h-4" />, count: cargo.length },
     { id: 'schedules', label: t('admin.schedules'), icon: <Bus className="w-4 h-4" />, count: schedules.length },
     { id: 'reports', label: t('admin.reports'), icon: <BarChart3 className="w-4 h-4" /> },
+    { id: 'settings', label: t('admin.settings', 'Settings'), icon: <Settings className="w-4 h-4" /> },
   ];
+
+  // Settings Handlers
+  const handleUpdateRouteRate = async (routeId: string, newRate: string) => {
+    try {
+      const parsedRate = parseFloat(newRate);
+      if (isNaN(parsedRate)) throw new Error('Invalid rate');
+      const { error } = await supabase.from('routes').update({ base_rate_fcfa: parsedRate }).eq('id', routeId);
+      if (error) throw error;
+      alert('Rate updated successfully');
+      fetchAll();
+    } catch (err: any) {
+      alert('Failed to update rate: ' + err.message);
+    }
+  };
+
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [newAdminName, setNewAdminName] = useState('');
+  const [newAdminRole, setNewAdminRole] = useState('agent');
+  
+  const handleAddAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const { error } = await supabase.from('admin_users').insert({
+        email: newAdminEmail,
+        full_name: newAdminName,
+        role: newAdminRole,
+        active: true
+      });
+      if (error) throw error;
+      alert('Admin added successfully');
+      setNewAdminEmail('');
+      setNewAdminName('');
+      fetchAll();
+    } catch (err: any) {
+      alert('Failed to add admin: ' + err.message);
+    }
+  };
+
+  const handleToggleAdminStatus = async (adminId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase.from('admin_users').update({ active: !currentStatus }).eq('id', adminId);
+      if (error) throw error;
+      fetchAll();
+    } catch (err: any) {
+      alert('Failed to update admin: ' + err.message);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -654,21 +804,31 @@ export default function AdminDashboard() {
                               <span className="text-white text-xs font-semibold">{s.available_seats}/48</span>
                             </div>
                           </div>
-                          <div className="text-right flex items-center justify-end gap-3">
-                            <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusBadge(s.status)}`}>
-                              {s.status}
-                            </span>
-                            <div className="text-lg font-bold text-green-400">{(s.base_fare_fcfa || 0).toLocaleString()} FCFA</div>
-                            {s.status !== 'cancelled' && (
-                              <button
-                                onClick={() => handleCancelSchedule(s)}
-                                disabled={cancelScheduleLoading === s.id}
-                                className="px-3 py-1 bg-red-800 hover:bg-red-700 text-red-200 rounded text-xs font-semibold transition-colors disabled:opacity-50"
-                              >
-                                {cancelScheduleLoading === s.id ? '...' : t('admin.cancelSchedule')}
-                              </button>
-                            )}
-                          </div>
+                            <div className="text-right flex flex-col items-end gap-2">
+                              <div className="flex items-center gap-3">
+                                <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusBadge(s.status)}`}>
+                                  {s.status}
+                                </span>
+                                <div className="text-lg font-bold text-green-400">{(s.base_fare_fcfa || 0).toLocaleString()} FCFA</div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handlePrintManifest(s)}
+                                  className="px-3 py-1 bg-blue-800 hover:bg-blue-700 text-blue-200 rounded text-xs font-semibold transition-colors"
+                                >
+                                  Print Manifest
+                                </button>
+                                {s.status !== 'cancelled' && (
+                                  <button
+                                    onClick={() => handleCancelSchedule(s)}
+                                    disabled={cancelScheduleLoading === s.id}
+                                    className="px-3 py-1 bg-red-800 hover:bg-red-700 text-red-200 rounded text-xs font-semibold transition-colors disabled:opacity-50"
+                                  >
+                                    {cancelScheduleLoading === s.id ? '...' : t('admin.cancelSchedule')}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                         </div>
                       </div>
                     ))}
@@ -745,6 +905,132 @@ export default function AdminDashboard() {
                           <span className="flex items-center gap-2"><Users className="w-4 h-4" /> Export User Data</span>
                           <Download className="w-4 h-4 text-gray-400" />
                         </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── SETTINGS ── */}
+              {activeTab === 'settings' && (
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-bold text-white">{t('admin.settings', 'Settings')}</h2>
+                  
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    {/* Route Pricing */}
+                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                      <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-amber-400" />
+                        {t('admin.pricingManagement', 'Route Pricing Management')}
+                      </h3>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm text-gray-300">
+                          <thead className="text-xs uppercase bg-gray-800 text-gray-400">
+                            <tr>
+                              <th className="px-4 py-3">Route</th>
+                              <th className="px-4 py-3">{t('admin.baseRate', 'Base Rate (FCFA)')}</th>
+                              <th className="px-4 py-3 text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-800">
+                            {routesList.map(route => (
+                              <tr key={route.id} className="hover:bg-gray-800/50 transition-colors">
+                                <td className="px-4 py-3 font-medium text-white">{route.origin} → {route.destination}</td>
+                                <td className="px-4 py-3">
+                                  <input 
+                                    type="number" 
+                                    defaultValue={route.base_rate_fcfa}
+                                    onBlur={(e) => {
+                                      if (e.target.value !== route.base_rate_fcfa.toString()) {
+                                        handleUpdateRouteRate(route.id, e.target.value);
+                                      }
+                                    }}
+                                    className="w-24 bg-gray-800 border border-gray-700 text-white rounded px-2 py-1 focus:ring-1 focus:ring-amber-500"
+                                  />
+                                </td>
+                                <td className="px-4 py-3 text-right text-xs text-gray-500">
+                                  Auto-saves on blur
+                                </td>
+                              </tr>
+                            ))}
+                            {routesList.length === 0 && (
+                              <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-500">No routes found</td></tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Staff Account Management */}
+                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                      <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-teal-400" />
+                        {t('admin.staffManagement', 'Staff Account Management')}
+                      </h3>
+
+                      {/* Add Admin Form */}
+                      <form onSubmit={handleAddAdmin} className="mb-6 flex flex-wrap gap-3">
+                        <input 
+                          type="email" required placeholder="Email"
+                          value={newAdminEmail} onChange={e => setNewAdminEmail(e.target.value)}
+                          className="flex-1 min-w-[140px] bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                        />
+                        <input 
+                          type="text" required placeholder="Full Name"
+                          value={newAdminName} onChange={e => setNewAdminName(e.target.value)}
+                          className="flex-1 min-w-[140px] bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                        />
+                        <select
+                          value={newAdminRole} onChange={e => setNewAdminRole(e.target.value)}
+                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                        >
+                          <option value="agent">Agent</option>
+                          <option value="manager">Manager</option>
+                          <option value="super_admin">Super Admin</option>
+                        </select>
+                        <button type="submit" className="bg-teal-600 hover:bg-teal-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                          <Plus className="w-4 h-4" /> {t('admin.addAdmin', 'Add')}
+                        </button>
+                      </form>
+
+
+                      {/* Admins Table */}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm text-gray-300">
+                          <thead className="text-xs uppercase bg-gray-800 text-gray-400">
+                            <tr>
+                              <th className="px-4 py-3">Admin</th>
+                              <th className="px-4 py-3">Role</th>
+                              <th className="px-4 py-3 text-right">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-800">
+                            {adminUsers.map(admin => (
+                              <tr key={admin.id} className="hover:bg-gray-800/50 transition-colors">
+                                <td className="px-4 py-3">
+                                  <div className="font-medium text-white">{admin.full_name}</div>
+                                  <div className="text-xs text-gray-500">{admin.email}</div>
+                                </td>
+                                <td className="px-4 py-3 capitalize">{admin.role}</td>
+                                <td className="px-4 py-3 text-right">
+                                  <button
+                                    onClick={() => handleToggleAdminStatus(admin.id, admin.active)}
+                                    className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                                      admin.active 
+                                        ? 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20' 
+                                        : 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20'
+                                    }`}
+                                  >
+                                    {admin.active ? t('admin.deactivate', 'Deactivate') : t('admin.activate', 'Activate')}
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                            {adminUsers.length === 0 && (
+                              <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-500">No admins found</td></tr>
+                            )}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>

@@ -5,7 +5,7 @@
 **Date:** June 2026  
 **Project Name:** Afrique-con Platform MVP  
 **Status:** Ready for Development  
-**Deployment:** Netlify + Antigravity + Supabase + Telegram
+**Deployment:** Vercel + Antigravity + Supabase + Telegram
 
 ---
 
@@ -72,7 +72,7 @@ Afrique-con Plc is building an integrated digital platform for cross-border tran
 
 | Metric | Target | Tracking |
 |--------|--------|----------|
-| Website Load Time | <2s | Netlify Analytics |
+| Website Load Time | <2s | Vercel Analytics |
 | Cargo Quote Conversion | 12% | Supabase events |
 | Passenger Ticket Sales | 50+ tickets/week | Admin dashboard |
 | Platform Uptime | 99.5% | Sentry monitoring |
@@ -241,7 +241,7 @@ Extra Fees:
 |-------|-----------|-----------------|
 | **Frontend** | React 18 + TypeScript | Type-safe, performant, component reuse |
 | **Styling** | Tailwind CSS | Utility-first, lightweight, responsive |
-| **Hosting** | Netlify | Free tier, edge functions, auto-scaling |
+| **Hosting** | Vercel | Free tier, edge functions, auto-scaling |
 | **Backend Logic** | Antigravity | No-code automation, workflow orchestration |
 | **Database** | Supabase (PostgreSQL) | Free tier (500MB), real-time, RLS support |
 | **Auth** | Supabase Auth | Passwordless email / OAuth, built-in |
@@ -264,11 +264,11 @@ Extra Fees:
 │  │ Booking │ │Booking  │ │Dashboard│          │
 │  └─────────┘ └─────────┘ └─────────┘          │
 │      ↓            ↓            ↓               │
-│  Hosted on Netlify Global CDN (<1.5s load)    │
+│  Hosted on Vercel Global CDN (<1.5s load)    │
 └──────────────────────────────────────────────────┘
               ↓          ↓          ↓
 ┌──────────────────────────────────────────────────┐
-│      NETLIFY EDGE FUNCTIONS (Serverless)        │
+│      Vercel EDGE FUNCTIONS (Serverless)        │
 │  • Rate limiting • Request routing             │
 │  • JWT validation • CORS handling              │
 └──────────────────────────────────────────────────┘
@@ -303,7 +303,7 @@ Extra Fees:
 ### 5.3 Telegram Integration Points
 
 **Telegram Bot Setup:**
-- Bot Token: Stored securely in Netlify environment variables
+- Bot Token: Stored securely in Vercel environment variables
 - Webhook: `/api/webhooks/telegram` receives messages
 - Bot Commands:
   - `/quote` - Request cargo quote
@@ -1211,10 +1211,10 @@ HOME
 
 ### 14.1 Deployment Platform
 
-**Platform:** Netlify  
+**Platform:** Vercel  
 **Build Tool:** Vite (React)  
 **Version Control:** GitHub  
-**CI/CD:** Netlify auto-builds on push
+**CI/CD:** Vercel auto-builds on push
 
 ### 14.2 Environment Variables (Production)
 
@@ -1234,7 +1234,7 @@ REACT_APP_ANALYTICS_DOMAIN          = afrique-con.com
 | Tool | Purpose | Tier |
 |------|---------|------|
 | Sentry | Error tracking, alerts | Free (5K events/month) |
-| Netlify Analytics | Page views, performance | Free |
+| Vercel Analytics | Page views, performance | Free |
 | Plausible | Visitor analytics | Free tier |
 | Supabase Logs | Database monitoring | Free |
 | Telegram Bot Logs | Message delivery tracking | Free |
@@ -1256,7 +1256,7 @@ REACT_APP_ANALYTICS_DOMAIN          = afrique-con.com
 
 **Week 1-2: Setup & Architecture**
 - GitHub repo setup
-- Netlify project creation
+- Vercel project creation
 - Supabase database + tables
 - Antigravity workflow templates
 - Telegram bot creation (BotFather)
@@ -1304,7 +1304,7 @@ REACT_APP_ANALYTICS_DOMAIN          = afrique-con.com
 
 | Service | Free Tier | Cost |
 |---------|-----------|------|
-| Netlify | 300 builds, 100 GB bandwidth | Free |
+| Vercel | 300 builds, 100 GB bandwidth | Free |
 | Supabase | 500 MB DB, 1 GB storage, 2M calls | Free |
 | Paystack | Per-transaction | 1.5% + ₦10 |
 | Flutterwave | Per-transaction | 1.4% + 50 FCFA |
@@ -1313,7 +1313,7 @@ REACT_APP_ANALYTICS_DOMAIN          = afrique-con.com
 | Antigravity | Workflows | $0-$50 |
 | Plausible Analytics | 10K events free | Free |
 | Sentry | 5K events/month | Free |
-| Domain + SSL | Netlify SSL included | $15/year |
+| Domain + SSL | Vercel SSL included | $15/year |
 | **TOTAL (Steady State)** | | **$15-65/month** |
 
 ### 16.2 Cost Savings with Telegram
@@ -1343,7 +1343,7 @@ REACT_APP_ANALYTICS_DOMAIN          = afrique-con.com
 | Telegram API downtime | Medium | Fallback to email; queue system |
 | Route/pricing data errors | Medium | Admin update interface; tests |
 | Database outage | High | Supabase daily backups; RTO 1hr |
-| DDoS attack | High | Netlify DDoS protection; rate limit |
+| DDoS attack | High | Vercel DDoS protection; rate limit |
 | Data breach | Critical | Encryption at rest; RLS policies |
 | Staffing issues | Medium | Process documentation; knowledge base |
 

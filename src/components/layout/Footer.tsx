@@ -114,9 +114,11 @@ export default function Footer() {
         <div className="border-t border-white/8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
           <span>{t('footer.copyright')}</span>
           <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-2 sm:mt-0">
+            <Link to="/about" className="hover:text-amber-400 transition-colors">{t('info.about.title', 'About Us')}</Link>
+            <Link to="/contact" className="hover:text-amber-400 transition-colors">{t('info.contact.title', 'Contact')}</Link>
             <Link to="/terms" className="hover:text-amber-400 transition-colors">Terms</Link>
             <Link to="/privacy" className="hover:text-amber-400 transition-colors">Privacy Policy</Link>
-            <Link to="/#faqs" className="hover:text-amber-400 transition-colors">FAQs</Link>
+            <Link to="/faq" className="hover:text-amber-400 transition-colors">FAQs</Link>
           </div>
           <div className="flex items-center gap-4 mt-4 sm:mt-0">
             <span className="flex items-center gap-1.5">

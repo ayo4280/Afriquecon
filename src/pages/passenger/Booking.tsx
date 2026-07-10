@@ -226,9 +226,14 @@ export default function PassengerBooking() {
             Click here to get live tracking updates on Telegram!
           </a>
 
-          <button onClick={() => navigate('/')} className="text-primary font-bold hover:underline">
-            {t('passengerBooking.returnHome')}
-          </button>
+          <div className="flex gap-3">
+            <button onClick={() => navigate('/profile')} className="flex-1 bg-[#0A1628] text-white py-3 rounded-xl font-bold hover:bg-[#1a2d4e] transition-colors">
+              View E-Tickets
+            </button>
+            <button onClick={() => navigate('/')} className="flex-1 bg-slate-100 text-slate-800 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors">
+              {t('passengerBooking.returnHome')}
+            </button>
+          </div>
         </div>
       </div>
     );
