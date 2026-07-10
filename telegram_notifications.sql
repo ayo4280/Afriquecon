@@ -1,4 +1,4 @@
-﻿-- =============================================
+-- =============================================
 -- AFRIQUE-CON — TELEGRAM NOTIFICATION TRIGGERS
 -- Paste this in: Supabase Dashboard > SQL Editor > Run
 -- =============================================
@@ -20,6 +20,9 @@ DECLARE
 BEGIN
   api_url := 'https://api.telegram.org/bot' || bot_token || '/sendMessage';
   new_row := to_jsonb(NEW);
+
+  -- We only want to trigger this when a booking becomes PAID
+  IF NEW.payment_status = 'paid' AND OLD.payment_status != 'paid' THEN
 
   -- ── Passenger Ticket Notification ──────────────────────────────────────────
   IF TG_TABLE_NAME = 'passenger_tickets' THEN
@@ -84,21 +87,23 @@ BEGIN
     );
   END IF;
 
+  END IF;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Step 3: Attach trigger to passenger_tickets (fires on INSERT)
+-- Step 3: Attach trigger to passenger_tickets (fires on UPDATE)
 DROP TRIGGER IF EXISTS trg_notify_telegram_ticket ON public.passenger_tickets;
 CREATE TRIGGER trg_notify_telegram_ticket
-  AFTER INSERT ON public.passenger_tickets
+  AFTER UPDATE ON public.passenger_tickets
   FOR EACH ROW
   EXECUTE FUNCTION public.notify_telegram();
 
--- Step 4: Attach trigger to cargo_bookings (fires on INSERT)
+-- Step 4: Attach trigger to cargo_bookings (fires on UPDATE)
 DROP TRIGGER IF EXISTS trg_notify_telegram_cargo ON public.cargo_bookings;
 CREATE TRIGGER trg_notify_telegram_cargo
-  AFTER INSERT ON public.cargo_bookings
+  AFTER UPDATE ON public.cargo_bookings
   FOR EACH ROW
   EXECUTE FUNCTION public.notify_telegram();
 

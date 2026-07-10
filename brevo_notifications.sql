@@ -1,4 +1,4 @@
-﻿-- =============================================
+-- =============================================
 -- AFRIQUE-CON — BREVO EMAIL NOTIFICATION TRIGGERS
 -- Paste this in: Supabase Dashboard > SQL Editor > Run
 -- =============================================
@@ -19,7 +19,7 @@ ALTER TABLE public.passenger_tickets ADD COLUMN IF NOT EXISTS final_price_fcfa D
 CREATE OR REPLACE FUNCTION public.notify_email_brevo()
 RETURNS trigger AS $$
 DECLARE
-  brevo_api_key  TEXT := 'YOUR_BREVO_API_KEY';
+  brevo_api_key  TEXT := '<YOUR_BREVO_API_KEY>'; -- Replace with your actual Brevo API Key
   api_url        TEXT := 'https://api.brevo.com/v3/smtp/email';
   sender_email   TEXT := 'your-email@gmail.com'; -- MUST be your Brevo registered email
   sender_name    TEXT := 'Afrique-con';

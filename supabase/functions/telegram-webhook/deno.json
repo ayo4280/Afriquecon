@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "telegram-webhook": {
+      "entrypoint": "index.ts"
+    }
+  }
+}
