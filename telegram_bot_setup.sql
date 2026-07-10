@@ -14,8 +14,13 @@ CREATE TABLE IF NOT EXISTS public.telegram_users (
 
 -- Allow anon/service_role to read/write, but typical RLS depends on your setup.
 ALTER TABLE public.telegram_users ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.telegram_users;
 CREATE POLICY "Enable read access for all users" ON public.telegram_users FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Enable insert access for all users" ON public.telegram_users;
 CREATE POLICY "Enable insert access for all users" ON public.telegram_users FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Enable update access for all users" ON public.telegram_users;
 CREATE POLICY "Enable update access for all users" ON public.telegram_users FOR UPDATE USING (true);
 
 
