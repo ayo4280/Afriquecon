@@ -411,13 +411,13 @@ export default function AdminDashboard() {
   };
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode; count?: number }[] = [
-    { id: 'overview', label: t('admin.overview'), icon: <TrendingUp className="w-4 h-4" /> },
-    { id: 'users', label: t('admin.users'), icon: <Users className="w-4 h-4" />, count: profiles.length },
-    { id: 'tickets', label: t('admin.tickets'), icon: <Ticket className="w-4 h-4" />, count: tickets.length },
-    { id: 'cargo', label: t('admin.cargo'), icon: <Package className="w-4 h-4" />, count: cargo.length },
-    { id: 'schedules', label: t('admin.schedules'), icon: <Bus className="w-4 h-4" />, count: schedules.length },
-    { id: 'reports', label: t('admin.reports'), icon: <BarChart3 className="w-4 h-4" /> },
-    { id: 'settings', label: t('admin.settings', 'Settings'), icon: <Settings className="w-4 h-4" /> },
+    { id: 'overview', label: t('admin.overview'), icon: <TrendingUp className="w-5 h-5" /> },
+    { id: 'users', label: t('admin.users'), icon: <Users className="w-5 h-5" />, count: profiles.length },
+    { id: 'tickets', label: t('admin.tickets'), icon: <Ticket className="w-5 h-5" />, count: tickets.length },
+    { id: 'cargo', label: t('admin.cargo'), icon: <Package className="w-5 h-5" />, count: cargo.length },
+    { id: 'schedules', label: t('admin.schedules'), icon: <Bus className="w-5 h-5" />, count: schedules.length },
+    { id: 'reports', label: t('admin.reports'), icon: <BarChart3 className="w-5 h-5" /> },
+    { id: 'settings', label: t('admin.settings', 'Settings'), icon: <Settings className="w-5 h-5" /> },
   ];
 
   // Settings Handlers
@@ -503,24 +503,24 @@ export default function AdminDashboard() {
 
       <div className="flex min-h-[calc(100vh-57px)]">
         {/* Sidebar */}
-        <aside className="w-52 bg-gray-900 border-r border-gray-800 py-6 flex-shrink-0 hidden md:block">
-          <nav className="space-y-1 px-3">
+        <aside className="w-72 bg-gray-900 border-r border-gray-800 py-6 flex-shrink-0 hidden md:block shadow-2xl z-10">
+          <nav className="space-y-2 px-4">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-base font-semibold transition-all duration-200 ${
                   activeTab === tab.id
-                    ? 'bg-primary text-white'
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                    ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-[1.02]'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                 }`}
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-3">
                   {tab.icon}
                   {tab.label}
                 </span>
                 {tab.count !== undefined && (
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-white/20' : 'bg-gray-700 text-gray-300'}`}>
+                  <span className={`text-sm px-2 py-0.5 rounded-full font-bold ${activeTab === tab.id ? 'bg-white/20' : 'bg-gray-700 text-gray-200'}`}>
                     {tab.count}
                   </span>
                 )}
