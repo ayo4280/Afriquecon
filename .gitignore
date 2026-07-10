@@ -17,6 +17,9 @@ dist-ssr
 .env.*
 !.env.example
 
+# Supabase Vault setup script (contains real API keys — run locally only)
+vault_setup.sql
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

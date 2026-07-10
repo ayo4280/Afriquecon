@@ -19,7 +19,7 @@ ALTER TABLE public.passenger_tickets ADD COLUMN IF NOT EXISTS final_price_fcfa D
 CREATE OR REPLACE FUNCTION public.notify_email_brevo()
 RETURNS trigger AS $$
 DECLARE
-  brevo_api_key  TEXT := '<YOUR_BREVO_API_KEY>'; -- Replace with your actual Brevo API Key
+  brevo_api_key  TEXT;
   api_url        TEXT := 'https://api.brevo.com/v3/smtp/email';
   sender_email   TEXT := 'your-email@gmail.com'; -- MUST be your Brevo registered email
   sender_name    TEXT := 'Afrique-con';
@@ -27,6 +27,17 @@ DECLARE
   email_subject  TEXT;
   email_html     TEXT;
 BEGIN
+  -- Read Brevo API key from Supabase Vault (set up via vault_setup.sql)
+  SELECT decrypted_secret INTO brevo_api_key
+  FROM vault.decrypted_secrets
+  WHERE name = 'brevo_api_key'
+  LIMIT 1;
+
+  IF brevo_api_key IS NULL THEN
+    RAISE WARNING 'notify_email_brevo: brevo_api_key not found in Vault. Skipping email.';
+    RETURN NEW;
+  END IF;
+
   -- We only want to trigger this when a booking becomes PAID
   IF NEW.payment_status = 'paid' AND OLD.payment_status != 'paid' THEN
 
