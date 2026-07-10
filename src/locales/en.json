@@ -271,7 +271,24 @@
     "addSchedule": "Add Schedule",
     "departure": "Departure",
     "noSchedules": "No schedules found.",
-    "reportsAnalytics": "Reports & Analytics"
+    "reportsAnalytics": "Reports & Analytics",
+    "availability": "Availability",
+    "cancelSchedule": "Cancel Schedule",
+    "markAsPaid": "Mark as Paid",
+    "paid": "Paid",
+    "dataExports": "Data Exports (CSV)",
+    "updateCargoStatus": "Update Cargo Status",
+    "addNewSchedule": "Add New Bus Schedule",
+    "cargoShipping": "Cargo Shipping",
+    "passengerTravel": "Passenger Travel",
+    "negotiatedPrice": "Negotiated Price (FCFA)",
+    "negotiatedPriceHint": "Enter the agreed price after negotiation with customer.",
+    "locationOptional": "Location (Optional)",
+    "locationPlaceholder": "e.g. Douala Sorting Center",
+    "notesOptional": "Notes (Optional)",
+    "notesPlaceholder": "e.g. Cleared customs, out for delivery...",
+    "saveUpdate": "Save Update",
+    "markingPaid": "Marking..."
   },
   "track": {
     "title": "Track Your Shipment",
@@ -289,5 +306,15 @@
     "trackingHistory": "Tracking History",
     "shipmentBooked": "Shipment Booked",
     "error": "An error occurred while tracking the shipment."
+  },
+  "ai": {
+    "assistant": "AI Trip Assistant",
+    "placeholder": "Ask about routes, prices, baggage...",
+    "welcome": "Hi! I'm your Afrique-con AI assistant 🤖 Ask me about routes, prices, booking, or baggage policies!",
+    "error": "Sorry, I couldn't connect right now. Please try again.",
+    "thinking": "Thinking...",
+    "send": "Send",
+    "minimize": "Minimize",
+    "poweredBy": "Powered by AI"
   }
 }

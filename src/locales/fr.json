@@ -271,7 +271,24 @@
     "addSchedule": "Ajouter un Horaire",
     "departure": "Départ",
     "noSchedules": "Aucun horaire trouvé.",
-    "reportsAnalytics": "Rapports & Analyses"
+    "reportsAnalytics": "Rapports & Analyses",
+    "availability": "Disponibilité",
+    "cancelSchedule": "Annuler l'Horaire",
+    "markAsPaid": "Marquer comme Payé",
+    "paid": "Payé",
+    "dataExports": "Exportations de Données (CSV)",
+    "updateCargoStatus": "Mettre à jour le Statut du Fret",
+    "addNewSchedule": "Ajouter un Nouvel Horaire de Bus",
+    "cargoShipping": "Expédition de Fret",
+    "passengerTravel": "Transport de Passagers",
+    "negotiatedPrice": "Prix Négocié (FCFA)",
+    "negotiatedPriceHint": "Entrez le prix convenu après négociation avec le client.",
+    "locationOptional": "Lieu (Optionnel)",
+    "locationPlaceholder": "ex. Centre de tri de Douala",
+    "notesOptional": "Notes (Optionnel)",
+    "notesPlaceholder": "ex. Dédouané, en cours de livraison...",
+    "saveUpdate": "Enregistrer la Mise à Jour",
+    "markingPaid": "Marquage..."
   },
   "track": {
     "title": "Suivre votre Envoi",
@@ -289,5 +306,15 @@
     "trackingHistory": "Historique de Suivi",
     "shipmentBooked": "Envoi Réservé",
     "error": "Une erreur s'est produite lors du suivi de l'envoi."
+  },
+  "ai": {
+    "assistant": "Assistant IA de Voyage",
+    "placeholder": "Posez une question sur les routes, tarifs, bagages...",
+    "welcome": "Bonjour ! Je suis votre assistant IA Afrique-con 🤖 Posez-moi des questions sur les routes, tarifs, réservations ou politiques de bagages !",
+    "error": "Désolé, je n'ai pas pu me connecter. Veuillez réessayer.",
+    "thinking": "Réflexion en cours...",
+    "send": "Envoyer",
+    "minimize": "Réduire",
+    "poweredBy": "Propulsé par l'IA"
   }
 }

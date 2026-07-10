@@ -88,6 +88,8 @@ export default function AdminDashboard() {
   const [negotiatedPrice, setNegotiatedPrice] = useState('');
   const [updateLoading, setUpdateLoading] = useState(false);
   const [markPaidLoading, setMarkPaidLoading] = useState<string | null>(null);
+  const [markTicketPaidLoading, setMarkTicketPaidLoading] = useState<string | null>(null);
+  const [cancelScheduleLoading, setCancelScheduleLoading] = useState<string | null>(null);
 
   // Add Schedule Modal State
   const [addingSchedule, setAddingSchedule] = useState(false);
@@ -213,12 +215,49 @@ export default function AdminDashboard() {
         .eq('id', booking.id);
       if (error) throw error;
       await fetchAll();
-      alert(`✅ Booking ${booking.booking_id} marked as paid! Confirmation email sent to ${booking.customer_email}.`);
+      alert(`✅ Booking ${booking.booking_id} marked as paid!`);
     } catch (err: any) {
       console.error(err);
       alert('Failed to mark as paid: ' + err.message);
     } finally {
       setMarkPaidLoading(null);
+    }
+  };
+
+  const handleMarkTicketAsPaid = async (ticket: PassengerTicket) => {
+    if (!window.confirm(`Mark ticket ${ticket.ticket_id} as PAID?`)) return;
+    setMarkTicketPaidLoading(ticket.id);
+    try {
+      const { error } = await supabase
+        .from('passenger_tickets')
+        .update({ payment_status: 'paid', ticket_status: ticket.ticket_status === 'pending' ? 'confirmed' : ticket.ticket_status })
+        .eq('id', ticket.id);
+      if (error) throw error;
+      await fetchAll();
+      alert(`✅ Ticket ${ticket.ticket_id} marked as paid!`);
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to mark ticket as paid: ' + err.message);
+    } finally {
+      setMarkTicketPaidLoading(null);
+    }
+  };
+
+  const handleCancelSchedule = async (schedule: Schedule) => {
+    if (!window.confirm(`Cancel schedule ${schedule.origin} → ${schedule.destination} on ${new Date(schedule.departure_time).toLocaleString()}?`)) return;
+    setCancelScheduleLoading(schedule.id);
+    try {
+      const { error } = await supabase
+        .from('bus_schedules')
+        .update({ status: 'cancelled' })
+        .eq('id', schedule.id);
+      if (error) throw error;
+      await fetchAll();
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to cancel schedule: ' + err.message);
+    } finally {
+      setCancelScheduleLoading(null);
     }
   };
 
@@ -452,35 +491,49 @@ export default function AdminDashboard() {
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-6">{t('admin.allPassengerTickets')} <span className="text-gray-500 text-lg font-normal">({tickets.length})</span></h2>
                   <div className="space-y-3">
-                    {tickets.map(t => (
-                      <div key={t.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col md:flex-row md:items-center gap-4">
+                    {tickets.map(ticket => (
+                      <div key={ticket.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col md:flex-row md:items-center gap-4">
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-2 text-sm">
                           <div>
-                            <div className="font-mono text-xs text-primary mb-1">{t.ticket_id}</div>
-                            <div className="font-semibold text-white">{t.passenger_name}</div>
-                            <div className="text-gray-400 text-xs capitalize">{t.ticket_type} · Seat {t.seat_number}</div>
+                            <div className="font-mono text-xs text-primary mb-1">{ticket.ticket_id}</div>
+                            <div className="font-semibold text-white">{ticket.passenger_name}</div>
+                            <div className="text-gray-400 text-xs capitalize">{ticket.ticket_type} · {t('admin.seat')} {ticket.seat_number}</div>
                           </div>
                           <div className="text-gray-400">
-                            <div className="text-xs text-gray-500 mb-1">Schedule</div>
-                            <div className="text-gray-300 font-mono text-xs truncate">{t.schedule_id}</div>
+                            <div className="text-xs text-gray-500 mb-1">{t('profile.schedule')}</div>
+                            <div className="text-gray-300 font-mono text-xs truncate">{ticket.schedule_id}</div>
                           </div>
                           <div className="flex gap-2 flex-wrap items-start">
-                            <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusBadge(t.ticket_status)}`}>
-                              {t.ticket_status}
+                            <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusBadge(ticket.ticket_status)}`}>
+                              {ticket.ticket_status}
                             </span>
-                            <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusBadge(t.payment_status, 'payment')}`}>
-                              💳 {t.payment_status}
+                            <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusBadge(ticket.payment_status, 'payment')}`}>
+                              💳 {ticket.payment_status}
                             </span>
                           </div>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-primary">{(t.total_fcfa || 0).toLocaleString()} FCFA</div>
-                            <div className="text-xs text-gray-500">{new Date(t.created_at).toLocaleDateString()}</div>
+                          <div className="text-right flex flex-col items-end gap-2">
+                            <div>
+                              <div className="text-lg font-bold text-primary">{(ticket.total_fcfa || 0).toLocaleString()} FCFA</div>
+                              <div className="text-xs text-gray-500">{new Date(ticket.created_at).toLocaleDateString()}</div>
+                            </div>
+                            {ticket.payment_status !== 'paid' && (
+                              <button
+                                onClick={() => handleMarkTicketAsPaid(ticket)}
+                                disabled={markTicketPaidLoading === ticket.id}
+                                className="px-3 py-1 bg-green-700 hover:bg-green-600 text-white rounded text-xs font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                              >
+                                {markTicketPaidLoading === ticket.id ? t('admin.markingPaid') : `✅ ${t('admin.markAsPaid')}`}
+                              </button>
+                            )}
+                            {ticket.payment_status === 'paid' && (
+                              <span className="px-3 py-1 bg-green-900/50 text-green-400 rounded text-xs font-semibold text-center">✅ {t('admin.paid')}</span>
+                            )}
                           </div>
                         </div>
                       </div>
                     ))}
                     {tickets.length === 0 && (
-                      <div className="text-center py-16 text-gray-500">No tickets yet.</div>
+                      <div className="text-center py-16 text-gray-500">{t('admin.noData')}</div>
                     )}
                   </div>
                 </div>
@@ -590,7 +643,7 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                           <div>
-                            <div className="text-xs text-gray-500 mb-1">Availability</div>
+                            <div className="text-xs text-gray-500 mb-1">{t('admin.availability')}</div>
                             <div className="flex items-center gap-2">
                               <div className="flex-1 bg-gray-800 rounded-full h-2">
                                 <div
@@ -606,6 +659,15 @@ export default function AdminDashboard() {
                               {s.status}
                             </span>
                             <div className="text-lg font-bold text-green-400">{(s.base_fare_fcfa || 0).toLocaleString()} FCFA</div>
+                            {s.status !== 'cancelled' && (
+                              <button
+                                onClick={() => handleCancelSchedule(s)}
+                                disabled={cancelScheduleLoading === s.id}
+                                className="px-3 py-1 bg-red-800 hover:bg-red-700 text-red-200 rounded text-xs font-semibold transition-colors disabled:opacity-50"
+                              >
+                                {cancelScheduleLoading === s.id ? '...' : t('admin.cancelSchedule')}
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -630,9 +692,9 @@ export default function AdminDashboard() {
                         {t('admin.revenueBreakdown')}
                       </h3>
                       <div className="space-y-4">
-                        <div>
+                      <div>
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-300">Cargo Shipping</span>
+                            <span className="text-gray-300">{t('admin.cargoShipping')}</span>
                             <span className="text-white font-semibold">{cargoRevenue.toLocaleString()} FCFA</span>
                           </div>
                           <div className="w-full bg-gray-800 rounded-full h-2">
@@ -641,7 +703,7 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-300">Passenger Travel</span>
+                            <span className="text-gray-300">{t('admin.passengerTravel')}</span>
                             <span className="text-white font-semibold">{ticketRevenue.toLocaleString()} FCFA</span>
                           </div>
                           <div className="w-full bg-gray-800 rounded-full h-2">
@@ -649,7 +711,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <div className="pt-4 border-t border-gray-800 flex justify-between items-center">
-                          <span className="text-gray-400 text-sm">Total Revenue</span>
+                          <span className="text-gray-400 text-sm">{t('admin.totalRevenue')}</span>
                           <span className="text-xl font-bold text-white">{totalRevenue.toLocaleString()} FCFA</span>
                         </div>
                       </div>
@@ -659,7 +721,7 @@ export default function AdminDashboard() {
                     <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
                       <h3 className="text-gray-400 font-medium mb-4 text-sm flex items-center gap-2">
                         <Download className="w-4 h-4 text-green-400" />
-                        Data Exports (CSV)
+                        {t('admin.dataExports')}
                       </h3>
                       <div className="space-y-3">
                         <button 
@@ -696,12 +758,12 @@ export default function AdminDashboard() {
       {updatingCargo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-md p-6">
-            <h3 className="text-xl font-bold text-white mb-2">Update Cargo Status</h3>
+            <h3 className="text-xl font-bold text-white mb-2">{t('admin.updateCargoStatus')}</h3>
             <p className="text-gray-400 text-sm mb-6">Booking ID: <span className="font-mono text-purple-400">{updatingCargo.booking_id}</span></p>
 
             <form onSubmit={handleUpdateCargo} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">New Status</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">{t('admin.newStatus')}</label>
                 <select
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
@@ -732,22 +794,22 @@ export default function AdminDashboard() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Location (Optional)</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">{t('admin.locationOptional')}</label>
                 <input
                   type="text"
                   value={statusLocation}
                   onChange={(e) => setStatusLocation(e.target.value)}
-                  placeholder="e.g. Douala Sorting Center"
+                  placeholder={t('admin.locationPlaceholder')}
                   className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Notes (Optional)</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">{t('admin.notesOptional')}</label>
                 <textarea
                   value={statusNotes}
                   onChange={(e) => setStatusNotes(e.target.value)}
-                  placeholder="e.g. Cleared customs, out for delivery..."
+                  placeholder={t('admin.notesPlaceholder')}
                   rows={2}
                   className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none resize-none"
                 />
@@ -766,7 +828,7 @@ export default function AdminDashboard() {
                   disabled={updateLoading}
                   className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
                 >
-                  {updateLoading ? 'Saving...' : 'Save Update'}
+                  {updateLoading ? t('admin.loading') : t('admin.saveUpdate')}
                 </button>
               </div>
             </form>
@@ -778,7 +840,7 @@ export default function AdminDashboard() {
       {addingSchedule && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-md p-6">
-            <h3 className="text-xl font-bold text-white mb-6">Add New Bus Schedule</h3>
+            <h3 className="text-xl font-bold text-white mb-6">{t('admin.addNewSchedule')}</h3>
 
             <form onSubmit={handleAddSchedule} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -838,7 +900,7 @@ export default function AdminDashboard() {
                   disabled={addSchedLoading}
                   className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
                 >
-                  {addSchedLoading ? 'Saving...' : 'Add Schedule'}
+                  {addSchedLoading ? t('admin.loading') : t('admin.addSchedule')}
                 </button>
               </div>
             </form>

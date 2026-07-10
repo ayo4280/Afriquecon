@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { cargoService } from '../services/cargoService';
 import type { CargoQuoteResponse } from '../services/cargoService';
+import AIChatWidget from '../components/AIChatWidget';
 
 const STATS = [
   { value: '2,400+', label: 'Shipments Delivered', icon: <Package className="w-5 h-5" /> },
@@ -535,6 +536,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <AIChatWidget />
     </div>
   );
 }
