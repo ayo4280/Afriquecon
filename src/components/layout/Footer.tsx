@@ -1,22 +1,39 @@
-import { Navigation, Package, Users, Search, Mail, ArrowRight } from 'lucide-react';
+import { Navigation, Package, Users, Search, Mail, ArrowRight, MapPin, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 
+interface Agency {
+  id: string;
+  country: string;
+  city: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+}
+
 export default function Footer() {
   const { t } = useTranslation();
-  const [routes, setRoutes] = useState<{ origin: string; destination: string }[]>([]);
+  const [agencies, setAgencies] = useState<Agency[]>([]);
 
   useEffect(() => {
-    async function fetchRoutes() {
-      const { data, error } = await supabase.from('routes').select('origin, destination');
+    async function fetchAgencies() {
+      const { data, error } = await supabase
+        .from('agencies')
+        .select('*')
+        .order('country', { ascending: true })
+        .order('city', { ascending: true });
       if (data && !error) {
-        setRoutes(data);
+        setAgencies(data);
       }
     }
-    fetchRoutes();
+    fetchAgencies();
   }, []);
+
+  const cameroonAgencies = agencies.filter(a => a.country === 'Cameroon');
+  const nigeriaAgencies = agencies.filter(a => a.country === 'Nigeria');
 
   return (
     <footer className="relative bg-[#070f1c] text-slate-400 overflow-hidden">
@@ -28,10 +45,12 @@ export default function Footer() {
       <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-teal-400/4 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative container mx-auto px-4 lg:px-6 pt-14 pb-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+
+        {/* TOP ROW: Brand + Services + Support */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-10">
 
           {/* Brand column */}
-          <div className="sm:col-span-2 lg:col-span-1">
+          <div>
             <Link to="/" className="inline-block group">
               <img
                 src="/logo.png"
@@ -79,24 +98,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Routes */}
-          <div>
-            <h4 className="font-semibold text-white mb-4 flex items-center gap-2">
-              <Navigation className="w-4 h-4 text-teal-400" />
-              Routes
-            </h4>
-            <ul className="space-y-2.5 text-sm text-slate-500 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-              {routes.length > 0 ? routes.map(route => (
-                <li key={`${route.origin}-${route.destination}`} className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400/60 flex-shrink-0" />
-                  {route.origin} → {route.destination}
-                </li>
-              )) : (
-                <li className="text-slate-600 italic">Loading routes...</li>
-              )}
-            </ul>
-          </div>
-
           {/* Support */}
           <div>
             <h4 className="font-semibold text-white mb-4 flex items-center gap-2">
@@ -115,8 +116,83 @@ export default function Footer() {
                 <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
                 🇨🇲 Cameroon &amp; 🇳🇬 Nigeria
               </div>
+              <div className="flex items-center gap-2 text-sm text-slate-400">
+                <Mail className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                <a href="mailto:afriquecon@afriquecon.com" className="hover:text-amber-400 transition-colors">
+                  afriquecon@afriquecon.com
+                </a>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* DIVIDER */}
+        <div className="h-px w-full bg-white/5 mb-10" />
+
+        {/* BRANCHES SECTION */}
+        <div className="mb-10">
+          <h4 className="font-semibold text-white mb-6 flex items-center gap-2 text-base">
+            <MapPin className="w-5 h-5 text-amber-400" />
+            Our Branches &amp; Agencies
+          </h4>
+
+          {agencies.length === 0 ? (
+            <p className="text-slate-600 text-sm italic">Loading branches...</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Cameroon */}
+              <div>
+                <h5 className="text-sm font-bold text-teal-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  🇨🇲 Cameroon
+                </h5>
+                <div className="space-y-4">
+                  {cameroonAgencies.map(agency => (
+                    <div key={agency.id} className="border border-white/5 bg-white/2 rounded-xl p-3 hover:border-amber-400/20 transition-colors">
+                      <p className="text-white text-sm font-semibold mb-1">{agency.name}</p>
+                      {agency.address && (
+                        <p className="text-xs text-slate-500 flex items-start gap-1.5 mb-1">
+                          <MapPin className="w-3 h-3 text-slate-600 flex-shrink-0 mt-0.5" />
+                          {agency.address}
+                        </p>
+                      )}
+                      {agency.phone && (
+                        <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                          <Phone className="w-3 h-3 text-amber-400/70 flex-shrink-0" />
+                          <a href={`tel:${agency.phone}`} className="hover:text-amber-400 transition-colors">{agency.phone}</a>
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Nigeria */}
+              <div>
+                <h5 className="text-sm font-bold text-amber-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  🇳🇬 Nigeria
+                </h5>
+                <div className="space-y-4">
+                  {nigeriaAgencies.map(agency => (
+                    <div key={agency.id} className="border border-white/5 bg-white/2 rounded-xl p-3 hover:border-teal-400/20 transition-colors">
+                      <p className="text-white text-sm font-semibold mb-1">{agency.name}</p>
+                      {agency.address && (
+                        <p className="text-xs text-slate-500 flex items-start gap-1.5 mb-1">
+                          <MapPin className="w-3 h-3 text-slate-600 flex-shrink-0 mt-0.5" />
+                          {agency.address}
+                        </p>
+                      )}
+                      {agency.phone && (
+                        <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                          <Phone className="w-3 h-3 text-amber-400/70 flex-shrink-0" />
+                          <a href={`tel:${agency.phone}`} className="hover:text-amber-400 transition-colors">{agency.phone}</a>
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bottom bar */}
