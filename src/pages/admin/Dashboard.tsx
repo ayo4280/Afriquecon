@@ -871,7 +871,7 @@ export default function AdminDashboard() {
                             <span className="text-white font-semibold">{ticketRevenue.toLocaleString()} FCFA</span>
                           </div>
                           <div className="w-full bg-gray-800 rounded-full h-2">
-                            <div className="bg-primary h-2 rounded-full" style={{ width: `${totalRevenue === 0 ? 0 : (ticketRevenue / totalRevenue) * 100}%` }}></div>
+                            <div className="bg-red-500 h-2 rounded-full" style={{ width: `${totalRevenue === 0 ? 0 : (ticketRevenue / totalRevenue) * 100}%` }}></div>
                           </div>
                         </div>
                         <div className="pt-4 border-t border-gray-800 flex justify-between items-center">
