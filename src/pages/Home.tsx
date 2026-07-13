@@ -5,8 +5,9 @@ import CoverageMap from '../components/CoverageMap';
 import {
   ArrowRight, Package, Users, MapPin, Search,
   AlertCircle, CheckCircle, Star, Zap, Shield,
-  Clock, TrendingUp, ChevronDown
+  Clock, TrendingUp, ChevronDown, Calendar, Loader2
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { cargoService } from '../services/cargoService';
 import type { CargoQuoteResponse } from '../services/cargoService';
 import AIChatWidget from '../components/AIChatWidget';
@@ -24,7 +25,7 @@ export default function Home() {
   const { t } = useTranslation();
 
   const initialMode = location.pathname.includes('passenger') ? 'passenger' : 'cargo';
-  const [serviceMode, setServiceMode] = useState<'cargo' | 'passenger'>(initialMode);
+  const [serviceMode, setServiceMode] = useState<'cargo' | 'passenger' | 'schedule'>(initialMode);
 
   useEffect(() => {
     if (location.pathname.includes('passenger')) setServiceMode('passenger');
@@ -53,6 +54,25 @@ export default function Home() {
   const CAMEROON_CITIES = ['Yaoundé', 'Douala', 'Buea', 'Kumba', 'Mamfe'];
 
   const isNigeriaToCamera = NIGERIA_CITIES.includes(passengerOrigin) && CAMEROON_CITIES.includes(passengerDestination);
+
+  // Schedule state
+  const [scheduleRoutes, setScheduleRoutes] = useState<any[]>([]);
+  const [loadingSchedule, setLoadingSchedule] = useState(false);
+  const [scheduleDirection, setScheduleDirection] = useState<'from_ng' | 'from_cm'>('from_ng');
+
+  useEffect(() => {
+    if (serviceMode === 'schedule' && scheduleRoutes.length === 0) {
+      setLoadingSchedule(true);
+      supabase.from('routes')
+        .select('*')
+        .eq('active', true)
+        .order('origin')
+        .then(({ data }) => {
+          if (data) setScheduleRoutes(data);
+          setLoadingSchedule(false);
+        });
+    }
+  }, [serviceMode]);
 
   // FAQ open state
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -133,11 +153,14 @@ export default function Home() {
           </p>
 
           {/* Service Switcher */}
-          <div className="relative bg-white/10 backdrop-blur-sm rounded-2xl p-1.5 max-w-xs mx-auto flex border border-white/15 animate-fade-up" style={{ animationDelay: '0.3s' }}>
+          <div className="relative bg-white/10 backdrop-blur-sm rounded-2xl p-1.5 max-w-md mx-auto flex border border-white/15 animate-fade-up" style={{ animationDelay: '0.3s' }}>
             {/* sliding indicator */}
             <div
-              className="absolute top-1.5 bottom-1.5 w-[calc(50%-3px)] rounded-xl bg-amber-400 transition-all duration-300 ease-in-out"
-              style={{ left: serviceMode === 'cargo' ? '6px' : 'calc(50% + 0px)' }}
+              className="absolute top-1.5 bottom-1.5 w-[calc(33.333%-4px)] rounded-xl bg-amber-400 transition-all duration-300 ease-in-out"
+              style={{
+                left: '6px',
+                transform: serviceMode === 'cargo' ? 'translateX(0)' : serviceMode === 'schedule' ? 'translateX(100%)' : 'translateX(200%)'
+              }}
             />
             <button
               onClick={() => { setServiceMode('cargo'); setQuoteResult(null); }}
@@ -145,6 +168,13 @@ export default function Home() {
             >
               <Package className="w-4 h-4" />
               {t('home.shipCargo')}
+            </button>
+            <button
+              onClick={() => setServiceMode('schedule')}
+              className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${serviceMode === 'schedule' ? 'text-[#0A1628]' : 'text-slate-300 hover:text-white'}`}
+            >
+              <Calendar className="w-4 h-4" />
+              Bus Schedule
             </button>
             <button
               onClick={() => setServiceMode('passenger')}
@@ -318,9 +348,83 @@ export default function Home() {
                       <button type="submit" className="mt-6 w-full bg-[#0A1628] hover:bg-[#1a2d4e] text-white py-4 rounded-xl font-bold text-base transition-all flex justify-center items-center gap-2 shadow-xl shadow-slate-900/20 group">
                         {t('home.calculateQuote')}
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </button>
                     </form>
                   )}
+                </div>
+              ) : serviceMode === 'schedule' ? (
+                <div>
+                  <div className="flex items-center gap-3 mb-7">
+                    <div className="w-10 h-10 rounded-xl bg-amber-400/15 flex items-center justify-center">
+                      <Calendar className="w-5 h-5 text-amber-500" />
+                    </div>
+                    <h2 className="text-2xl font-display font-bold text-slate-900">Bus Schedule</h2>
+                  </div>
+
+                  <div className="mb-6 flex bg-slate-100 p-1 rounded-xl">
+                    <button
+                      onClick={() => setScheduleDirection('from_ng')}
+                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${scheduleDirection === 'from_ng' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      From Nigeria
+                    </button>
+                    <button
+                      onClick={() => setScheduleDirection('from_cm')}
+                      className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${scheduleDirection === 'from_cm' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      From Cameroon
+                    </button>
+                  </div>
+
+                  {loadingSchedule ? (
+                    <div className="flex justify-center items-center py-12">
+                      <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+                    </div>
+                  ) : (
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="max-h-[400px] overflow-y-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead className="bg-slate-100/80 sticky top-0 backdrop-blur-sm z-10 text-xs uppercase text-slate-500 font-semibold">
+                            <tr>
+                              <th className="px-4 py-3 border-b border-slate-200">Origin</th>
+                              <th className="px-4 py-3 border-b border-slate-200">Destination</th>
+                              <th className="px-4 py-3 border-b border-slate-200">Days</th>
+                              <th className="px-4 py-3 border-b border-slate-200">Time</th>
+                            </tr>
+                          </thead>
+                          <tbody className="text-sm text-slate-700 divide-y divide-slate-100">
+                            {scheduleRoutes
+                              .filter(r => scheduleDirection === 'from_ng' ? NIGERIA_CITIES.includes(r.origin) : CAMEROON_CITIES.includes(r.origin))
+                              .map((route) => (
+                                <tr key={route.id} className="hover:bg-white transition-colors">
+                                  <td className="px-4 py-3 font-medium text-slate-900">{route.origin}</td>
+                                  <td className="px-4 py-3">{route.destination}</td>
+                                  <td className="px-4 py-3 text-teal-600 font-medium">{route.departure_days || 'Check office'}</td>
+                                  <td className="px-4 py-3">{route.departure_time || '-'}</td>
+                                </tr>
+                              ))}
+                            {scheduleRoutes.filter(r => scheduleDirection === 'from_ng' ? NIGERIA_CITIES.includes(r.origin) : CAMEROON_CITIES.includes(r.origin)).length === 0 && (
+                              <tr>
+                                <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                                  No schedules found for this direction.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-6">
+                    <button
+                      onClick={() => setServiceMode('passenger')}
+                      className="w-full bg-teal-500 hover:bg-teal-400 text-white py-4 rounded-xl font-bold text-base transition-all flex justify-center items-center gap-2 shadow-xl shadow-teal-500/20 group"
+                    >
+                      <Users className="w-5 h-5" />
+                      Proceed to Booking
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div>
