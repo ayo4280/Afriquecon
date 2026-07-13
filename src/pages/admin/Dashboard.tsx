@@ -123,6 +123,7 @@ export default function AdminDashboard() {
   const [markPaidLoading, setMarkPaidLoading] = useState<string | null>(null);
   const [markTicketPaidLoading, setMarkTicketPaidLoading] = useState<string | null>(null);
   const [cancelScheduleLoading, setCancelScheduleLoading] = useState<string | null>(null);
+  const [deleteScheduleLoading, setDeleteScheduleLoading] = useState<string | null>(null);
 
   // Add Schedule Modal State
   const [addingSchedule, setAddingSchedule] = useState(false);
@@ -324,6 +325,24 @@ export default function AdminDashboard() {
       alert('Failed to cancel schedule: ' + err.message);
     } finally {
       setCancelScheduleLoading(null);
+    }
+  };
+
+  const handleDeleteSchedule = async (schedule: Schedule) => {
+    if (!window.confirm(`Permanently DELETE schedule ${schedule.origin} → ${schedule.destination} on ${new Date(schedule.departure_time).toLocaleString()}? This cannot be undone.`)) return;
+    setDeleteScheduleLoading(schedule.id);
+    try {
+      const { error } = await supabase
+        .from('bus_schedules')
+        .delete()
+        .eq('id', schedule.id);
+      if (error) throw error;
+      await fetchAll();
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to delete schedule: ' + err.message);
+    } finally {
+      setDeleteScheduleLoading(null);
     }
   };
 
@@ -877,9 +896,18 @@ export default function AdminDashboard() {
                                 <button
                                   onClick={() => handleCancelSchedule(s)}
                                   disabled={cancelScheduleLoading === s.id}
-                                  className="px-3 py-1 bg-red-800 hover:bg-red-700 text-red-200 rounded text-xs font-semibold transition-colors disabled:opacity-50"
+                                  className="px-3 py-1 bg-amber-800 hover:bg-amber-700 text-amber-200 rounded text-xs font-semibold transition-colors disabled:opacity-50"
                                 >
                                   {cancelScheduleLoading === s.id ? '...' : t('admin.cancelSchedule')}
+                                </button>
+                              )}
+                              {isSuperAdmin && (
+                                <button
+                                  onClick={() => handleDeleteSchedule(s)}
+                                  disabled={deleteScheduleLoading === s.id}
+                                  className="px-3 py-1 bg-red-800 hover:bg-red-700 text-red-200 rounded text-xs font-semibold transition-colors disabled:opacity-50"
+                                >
+                                  {deleteScheduleLoading === s.id ? '...' : 'Delete'}
                                 </button>
                               )}
                             </div>
