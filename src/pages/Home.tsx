@@ -11,6 +11,8 @@ import { supabase } from '../lib/supabase';
 import { cargoService } from '../services/cargoService';
 import type { CargoQuoteResponse } from '../services/cargoService';
 import AIChatWidget from '../components/AIChatWidget';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const STATS = [
   { value: '2,400+', label: 'Shipments Delivered', icon: <Package className="w-5 h-5" /> },
@@ -44,7 +46,7 @@ export default function Home() {
   // Passenger state
   const [passengerOrigin, setPassengerOrigin] = useState('Douala');
   const [passengerDestination, setPassengerDestination] = useState('Lagos');
-  const [passengerDate, setPassengerDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [passengerDate, setPassengerDate] = useState<Date | null>(new Date());
   const [adultCount, setAdultCount] = useState<number>(1);
   const [childCount, setChildCount] = useState<number>(0);
   const [passengerError, setPassengerError] = useState<string | null>(null);
@@ -61,18 +63,34 @@ export default function Home() {
   const [scheduleDirection, setScheduleDirection] = useState<'from_ng' | 'from_cm'>('from_ng');
 
   useEffect(() => {
-    if (serviceMode === 'schedule' && scheduleRoutes.length === 0) {
-      setLoadingSchedule(true);
-      supabase.from('routes')
-        .select('*')
-        .eq('active', true)
-        .order('origin')
-        .then(({ data }) => {
-          if (data) setScheduleRoutes(data);
-          setLoadingSchedule(false);
-        });
-    }
-  }, [serviceMode]);
+    setLoadingSchedule(true);
+    supabase.from('routes')
+      .select('*')
+      .eq('active', true)
+      .order('origin')
+      .then(({ data }) => {
+        if (data) setScheduleRoutes(data);
+        setLoadingSchedule(false);
+      });
+  }, []);
+
+  const isAllowedDate = (date: Date) => {
+    const route = scheduleRoutes.find(r => r.origin === passengerOrigin && r.destination === passengerDestination);
+    if (!route || !route.departure_days) return true;
+
+    const daysStr = route.departure_days.toLowerCase();
+    const dayOfWeek = date.getDay(); // 0=Sun, 1=Mon, etc.
+
+    if (daysStr.includes('monday') && dayOfWeek === 1) return true;
+    if (daysStr.includes('tuesday') && dayOfWeek === 2) return true;
+    if (daysStr.includes('wednesday') && dayOfWeek === 3) return true;
+    if (daysStr.includes('thursday') && dayOfWeek === 4) return true;
+    if (daysStr.includes('friday') && dayOfWeek === 5) return true;
+    if (daysStr.includes('saturday') && dayOfWeek === 6) return true;
+    if (daysStr.includes('sunday') && dayOfWeek === 0) return true;
+
+    return false;
+  };
 
   // FAQ open state
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -82,18 +100,14 @@ export default function Home() {
     setPassengerError(null);
     if (!passengerOrigin || !passengerDestination || !passengerDate) return;
 
-    if (isNigeriaToCamera) {
-      // Use UTC date to avoid timezone shifting the day
-      const [year, month, day] = passengerDate.split('-').map(Number);
-      const dayOfWeek = new Date(year, month - 1, day).getDay(); // 0=Sun,2=Tue,5=Fri
-      if (dayOfWeek !== 2 && dayOfWeek !== 5) {
-        setPassengerError('Departures from Nigeria to Cameroon are only available on Tuesdays and Fridays. Please select a valid date.');
-        return;
-      }
+    if (!isAllowedDate(passengerDate)) {
+      setPassengerError('The selected date is not available for this route. Please check the bus schedule.');
+      return;
     }
 
     const passengerCount = adultCount + childCount;
-    navigate(`/passenger/results?origin=${passengerOrigin}&destination=${passengerDestination}&date=${passengerDate}&passengers=${passengerCount}&adults=${adultCount}&children=${childCount}`);
+    const formattedDate = [passengerDate.getFullYear(), (passengerDate.getMonth()+1).toString().padStart(2, '0'), passengerDate.getDate().toString().padStart(2, '0')].join('-');
+    navigate(`/passenger/results?origin=${passengerOrigin}&destination=${passengerDestination}&date=${formattedDate}&passengers=${passengerCount}&adults=${adultCount}&children=${childCount}`);
   };
 
   const handleCargoQuote = (e: React.FormEvent) => {
@@ -492,14 +506,27 @@ export default function Home() {
                       <div>
                         <label className={labelCls}>
                           {t('home.date')}
-                          {isNigeriaToCamera && <span className="ml-2 text-teal-600 font-bold normal-case tracking-normal">(Tue & Fri only)</span>}
                         </label>
-                        <input type="date" required value={passengerDate} onChange={e => { setPassengerDate(e.target.value); setPassengerError(null); }} className={inputCls} />
-                        {isNigeriaToCamera && (
-                          <p className="mt-1.5 text-xs text-teal-700 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2">
-                            🗓️ Nigeria → Cameroon departures run every <strong>Tuesday</strong> and <strong>Friday</strong>.
-                          </p>
-                        )}
+                        <DatePicker
+                          selected={passengerDate}
+                          onChange={(date: Date | null) => { setPassengerDate(date); setPassengerError(null); }}
+                          filterDate={isAllowedDate}
+                          minDate={new Date()}
+                          className={inputCls}
+                          dateFormat="yyyy-MM-dd"
+                          required
+                        />
+                        {(() => {
+                           const route = scheduleRoutes.find(r => r.origin === passengerOrigin && r.destination === passengerDestination);
+                           if (route && route.departure_days) {
+                             return (
+                               <p className="mt-1.5 text-xs text-teal-700 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2">
+                                 🗓️ This route runs on <strong>{route.departure_days}</strong>.
+                               </p>
+                             );
+                           }
+                           return null;
+                        })()}
                       </div>
                       <div>
                         <label className={labelCls}>{t('home.passengers')}</label>
