@@ -98,7 +98,7 @@ export default function Navbar() {
               title="Switch Language"
             >
               <span className="text-xl">{i18n.language === 'en' ? '🇫🇷' : '🇬🇧'}</span>
-              <span className="hidden lg:inline">{i18n.language === 'en' ? 'FR' : 'EN'}</span>
+              <span className="hidden lg:inline">{i18n.language === 'en' ? 'Français' : 'English'}</span>
             </button>
 
             {/* Auth section */}
