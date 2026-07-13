@@ -325,7 +325,7 @@
   "ai": {
     "assistant": "Assistant IA de Voyage",
     "placeholder": "Posez une question sur les routes, tarifs, bagages...",
-    "welcome": "Bonjour ! Je suis votre assistant IA Afrique-con 🤖 Posez-moi des questions sur les routes, tarifs, réservations ou politiques de bagages !",
+    "welcome": "Bonjour ! Je suis votre assistant IA Afriquecon 🤖 Posez-moi des questions sur les routes, tarifs, réservations ou politiques de bagages !",
     "error": "Désolé, je n'ai pas pu me connecter. Veuillez réessayer.",
     "thinking": "Réflexion en cours...",
     "send": "Envoyer",

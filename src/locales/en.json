@@ -325,7 +325,7 @@
   "ai": {
     "assistant": "AI Trip Assistant",
     "placeholder": "Ask about routes, prices, baggage...",
-    "welcome": "Hi! I'm your Afrique-con AI assistant 🤖 Ask me about routes, prices, booking, or baggage policies!",
+    "welcome": "Hi! I'm your Afriquecon AI assistant 🤖 Ask me about routes, prices, booking, or baggage policies!",
     "error": "Sorry, I couldn't connect right now. Please try again.",
     "thinking": "Thinking...",
     "send": "Send",
