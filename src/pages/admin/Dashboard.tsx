@@ -174,8 +174,13 @@ export default function AdminDashboard() {
       .eq('active', true)
       .maybeSingle()
       .then(({ data }) => {
-        if (data?.role) setCurrentAdminRole(data.role as AdminRole);
-        else setCurrentAdminRole('super_admin'); // fallback for hardcoded admins
+        if (ADMIN_EMAILS.includes(user.email ?? '')) {
+          setCurrentAdminRole('super_admin');
+        } else if (data?.role) {
+          setCurrentAdminRole(data.role as AdminRole);
+        } else {
+          setCurrentAdminRole('agent'); // fallback if not found
+        }
       });
   }, [user]);
 
