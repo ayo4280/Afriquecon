@@ -124,6 +124,7 @@ export default function AdminDashboard() {
   const [markTicketPaidLoading, setMarkTicketPaidLoading] = useState<string | null>(null);
   const [cancelScheduleLoading, setCancelScheduleLoading] = useState<string | null>(null);
   const [deleteScheduleLoading, setDeleteScheduleLoading] = useState<string | null>(null);
+  const [deleteCargoLoading, setDeleteCargoLoading] = useState<string | null>(null);
 
   // Add Schedule Modal State
   const [addingSchedule, setAddingSchedule] = useState(false);
@@ -265,6 +266,24 @@ export default function AdminDashboard() {
       alert('Failed to update status: ' + err.message);
     } finally {
       setUpdateLoading(false);
+    }
+  };
+
+  const handleDeleteCargo = async (cargo: CargoBooking) => {
+    if (!window.confirm(`Permanently DELETE cargo booking ${cargo.booking_id}? This cannot be undone.`)) return;
+    setDeleteCargoLoading(cargo.id);
+    try {
+      const { error } = await supabase
+        .from('cargo_bookings')
+        .delete()
+        .eq('id', cargo.id);
+      if (error) throw error;
+      await fetchAll();
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to delete cargo: ' + err.message);
+    } finally {
+      setDeleteCargoLoading(null);
     }
   };
 
@@ -820,6 +839,15 @@ export default function AdminDashboard() {
                                 )}
                                 {c.payment_status === 'paid' && (
                                   <span className="px-3 py-1 bg-green-900/50 text-green-400 rounded text-xs font-semibold text-center">✅ Paid</span>
+                                )}
+                                {isSuperAdmin && (
+                                  <button
+                                    onClick={() => handleDeleteCargo(c)}
+                                    disabled={deleteCargoLoading === c.id}
+                                    className="px-3 py-1 bg-red-800 hover:bg-red-700 text-red-200 rounded text-xs font-semibold transition-colors disabled:opacity-50"
+                                  >
+                                    {deleteCargoLoading === c.id ? '...' : 'Delete'}
+                                  </button>
                                 )}
                               </div>
                             </div>
