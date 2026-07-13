@@ -10,6 +10,8 @@ export default function SeatSelection() {
 
   const trip = location.state?.trip as TripSchedule;
   const passengers = location.state?.passengers as number || 1;
+  const adults = location.state?.adults as number || 1;
+  const children = location.state?.children as number || 0;
 
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
   const [occupiedSeats, setOccupiedSeats] = useState<number[]>([]);
@@ -80,7 +82,7 @@ export default function SeatSelection() {
   };
 
   const remaining = passengers - selectedSeats.length;
-  const total = trip.baseFareFCFA * selectedSeats.length;
+  const total = (adults * trip.baseFareFCFA) + (children * trip.baseFareFCFA * 0.7);
 
   return (
     <div className="bg-[#F4F6FA] min-h-screen py-10">
@@ -168,13 +170,15 @@ export default function SeatSelection() {
 
                   <div className="border-t border-white/10 pt-5 space-y-2.5 text-sm text-slate-300">
                     <div className="flex justify-between">
-                      <span>Base Fare</span>
-                      <span>{trip.baseFareFCFA.toLocaleString()} FCFA</span>
+                      <span>Adults</span>
+                      <span>{adults} × {trip.baseFareFCFA.toLocaleString()} FCFA</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Passengers</span>
-                      <span>× {selectedSeats.length}</span>
-                    </div>
+                    {children > 0 && (
+                      <div className="flex justify-between">
+                        <span>Children (2-5)</span>
+                        <span>{children} × {(trip.baseFareFCFA * 0.7).toLocaleString()} FCFA</span>
+                      </div>
+                    )}
                     <div className="border-t border-white/10 pt-2 mt-2 flex justify-between font-bold text-xl text-white">
                       <span>Subtotal</span>
                       <span>{total.toLocaleString()} FCFA</span>
@@ -184,12 +188,12 @@ export default function SeatSelection() {
 
                   <button
                     disabled={selectedSeats.length !== passengers}
-                    onClick={() => navigate('/passenger/booking', { state: { trip, passengers, selectedSeats } })}
+                    onClick={() => navigate('/passenger/booking', { state: { trip, passengers, adults, children, selectedSeats } })}
                     className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed text-[#0A1628] py-3.5 rounded-xl font-extrabold transition-all shadow-lg shadow-amber-400/20 flex items-center justify-center gap-2 group"
                   >
                     {selectedSeats.length === passengers
-                      ? <><CheckCircle className="w-5 h-5" /> Proceed to Checkout</>
-                      : `Select ${passengers - selectedSeats.length} more seat${passengers - selectedSeats.length !== 1 ? 's' : ''}`
+                       ? <><CheckCircle className="w-5 h-5" /> Proceed to Checkout</>
+                       : `Select ${passengers - selectedSeats.length} more seat${passengers - selectedSeats.length !== 1 ? 's' : ''}`
                     }
                   </button>
                 </div>

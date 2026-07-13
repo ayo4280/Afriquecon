@@ -73,7 +73,7 @@ export default function Home() {
     }
 
     const passengerCount = adultCount + childCount;
-    navigate(`/passenger/results?origin=${passengerOrigin}&destination=${passengerDestination}&date=${passengerDate}&passengers=${passengerCount}`);
+    navigate(`/passenger/results?origin=${passengerOrigin}&destination=${passengerDestination}&date=${passengerDate}&passengers=${passengerCount}&adults=${adultCount}&children=${childCount}`);
   };
 
   const handleCargoQuote = (e: React.FormEvent) => {

@@ -18,6 +18,8 @@ export default function PassengerBooking() {
   
   const trip = location.state?.trip as TripSchedule;
   const passengersCount = location.state?.passengers as number || 1;
+  const adults = location.state?.adults as number || 1;
+  const children = location.state?.children as number || 0;
   const selectedSeats = location.state?.selectedSeats as number[];
 
   const [paymentMethod, setPaymentMethod] = useState<'paystack' | 'flutterwave'>('paystack');
@@ -39,17 +41,17 @@ export default function PassengerBooking() {
     
     // Initialize passenger details based on count
     if (passengerDetails.length === 0) {
-      const initialDetails = Array.from({length: passengersCount}).map(() => ({
+      const initialDetails = Array.from({length: passengersCount}).map((_, index) => ({
         name: '',
         idNumber: '',
-        ticketType: 'adult' as TicketType,
+        ticketType: (index < adults ? 'adult' : 'child_under_5') as TicketType,
         extraLuggage: 0,
         isNigerian: true,
         telegramId: ''
       }));
       setPassengerDetails(initialDetails);
     }
-  }, [trip, selectedSeats, passengersCount, navigate, passengerDetails.length]);
+  }, [trip, selectedSeats, passengersCount, adults, children, navigate, passengerDetails.length]);
 
   // Recalculate pricing whenever passenger details change
   useEffect(() => {

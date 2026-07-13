@@ -12,6 +12,8 @@ export default function TripResults() {
   const destination = searchParams.get('destination') || '';
   const date        = searchParams.get('date') || '';
   const passengers  = parseInt(searchParams.get('passengers') || '1', 10);
+  const adults      = parseInt(searchParams.get('adults') || '1', 10);
+  const children    = parseInt(searchParams.get('children') || '0', 10);
 
   const [trips, setTrips] = useState<TripSchedule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,6 +106,9 @@ export default function TripResults() {
               const arr = new Date(trip.arrivalTime);
               const seatsLeft = trip.availableSeats;
               const isLow = seatsLeft <= 5;
+              
+              const totalFCFA = (trip.baseFareFCFA * adults) + (trip.baseFareFCFA * 0.7 * children);
+              const totalNGN = totalFCFA * 2.5;
 
               return (
                 <div
@@ -150,15 +155,15 @@ export default function TripResults() {
                     <div className="flex flex-col items-center md:items-end gap-3 min-w-[180px] w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0">
                       <div className="text-right">
                         <div className="text-3xl font-display font-extrabold text-[#0A1628]">
-                          {trip.baseFareFCFA.toLocaleString()}
+                          {totalFCFA.toLocaleString()}
                         </div>
-                        <div className="text-xs text-slate-400 font-medium">FCFA · ₦{(trip.baseFareFCFA * 2.5).toLocaleString()}</div>
+                        <div className="text-xs text-slate-400 font-medium">FCFA · ₦{totalNGN.toLocaleString()}</div>
                       </div>
                       <div className={`text-xs font-bold px-3 py-1 rounded-full ${isLow ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-teal-50 text-teal-700 border border-teal-100'}`}>
                         {isLow ? `🔥 Only ${seatsLeft} seats!` : `${seatsLeft} seats available`}
                       </div>
                       <button
-                        onClick={() => navigate('/passenger/seats', { state: { trip, passengers } })}
+                        onClick={() => navigate('/passenger/seats', { state: { trip, passengers, adults, children } })}
                         className="w-full bg-[#0A1628] hover:bg-[#1a2d4e] text-white py-2.5 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 group shadow-lg shadow-slate-900/10"
                       >
                         Select Seats
