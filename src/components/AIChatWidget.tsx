@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { aiService } from "../services/aiService";
 import { supabase } from "../lib/supabase";
@@ -11,9 +11,12 @@ interface Message {
 
 function buildScheduleSection(routes: any[]): string {
   if (!routes.length) return "- No schedule data available.";
-  return routes.map(r =>
-    `  - ${r.origin} to ${r.destination}: ${r.departure_days ?? "days TBC"}${r.departure_time ? " at " + r.departure_time : ""}`
-  ).join("\n");
+  return routes.map(r => {
+    const fare = r.base_rate_fcfa ? ` | Fare: ${r.base_rate_fcfa.toLocaleString()} FCFA` : "";
+    const days = r.departure_days ?? "days TBC";
+    const time = r.departure_time ? ` at ${r.departure_time}` : "";
+    return `  - ${r.origin} → ${r.destination}: ${days}${time}${fare}`;
+  }).join("\n");
 }
 
 function buildAgenciesSection(agencies: any[]): string {
@@ -41,21 +44,23 @@ AFRIQUECON AGENCIES & CONTACTS:
 ${buildAgenciesSection(agencies)}
 
 GENERAL FACTS:
-- Cargo: 1,000 FCFA/kg (>=100 kg negotiated). Heavy: +15%. Express (<48h): +20%.
-- Fares: Douala-Lagos ~15,000-25,000 FCFA; Yaounde-Abuja ~20,000-30,000 FCFA.
-- Discounts: Student 10%, Senior 15%, Child (<12) 20%.
+- Cargo: 1,000 FCFA/kg (>=100 kg negotiated). Heavy equipment: +15%. Express (<48h before departure): +20%.
+- Passenger fares: USE THE LIVE BUS SCHEDULE DATA ABOVE — exact fares are listed per route.
+- Discounts: Student 10%, Senior (60+) 15%, Child (<12) 20% off the listed fare.
 - Free luggage: 20 kg/person. Extra: 1,000 FCFA or 2,500 NGN/kg.
 - Bus capacity: 48 seats. Payment: Paystack (NGN) or Flutterwave (FCFA).
-- Tracking: Telegram @Afriquecon_bot (24/7). Customs: 12-24 hours.
-- No containerized, refrigerated, hazardous cargo.
-- Ticket validity: 1 month. Date change: 48h notice. Cancellation: 35% fee.
+- Tracking: Telegram @Afriquecon_bot (24/7). Customs clearance: 12-24 hours.
+- No containerized, refrigerated, or hazardous cargo accepted.
+- Ticket validity: 1 month. Date change: 48h notice required. Cancellation fee: 35%.
 
 RULES:
-- Answer ONLY about Afriquecon services, schedules, agencies, pricing, booking, cargo, policies.
-- Be SHORT: max 3-4 sentences unless listing data.
-- Use the LIVE data above for schedules and agency questions — do not guess.
-- Redirect off-topic questions politely back to Afriquecon topics.
-- Suggest Telegram @Afriquecon_bot for live support.
+- Answer ONLY about Afriquecon services, schedules, agencies, pricing, booking, cargo, and policies.
+- Be SHORT and direct — max 3-4 sentences unless listing data.
+- CRITICAL: For ALL fare/price questions, ONLY quote figures from the LIVE BUS SCHEDULE above. NEVER invent or approximate prices.
+- CRITICAL: For schedule/departure day questions, ONLY use the LIVE BUS SCHEDULE above.
+- CRITICAL: For agency/branch/address/phone questions, ONLY use the AGENCIES & CONTACTS above.
+- Redirect off-topic questions back to Afriquecon topics.
+- Suggest Telegram @Afriquecon_bot for live support or booking help.
 
 User message: `;
 }
@@ -74,7 +79,7 @@ export default function AIChatWidget() {
 
   useEffect(() => {
     Promise.all([
-      supabase.from("routes").select("origin, destination, departure_days, departure_time").eq("active", true).order("origin"),
+      supabase.from("routes").select("origin, destination, departure_days, departure_time, base_rate_fcfa").eq("active", true).order("origin"),
       supabase.from("agencies").select("name, city, country, address, phone").order("country"),
     ]).then(([routesRes, agenciesRes]) => {
       setSystemPrompt(buildSystemPrompt(routesRes.data ?? [], agenciesRes.data ?? []));
