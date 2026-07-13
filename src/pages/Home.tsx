@@ -348,6 +348,7 @@ export default function Home() {
                       <button type="submit" className="mt-6 w-full bg-[#0A1628] hover:bg-[#1a2d4e] text-white py-4 rounded-xl font-bold text-base transition-all flex justify-center items-center gap-2 shadow-xl shadow-slate-900/20 group">
                         {t('home.calculateQuote')}
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </button>
                     </form>
                   )}
                 </div>
