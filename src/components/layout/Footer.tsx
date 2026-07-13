@@ -1,9 +1,22 @@
 import { Navigation, Package, Users, Search, Mail, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 
 export default function Footer() {
   const { t } = useTranslation();
+  const [routes, setRoutes] = useState<{ origin: string; destination: string }[]>([]);
+
+  useEffect(() => {
+    async function fetchRoutes() {
+      const { data, error } = await supabase.from('routes').select('origin, destination');
+      if (data && !error) {
+        setRoutes(data);
+      }
+    }
+    fetchRoutes();
+  }, []);
 
   return (
     <footer className="relative bg-[#070f1c] text-slate-400 overflow-hidden">
@@ -72,19 +85,15 @@ export default function Footer() {
               <Navigation className="w-4 h-4 text-teal-400" />
               Routes
             </h4>
-            <ul className="space-y-2.5 text-sm text-slate-500">
-              {[
-                'Douala → Lagos',
-                'Yaoundé → Abuja',
-                'Buea → Lagos',
-                'Kumba → Lagos',
-                'Ikom → Douala',
-              ].map(route => (
-                <li key={route} className="flex items-center gap-2">
+            <ul className="space-y-2.5 text-sm text-slate-500 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+              {routes.length > 0 ? routes.map(route => (
+                <li key={`${route.origin}-${route.destination}`} className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400/60 flex-shrink-0" />
-                  {route}
+                  {route.origin} → {route.destination}
                 </li>
-              ))}
+              )) : (
+                <li className="text-slate-600 italic">Loading routes...</li>
+              )}
             </ul>
           </div>
 
