@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS public.agencies (
 -- 2. Optional: Add Row Level Security (RLS)
 ALTER TABLE public.agencies ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow public read access on agencies" ON public.agencies;
+
 CREATE POLICY "Allow public read access on agencies"
 ON public.agencies
 FOR SELECT
