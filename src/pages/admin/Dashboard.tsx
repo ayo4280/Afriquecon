@@ -83,6 +83,19 @@ type Tab = 'overview' | 'users' | 'tickets' | 'cargo' | 'schedules' | 'reports' 
 // ─── Admin emails ─────────────────────────────────────────────────────────────
 const ADMIN_EMAILS = ['testuser3@afrique-con.com', 'admin@afrique-con.com', 'ayodelesodiya@gmail.com'];
 
+// ─── Role helpers ─────────────────────────────────────────────────────────────
+type AdminRole = 'agent' | 'manager' | 'super_admin';
+const ROLE_LABELS: Record<AdminRole, string> = {
+  agent: 'Agent',
+  manager: 'Manager',
+  super_admin: 'Super Admin',
+};
+const ROLE_COLORS: Record<AdminRole, string> = {
+  agent: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+  manager: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+  super_admin: 'bg-red-500/15 text-red-400 border-red-500/30',
+};
+
 export default function AdminDashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -98,6 +111,7 @@ export default function AdminDashboard() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [routesList, setRoutesList] = useState<Route[]>([]);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  const [currentAdminRole, setCurrentAdminRole] = useState<AdminRole>('agent');
 
   // Cargo Update Modal State
   const [updatingCargo, setUpdatingCargo] = useState<CargoBooking | null>(null);
@@ -120,6 +134,11 @@ export default function AdminDashboard() {
   const [addSchedLoading, setAddSchedLoading] = useState(false);
 
   const isAdmin = user && ADMIN_EMAILS.includes(user.email ?? '');
+
+  // ─── Role permission helpers ──────────────────────────────────────────────
+  const canManageSchedules = currentAdminRole === 'manager' || currentAdminRole === 'super_admin';
+  const canNegotiatePrice  = currentAdminRole === 'manager' || currentAdminRole === 'super_admin';
+  const isSuperAdmin       = currentAdminRole === 'super_admin';
 
   const fetchAll = async (showRefresh = false) => {
     if (showRefresh) setRefreshing(true);
@@ -144,6 +163,21 @@ export default function AdminDashboard() {
     setLoading(false);
     setRefreshing(false);
   };
+
+  // Detect current user's role from admin_users table
+  useEffect(() => {
+    if (!user?.email) return;
+    supabase
+      .from('admin_users')
+      .select('role')
+      .eq('email', user.email)
+      .eq('active', true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.role) setCurrentAdminRole(data.role as AdminRole);
+        else setCurrentAdminRole('super_admin'); // fallback for hardcoded admins
+      });
+  }, [user]);
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
@@ -414,15 +448,22 @@ export default function AdminDashboard() {
     return colors[status] || 'bg-gray-100 text-gray-600 border border-gray-200';
   };
 
-  const tabs: { id: Tab; label: string; icon: React.ReactNode; count?: number }[] = [
-    { id: 'overview', label: t('admin.overview'), icon: <TrendingUp className="w-5 h-5" /> },
-    { id: 'users', label: t('admin.users'), icon: <Users className="w-5 h-5" />, count: profiles.length },
-    { id: 'tickets', label: t('admin.tickets'), icon: <Ticket className="w-5 h-5" />, count: tickets.length },
-    { id: 'cargo', label: t('admin.cargo'), icon: <Package className="w-5 h-5" />, count: cargo.length },
-    { id: 'schedules', label: t('admin.schedules'), icon: <Bus className="w-5 h-5" />, count: schedules.length },
-    { id: 'reports', label: t('admin.reports'), icon: <BarChart3 className="w-5 h-5" /> },
-    { id: 'settings', label: t('admin.settings', 'Settings'), icon: <Settings className="w-5 h-5" /> },
+  const allTabs: { id: Tab; label: string; icon: React.ReactNode; count?: number; minRole?: AdminRole }[] = [
+    { id: 'overview',   label: t('admin.overview'),              icon: <TrendingUp className="w-5 h-5" /> },
+    { id: 'users',      label: t('admin.users'),                 icon: <Users className="w-5 h-5" />,      count: profiles.length },
+    { id: 'tickets',    label: t('admin.tickets'),               icon: <Ticket className="w-5 h-5" />,     count: tickets.length },
+    { id: 'cargo',      label: t('admin.cargo'),                 icon: <Package className="w-5 h-5" />,    count: cargo.length },
+    { id: 'schedules',  label: t('admin.schedules'),             icon: <Bus className="w-5 h-5" />,        count: schedules.length, minRole: 'manager' },
+    { id: 'reports',    label: t('admin.reports'),               icon: <BarChart3 className="w-5 h-5" />,                           minRole: 'manager' },
+    { id: 'settings',   label: t('admin.settings', 'Settings'), icon: <Settings className="w-5 h-5" />,                            minRole: 'super_admin' },
   ];
+
+  // Filter tabs by role
+  const roleRank: Record<AdminRole, number> = { agent: 1, manager: 2, super_admin: 3 };
+  const tabs = allTabs.filter(tab => {
+    if (!tab.minRole) return true;
+    return roleRank[currentAdminRole] >= roleRank[tab.minRole];
+  });
 
   // Settings Handlers
   const handleUpdateRouteRate = async (routeId: string, newRate: string) => {
@@ -482,7 +523,7 @@ export default function AdminDashboard() {
           </div>
           <div>
             <span className="font-bold text-white text-sm">{t('admin.dashboard')}</span>
-            <span className="text-gray-400 text-xs ml-2">Afrique-con PLC</span>
+            <span className="text-gray-400 text-xs ml-2">Afriquecon PLC</span>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -494,6 +535,9 @@ export default function AdminDashboard() {
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
             {refreshing ? t('admin.refreshing') : t('admin.refresh')}
           </button>
+          <span className={`hidden md:inline-flex items-center gap-1.5 border rounded-full px-2.5 py-0.5 text-xs font-semibold ${ROLE_COLORS[currentAdminRole]}`}>
+            {ROLE_LABELS[currentAdminRole]}
+          </span>
           <span className="text-gray-500 text-xs hidden md:block">{user.email}</span>
           <button
             onClick={async () => { await signOut(); navigate('/'); }}
@@ -771,12 +815,14 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-white">{t('admin.allBusSchedules')} <span className="text-gray-500 text-lg font-normal">({schedules.length})</span></h2>
-                    <button 
-                      onClick={() => setAddingSchedule(true)}
-                      className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors"
-                    >
-                      <Plus className="w-4 h-4" /> {t('admin.addSchedule')}
-                    </button>
+                    {canManageSchedules && (
+                      <button
+                        onClick={() => setAddingSchedule(true)}
+                        className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors"
+                      >
+                        <Plus className="w-4 h-4" /> {t('admin.addSchedule')}
+                      </button>
+                    )}
                   </div>
                   <div className="space-y-3">
                     {schedules.map(s => (
@@ -808,31 +854,31 @@ export default function AdminDashboard() {
                               <span className="text-white text-xs font-semibold">{s.available_seats}/48</span>
                             </div>
                           </div>
-                            <div className="text-right flex flex-col items-end gap-2">
-                              <div className="flex items-center gap-3">
-                                <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusBadge(s.status)}`}>
-                                  {s.status}
-                                </span>
-                                <div className="text-lg font-bold text-green-400">{(s.base_fare_fcfa || 0).toLocaleString()} FCFA</div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handlePrintManifest(s)}
-                                  className="px-3 py-1 bg-blue-800 hover:bg-blue-700 text-blue-200 rounded text-xs font-semibold transition-colors"
-                                >
-                                  Print Manifest
-                                </button>
-                                {s.status !== 'cancelled' && (
-                                  <button
-                                    onClick={() => handleCancelSchedule(s)}
-                                    disabled={cancelScheduleLoading === s.id}
-                                    className="px-3 py-1 bg-red-800 hover:bg-red-700 text-red-200 rounded text-xs font-semibold transition-colors disabled:opacity-50"
-                                  >
-                                    {cancelScheduleLoading === s.id ? '...' : t('admin.cancelSchedule')}
-                                  </button>
-                                )}
-                              </div>
+                          <div className="text-right flex flex-col items-end gap-2">
+                            <div className="flex items-center gap-3">
+                              <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusBadge(s.status)}`}>
+                                {s.status}
+                              </span>
+                              <div className="text-lg font-bold text-green-400">{(s.base_fare_fcfa || 0).toLocaleString()} FCFA</div>
                             </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handlePrintManifest(s)}
+                                className="px-3 py-1 bg-blue-800 hover:bg-blue-700 text-blue-200 rounded text-xs font-semibold transition-colors"
+                              >
+                                Print Manifest
+                              </button>
+                              {s.status !== 'cancelled' && canManageSchedules && (
+                                <button
+                                  onClick={() => handleCancelSchedule(s)}
+                                  disabled={cancelScheduleLoading === s.id}
+                                  className="px-3 py-1 bg-red-800 hover:bg-red-700 text-red-200 rounded text-xs font-semibold transition-colors disabled:opacity-50"
+                                >
+                                  {cancelScheduleLoading === s.id ? '...' : t('admin.cancelSchedule')}
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -842,6 +888,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
+
 
               {/* ── REPORTS ── */}
               {activeTab === 'reports' && (
@@ -918,10 +965,19 @@ export default function AdminDashboard() {
               {/* ── SETTINGS ── */}
               {activeTab === 'settings' && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-white">{t('admin.settings', 'Settings')}</h2>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold text-white">{t('admin.settings', 'Settings')}</h2>
+                    {!isSuperAdmin && (
+                      <span className="flex items-center gap-2 text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-lg px-4 py-2 text-sm">
+                        <Shield className="w-4 h-4" />
+                        Only Super Admins can modify settings
+                      </span>
+                    )}
+                  </div>
                   
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {/* Route Pricing */}
+                    {/* Route Pricing — Super Admin only */}
+                    {isSuperAdmin && (
                     <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
                       <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                         <MapPin className="w-5 h-5 text-amber-400" />
@@ -964,8 +1020,10 @@ export default function AdminDashboard() {
                         </table>
                       </div>
                     </div>
+                    )} {/* end isSuperAdmin: route pricing */}
 
-                    {/* Staff Account Management */}
+                    {/* Staff Account Management — Super Admin only */}
+                    {isSuperAdmin && (
                     <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
                       <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                         <Shield className="w-5 h-5 text-teal-400" />
@@ -1037,6 +1095,7 @@ export default function AdminDashboard() {
                         </table>
                       </div>
                     </div>
+                    )} {/* end isSuperAdmin: staff management */}
                   </div>
                 </div>
               )}
@@ -1067,8 +1126,8 @@ export default function AdminDashboard() {
                 </select>
               </div>
 
-              {/* Negotiated Price — shown for large shipments or when price is 0 */}
-              {(updatingCargo && (updatingCargo.weight_kg >= 100 || !updatingCargo.total_fcfa)) && (
+              {/* Negotiated Price — shown for large shipments; Manager+ only */}
+              {updatingCargo && (updatingCargo.weight_kg >= 100 || !updatingCargo.total_fcfa) && canNegotiatePrice && (
                 <div>
                   <label className="block text-sm font-medium text-amber-400 mb-1">⚖️ Negotiated Price (FCFA) <span className="text-gray-500 font-normal">— required for ≥100kg</span></label>
                   <input
