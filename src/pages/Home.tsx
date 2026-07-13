@@ -14,7 +14,7 @@ import AIChatWidget from '../components/AIChatWidget';
 const STATS = [
   { value: '2,400+', label: 'Shipments Delivered', icon: <Package className="w-5 h-5" /> },
   { value: '98%',    label: 'On-Time Rate',        icon: <Clock className="w-5 h-5" /> },
-  { value: '4',      label: 'Countries Connected', icon: <TrendingUp className="w-5 h-5" /> },
+  { value: '2',      label: 'Countries Connected', icon: <TrendingUp className="w-5 h-5" /> },
   { value: '24/7',   label: 'Telegram Support',    icon: <Shield className="w-5 h-5" /> },
 ];
 
