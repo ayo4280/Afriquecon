@@ -55,8 +55,6 @@ export default function Home() {
   const NIGERIA_CITIES = ['Lagos', 'Abuja', 'Ikom', 'Enugu', 'Abakaliki', 'Onitsha'];
   const CAMEROON_CITIES = ['Yaoundé', 'Douala', 'Buea', 'Kumba', 'Mamfe'];
 
-  const isNigeriaToCamera = NIGERIA_CITIES.includes(passengerOrigin) && CAMEROON_CITIES.includes(passengerDestination);
-
   // Schedule state
   const [scheduleRoutes, setScheduleRoutes] = useState<any[]>([]);
   const [loadingSchedule, setLoadingSchedule] = useState(false);
