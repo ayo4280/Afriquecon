@@ -127,10 +127,7 @@ export default function TripResults() {
                         <div className="text-xs text-slate-400">{dep.toLocaleDateString(undefined, { weekday: 'short' })}</div>
                       </div>
 
-                      <div className="flex flex-col items-center">
-                        <div className="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100 mb-2">
-                          {trip.durationHours}h
-                        </div>
+                      <div className="flex flex-col items-center justify-center">
                         <div className="relative w-full flex items-center">
                           <div className="w-3 h-3 rounded-full bg-teal-400 border-2 border-white shadow-sm flex-shrink-0" />
                           <div className="flex-1 h-0.5 bg-gradient-to-r from-teal-400 via-amber-400 to-amber-500 mx-1" />
