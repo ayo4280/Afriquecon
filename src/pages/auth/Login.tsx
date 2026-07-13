@@ -60,7 +60,7 @@ export default function Login() {
             {[
               { v: '2,400+', l: 'Shipments' },
               { v: '98%',    l: 'On-Time Rate' },
-              { v: '4',      l: 'Countries' },
+              { v: '2',      l: 'Countries' },
               { v: '24/7',   l: 'Support' },
             ].map(s => (
               <div key={s.l} className="bg-white/8 backdrop-blur-sm border border-white/12 rounded-xl p-4">
