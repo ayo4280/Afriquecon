@@ -232,11 +232,13 @@ export default function AdminDashboard() {
     if (!window.confirm(`Mark booking ${booking.booking_id} as PAID? This will send a confirmation email to ${booking.customer_email}.`)) return;
     setMarkPaidLoading(booking.id);
     try {
-      const { error } = await supabase
+      const { error, count } = await supabase
         .from('cargo_bookings')
         .update({ payment_status: 'paid', status: booking.status === 'pending' ? 'confirmed' : booking.status })
-        .eq('id', booking.id);
+        .eq('id', booking.id)
+        .select();
       if (error) throw error;
+      if (count === 0) throw new Error('Update blocked — admin RLS policy missing. Run the fix_admin_rls.sql in Supabase SQL Editor.');
       await fetchAll();
       alert(`✅ Booking ${booking.booking_id} marked as paid!`);
     } catch (err: any) {
@@ -251,11 +253,13 @@ export default function AdminDashboard() {
     if (!window.confirm(`Mark ticket ${ticket.ticket_id} as PAID?`)) return;
     setMarkTicketPaidLoading(ticket.id);
     try {
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('passenger_tickets')
         .update({ payment_status: 'paid', ticket_status: ticket.ticket_status === 'pending' ? 'confirmed' : ticket.ticket_status })
-        .eq('id', ticket.id);
+        .eq('id', ticket.id)
+        .select();
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error('Update blocked — admin RLS policy missing. Run fix_admin_rls.sql in Supabase SQL Editor.');
       await fetchAll();
       alert(`✅ Ticket ${ticket.ticket_id} marked as paid!`);
     } catch (err: any) {

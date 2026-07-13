@@ -44,7 +44,8 @@ export default function Home() {
   const [passengerOrigin, setPassengerOrigin] = useState('Douala');
   const [passengerDestination, setPassengerDestination] = useState('Lagos');
   const [passengerDate, setPassengerDate] = useState<string>(new Date().toISOString().slice(0, 10));
-  const [passengerCount, setPassengerCount] = useState<number>(1);
+  const [adultCount, setAdultCount] = useState<number>(1);
+  const [childCount, setChildCount] = useState<number>(0);
   const [passengerError, setPassengerError] = useState<string | null>(null);
 
   // Nigerian origin cities — departures to Cameroon only on Tuesdays (2) & Fridays (5)
@@ -71,6 +72,7 @@ export default function Home() {
       }
     }
 
+    const passengerCount = adultCount + childCount;
     navigate(`/passenger/results?origin=${passengerOrigin}&destination=${passengerDestination}&date=${passengerDate}&passengers=${passengerCount}`);
   };
 
@@ -396,12 +398,24 @@ export default function Home() {
                       </div>
                       <div>
                         <label className={labelCls}>{t('home.passengers')}</label>
-                        <select value={passengerCount} onChange={e => setPassengerCount(Number(e.target.value))} className={inputCls}>
-                          <option value={1}>{t('home.adult1')}</option>
-                          <option value={2}>{t('home.adult2')}</option>
-                          <option value={3}>{t('home.adult3')}</option>
-                          <option value={4}>{t('home.adult4')}</option>
-                        </select>
+                        <div className="space-y-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-slate-700">Adult</span>
+                            <div className="flex items-center gap-3">
+                              <button type="button" onClick={() => setAdultCount(Math.max(1, adultCount - 1))} className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors">-</button>
+                              <span className="w-4 text-center text-sm font-bold text-slate-800">{adultCount}</span>
+                              <button type="button" onClick={() => setAdultCount(adultCount + 1)} className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors">+</button>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-slate-700">Child (2-5 yrs)</span>
+                            <div className="flex items-center gap-3">
+                              <button type="button" onClick={() => setChildCount(Math.max(0, childCount - 1))} className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors">-</button>
+                              <span className="w-4 text-center text-sm font-bold text-slate-800">{childCount}</span>
+                              <button type="button" onClick={() => setChildCount(childCount + 1)} className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors">+</button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <button type="submit" className="mt-6 w-full bg-teal-500 hover:bg-teal-400 text-white py-4 rounded-xl font-bold text-base transition-all flex justify-center items-center gap-2 shadow-xl shadow-teal-500/20 group">

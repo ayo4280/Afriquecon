@@ -36,8 +36,11 @@ export const passengerService = {
   // Query real database for trips
   searchTrips: async (origin: string, destination: string, date: string): Promise<TripSchedule[]> => {
     try {
-      const startOfDay = new Date(`${date}T00:00:00Z`).toISOString();
-      const endOfDay = new Date(`${date}T23:59:59Z`).toISOString();
+      // Use date string directly to avoid UTC timezone shift issues.
+      // The schedules store timestamps at local departure time, so we filter
+      // by the date portion of departure_time using a cast.
+      const startOfDay = `${date} 00:00:00`;
+      const endOfDay   = `${date} 23:59:59`;
 
       const { data, error } = await supabase
         .from('bus_schedules')

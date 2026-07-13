@@ -305,8 +305,8 @@ export default function PassengerBooking() {
                           <option value="adult">Adult</option>
                           <option value="student">Student</option>
                           <option value="senior">Senior</option>
-                          <option value="child_under_5">Child &lt; 5 (30% Off)</option>
-                          <option value="child_under_2">Child &lt; 2 (Free)</option>
+                          <option value="child_under_5">Child (2-5 years) - 30% Off</option>
+                          <option value="child_under_2">Child (Under 2) - Free</option>
                         </select>
                       </div>
                       <div>
