@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Search, Package, MapPin, Calendar, Clock, AlertCircle, CheckCircle, Truck, ArrowRight } from 'lucide-react';
@@ -41,7 +41,7 @@ export default function TrackShipment() {
   const [cargo, setCargo] = useState<CargoDetails | null>(null);
   const { t } = useTranslation();
 
-  const runTrack = async (id: string) => {
+  const runTrack = useCallback(async (id: string) => {
     if (!id.trim()) return;
     setLoading(true);
     setError(null);
@@ -60,13 +60,13 @@ export default function TrackShipment() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   // Auto-track if ?id= is in the URL (deep-link from Profile page)
   useEffect(() => {
     const idParam = searchParams.get('id');
     if (idParam) runTrack(idParam);
-  }, []);
+  }, [searchParams, runTrack]);
 
   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();

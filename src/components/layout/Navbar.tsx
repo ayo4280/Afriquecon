@@ -3,8 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Navigation, UserCircle, LogOut, Shield, Menu, X, Package, Users, Search } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-
-const ADMIN_EMAILS = ['testuser3@afrique-con.com', 'admin@afrique-con.com', 'ayodelesodiya@gmail.com'];
+import { supabase } from '../../lib/supabase';
 
 export default function Navbar() {
   const { user, signOut } = useAuth();
@@ -12,6 +11,7 @@ export default function Navbar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -22,11 +22,23 @@ export default function Navbar() {
   // Close mobile menu on route change
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
+  useEffect(() => {
+    let active = true;
+    if (!user) {
+      setIsAdmin(false);
+      return () => { active = false; };
+    }
+
+    supabase.rpc('current_admin_role').then(({ data }) => {
+      if (active) setIsAdmin(['agent', 'manager', 'super_admin'].includes(data));
+    });
+
+    return () => { active = false; };
+  }, [user]);
+
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'fr' : 'en');
   };
-
-  const isAdmin = ADMIN_EMAILS.includes(user?.email ?? '');
 
   const navLinks = [
     { to: '/cargo',     label: t('nav.shipCargo'),     icon: <Package className="w-4 h-4" /> },
