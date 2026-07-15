@@ -1,32 +1,53 @@
-# React + TypeScript + Vite
+# Afrique-con PLC
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Cross-border cargo and passenger booking platform for Cameroon and Nigeria.
 
-Currently, two official plugins are available:
+## Technology
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React, TypeScript, Vite, Tailwind CSS
+- Supabase Auth, Postgres, Row Level Security, RPC, and Edge Functions
+- Paystack and Flutterwave checkout
+- Telegram Bot API, Leaflet, and i18next
 
-## React Compiler
+## Local development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Install Node.js 20 or newer.
+2. Copy `.env.example` to `.env` and provide the public browser variables.
+3. Run `npm install` and `npm run dev`.
+4. Verify with `npm run build` and `npm run lint`.
 
-## Expanding the Oxlint configuration
+Browser variables must use the `VITE_` prefix. Do not put service-role,
+payment-secret, Telegram-bot, or AI-provider keys in Vite variables.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Supabase deployment order
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+Apply the historical schema/data scripts required by your environment first.
+For the hardened application, then apply these migrations in order:
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+1. `supabase/migrations/20260715_security_hardening.sql`
+2. `supabase/migrations/20260715_payment_webhooks.sql`
+3. `supabase/migrations/20260715_passenger_seat_holds.sql`
+4. `supabase/migrations/20260715_cargo_status_notifications.sql`
+
+Review [Security deployment](supabase/SECURITY_DEPLOYMENT.md) and [Payment deployment](supabase/PAYMENT_DEPLOYMENT.md) before applying them. Use a staging Supabase project first.
+
+## Edge Functions
+
+- `telegram-webhook` — Telegram support commands and account linking.
+- `create-payment-intent` — creates server-side pending payment records.
+- `create-passenger-reservation` — validates fare/seat availability and creates a 15-minute seat hold.
+- `payment-webhook` — validates and verifies Paystack/Flutterwave notifications before marking bookings paid.
+- `generate-ai-text` — website AI assistant.
+
+## Operational safeguards
+
+- Admin access is resolved from active `admin_users` records in the database.
+- Browser code cannot mark bookings paid.
+- Passenger seats are unique per schedule and expire after 15 minutes if unpaid.
+- Telegram mappings and secrets are not publicly exposed.
+
+## Current verification
+
+`npm run build` and `npm run lint` are the current local checks. Provider
+webhooks and Edge Functions must additionally be tested in Supabase staging
+with sandbox payment credentials.

@@ -7,7 +7,6 @@ import type { TripSchedule, TicketType, PassengerPricingResponse } from '../../s
 import { CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { usePaystackPayment } from 'react-paystack';
-import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 import TermsModal from '../../components/TermsModal';
 
 export default function PassengerBooking() {
@@ -28,6 +27,7 @@ export default function PassengerBooking() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [paymentReference] = useState(() => `AC-${crypto.randomUUID()}`);
 
   // Array of passenger details state
   const [passengerDetails, setPassengerDetails] = useState<{name: string, idNumber: string, ticketType: TicketType, extraLuggage: number, isNigerian: boolean, telegramId?: string}[]>([]);
@@ -68,8 +68,6 @@ export default function PassengerBooking() {
     setPricingResults(newPricing);
   }, [passengerDetails, trip]);
 
-  if (!trip) return null;
-
   const handleDetailChange = (index: number, field: string, value: any) => {
     const updated = [...passengerDetails];
     updated[index] = { ...updated[index], [field]: value };
@@ -80,31 +78,16 @@ export default function PassengerBooking() {
   const totalNGN = pricingResults.reduce((sum, res) => sum + res.finalPriceNGN, 0);
 
   const paystackConfig = {
-    reference: (new Date()).getTime().toString(),
+    reference: paymentReference,
     email: user?.email || '',
     amount: totalNGN * 100, // in kobo
     publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
   };
   const initializePaystack = usePaystackPayment(paystackConfig);
 
-  const flutterwaveConfig = {
-    public_key: import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY || '',
-    tx_ref: Date.now().toString(),
-    amount: totalFCFA,
-    currency: 'XAF',
-    payment_options: 'card,mobilemoney,ussd',
-    customer: {
-      email: user?.email || '',
-      phone_number: '',
-      name: user?.email || '',
-    },
-    customizations: {
-      title: 'Afrique-con PLC',
-      description: 'Payment for Passenger Tickets',
-      logo: 'https://via.placeholder.com/150',
-    },
-  };
-  const handleFlutterwave = useFlutterwave(flutterwaveConfig);
+  // Payment hooks must run on every render. Only render the booking UI after
+  // they have been initialised, so a direct visit without route state is safe.
+  if (!trip) return null;
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,6 +124,7 @@ export default function PassengerBooking() {
           passenger_name: p.name,
           passenger_telegram_id: p.telegramId ? p.telegramId.replace(/^@+/, '') : null, // Fix: save to DB so trigger can notify user
           id_number: p.idNumber || null,
+          extra_luggage_kg: p.extraLuggage,
           ticket_type: p.ticketType,
           is_nigerian: p.isNigerian,
           seat_number: selectedSeats[i].toString(),
@@ -150,29 +134,21 @@ export default function PassengerBooking() {
           luggage_fee_fcfa: pricing.extraLuggageFeeFCFA,
           total_fcfa: pricing.finalPriceFCFA,
           final_price_fcfa: pricing.finalPriceFCFA,
-          payment_status: 'pending'
+          payment_status: 'pending',
+          payment_reference: paymentReference,
         };
       });
 
-      const { error: dbError } = await supabase.from('passenger_tickets').insert(recordsToInsert);
+      const { error: dbError } = await supabase.functions.invoke('create-passenger-reservation', {
+        body: { paymentReference, tickets: recordsToInsert },
+      });
 
       if (dbError) throw dbError;
-
-      // Decrement the available seats count for the schedule
-      if (trip.scheduleId.length === 36) {
-        const { error: rpcError } = await supabase.rpc('decrement_available_seats', {
-          schedule_id_param: trip.scheduleId,
-          seats_to_book: recordsToInsert.length
-        });
-        if (rpcError) console.error("Failed to decrement seats:", rpcError);
-      }
 
       // ─── Payment Gateway Trigger ───
       const ticketIds = recordsToInsert.map(t => t.ticket_id);
       
       const onSuccess = async () => {
-        // Update DB to paid
-        await supabase.from('passenger_tickets').update({ payment_status: 'paid' }).in('ticket_id', ticketIds);
         setSuccess(true);
       };
 
@@ -181,25 +157,19 @@ export default function PassengerBooking() {
         setIsSubmitting(false);
       };
 
+      const { data: intent, error: intentError } = await supabase.functions.invoke('create-payment-intent', {
+        body: { provider: paymentMethod, bookingType: 'passenger', reference: paymentReference, ticketIds },
+      });
+      if (intentError) throw intentError;
+
       if (paymentMethod === 'paystack') {
         initializePaystack({
           onSuccess,
           onClose
         });
       } else {
-        handleFlutterwave({
-          callback: (response) => {
-            if (response.status === 'successful') {
-              onSuccess();
-            } else {
-              onClose();
-            }
-            closePaymentModal();
-          },
-          onClose: () => {
-            onClose();
-          }
-        });
+        if (!intent?.checkoutUrl) throw new Error('Unable to start Flutterwave checkout.');
+        window.location.assign(intent.checkoutUrl);
       }
 
     } catch (err: any) {
@@ -220,7 +190,7 @@ export default function PassengerBooking() {
           <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">{t('passengerBooking.bookingInitiated')}</h2>
           <p className="text-gray-600 mb-6">
-            Your {passengersCount} ticket(s) have been reserved. You would normally be redirected to {paymentMethod === 'paystack' ? 'Paystack' : 'Flutterwave'} to complete the payment of <strong>{totalFCFA.toLocaleString()} FCFA</strong> (₦ {totalNGN.toLocaleString()}).
+            Your {passengersCount} ticket(s) are reserved. Your payment was submitted and will be confirmed automatically after verification.
           </p>
 
           <a href="https://t.me/AfriqueCon_Bot" target="_blank" rel="noopener noreferrer" className="block w-full bg-[#0088cc] hover:bg-[#0077b5] text-white font-bold py-3 px-4 rounded-xl mb-4 transition-colors flex items-center justify-center gap-2">

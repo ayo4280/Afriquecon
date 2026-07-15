@@ -1,91 +1,96 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+const webhookSecret = Deno.env.get("TELEGRAM_WEBHOOK_SECRET");
+const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+async function sendMessage(chatId: number, text: string) {
+  if (!botToken) throw new Error("Telegram bot is not configured");
+
+  const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
+  });
+
+  if (!response.ok) throw new Error(`Telegram API returned ${response.status}`);
+}
+
+function helpMessage() {
+  return `*Afrique-con Support*
+
+/track [booking ID] — track a shipment
+/quote — open the cargo calculator
+/ticket — book passenger travel
+/contact — speak to support
+/help — show this menu`;
+}
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
+  }
+
+  // Telegram supplies this header only when secret_token was set with setWebhook.
+  // A missing configuration never falls back to a source-controlled secret.
+  if (!webhookSecret || req.headers.get("x-telegram-bot-api-secret-token") !== webhookSecret) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
   try {
-    const url = new URL(req.url);
-    const secret = url.searchParams.get("secret");
-
-    // Basic security check (you can set this when registering the webhook)
-    if (secret !== Deno.env.get("TELEGRAM_WEBHOOK_SECRET") && secret !== "afriquecon2026") {
-      return new Response("Unauthorized", { status: 401 });
-    }
-
     const update = await req.json();
+    const message = update?.message;
+    if (!message?.text) return Response.json({ ok: true });
 
-    // Only process messages
-    if (update.message && update.message.text) {
-      const message = update.message;
-      const text = message.text;
-      const chatId = message.chat.id;
-      const username = message.chat.username;
+    const chatId = message.chat?.id as number;
+    const username = message.from?.username as string | undefined;
+    const text = String(message.text).trim();
 
-      // When a user starts the bot
-      if (text.startsWith("/start")) {
-        // We need a username to link them. If they don't have one, we can't link via username on the site.
-        if (username) {
-          // Initialize Supabase Client (using Service Role to bypass RLS since this is a webhook)
-          const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-          const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-          const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    if (!chatId) return Response.json({ ok: true });
 
-          // Upsert the username to chat_id mapping
-          const { error } = await supabase
-            .from("telegram_users")
-            .upsert({ username: username, chat_id: chatId }, { onConflict: "username" });
+    if (text.startsWith("/start")) {
+      if (username) {
+        const { error } = await supabase
+          .from("telegram_users")
+          .upsert({ username: username.replace(/^@/, ""), chat_id: chatId }, { onConflict: "username" });
+        if (error) throw error;
 
-          if (error) {
-            console.error("Error upserting mapping:", error);
-          } else {
-            // Reply back to user
-            const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
-            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                chat_id: chatId,
-                text: "✅ Successfully linked! You will now receive booking updates from Afrique-con directly here.",
-              }),
-            });
-          }
+        await sendMessage(chatId, "✅ Your Telegram account is linked to Afrique-con. You will receive booking updates here.");
+      } else {
+        await sendMessage(chatId, "Please set a Telegram username, then send /start again so we can link your booking updates.");
+      }
+    } else if (text.startsWith("/help")) {
+      await sendMessage(chatId, helpMessage());
+    } else if (text.startsWith("/quote")) {
+      await sendMessage(chatId, "💵 Get an instant cargo quote at https://afrique-con.com/cargo");
+    } else if (text.startsWith("/ticket")) {
+      await sendMessage(chatId, "🎫 Search and book passenger travel at https://afrique-con.com/passenger");
+    } else if (text.startsWith("/contact")) {
+      await sendMessage(chatId, "📞 Cameroon: +237 678197361\nNigeria: +234 9029072330\nEmail: support@afriquecon.com");
+    } else if (text.startsWith("/track")) {
+      const bookingId = text.split(/\s+/, 2)[1];
+      if (!bookingId) {
+        await sendMessage(chatId, "Please provide a booking ID. Example: `/track AFCON-20260710-1234`");
+      } else {
+        const { data, error } = await supabase.rpc("track_cargo_shipment", { p_booking_id: bookingId });
+        const shipment = Array.isArray(data) ? data[0] : null;
+        if (error || !shipment) {
+          await sendMessage(chatId, `No shipment was found for *${bookingId}*.`);
         } else {
-            // Tell user they need a username
-            const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
-            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                chat_id: chatId,
-                text: "⚠️ We noticed you don't have a Telegram Username set. To receive booking updates on the website, please set a username in your Telegram Profile Settings, then type /start here again.",
-              }),
-            });
+          const status = String(shipment.status ?? "pending").replaceAll("_", " ").toUpperCase();
+          await sendMessage(chatId, `📦 *${shipment.booking_id}*\n${shipment.origin} → ${shipment.destination}\nStatus: *${status}*`);
         }
       }
+    } else {
+      await sendMessage(chatId, `I can help with Afrique-con cargo and passenger services.\n\n${helpMessage()}`);
     }
 
-    return new Response(JSON.stringify({ ok: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return Response.json({ ok: true });
   } catch (error) {
-    console.error(error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
-    });
+    console.error("Telegram webhook error", error);
+    return Response.json({ ok: false }, { status: 500 });
   }
 });

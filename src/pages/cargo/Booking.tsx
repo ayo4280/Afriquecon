@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { usePaystackPayment } from 'react-paystack';
-import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 import TermsModal from '../../components/TermsModal';
 
 export default function CargoBooking() {
@@ -35,25 +34,15 @@ export default function CargoBooking() {
   const [success, setSuccess] = useState(false);
   const [bookingId, setBookingId] = useState('');
   const [profileLoading, setProfileLoading] = useState(true);
+  const [paymentReference] = useState(() => `AC-${crypto.randomUUID()}`);
 
   const paystackConfig = {
-    reference: (new Date()).getTime().toString(),
+    reference: paymentReference,
     email: user?.email || '',
     amount: (quoteResult?.totalNGN || 0) * 100,
     publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
   };
   const initializePaystack = usePaystackPayment(paystackConfig);
-
-  const flutterwaveConfig = {
-    public_key: import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY || '',
-    tx_ref: Date.now().toString(),
-    amount: quoteResult?.totalFCFA || 0,
-    currency: 'XAF',
-    payment_options: 'card,mobilemoney,ussd',
-    customer: { email: user?.email || '', phone_number: senderPhone, name: senderName || user?.email || '' },
-    customizations: { title: 'Afrique-con PLC', description: 'Payment for Cargo Booking', logo: 'https://via.placeholder.com/150' },
-  };
-  const handleFlutterwave = useFlutterwave(flutterwaveConfig);
 
   useEffect(() => {
     if (!quoteResult) { navigate('/'); return; }
@@ -90,12 +79,11 @@ export default function CargoBooking() {
         customer_name: senderName, customer_email: user.email, customer_phone: senderPhone,
         customer_telegram_id: senderTelegram, recipient_name: recipientName,
         recipient_phone: recipientPhone, delivery_address: deliveryAddress,
-        status: 'pending', payment_status: 'pending',
+        status: 'pending', payment_status: 'pending', payment_reference: paymentReference,
       }]);
       if (dbError) throw dbError;
 
       const onSuccess = async () => {
-        await supabase.from('cargo_bookings').update({ payment_status: 'paid' }).eq('booking_id', newBookingId);
         setBookingId(newBookingId);
         setSuccess(true);
       };
@@ -105,16 +93,19 @@ export default function CargoBooking() {
         // Requires management approval — skip payment gateways
         setBookingId(newBookingId);
         setSuccess(true);
-      } else if (paymentMethod === 'paystack') {
+        return;
+      }
+
+      const { data: intent, error: intentError } = await supabase.functions.invoke('create-payment-intent', {
+        body: { provider: paymentMethod, bookingType: 'cargo', reference: paymentReference, bookingId: newBookingId },
+      });
+      if (intentError) throw intentError;
+
+      if (paymentMethod === 'paystack') {
         initializePaystack({ onSuccess, onClose });
       } else {
-        handleFlutterwave({
-          callback: (response) => {
-            if (response.status === 'successful') { onSuccess(); } else { onClose(); }
-            closePaymentModal();
-          },
-          onClose,
-        });
+        if (!intent?.checkoutUrl) throw new Error('Unable to start Flutterwave checkout.');
+        window.location.assign(intent.checkoutUrl);
       }
     } catch (err: any) {
       setError(err.message || t('cargoBooking.error', 'An error occurred while saving the booking.'));
@@ -131,7 +122,11 @@ export default function CargoBooking() {
             <CheckCircle className="w-12 h-12 text-teal-500" />
           </div>
           <h2 className="text-3xl font-display font-bold mb-2 text-slate-900">{t('cargoBooking.successTitle')}</h2>
-          <p className="text-slate-500 mb-6">{t('cargoBooking.successMsg')}</p>
+          <p className="text-slate-500 mb-6">
+            {quoteResult.totalFCFA === 0
+              ? t('cargoBooking.successMsg')
+              : 'Your payment was submitted and will be confirmed automatically after verification.'}
+          </p>
 
           <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 mb-6 text-left space-y-3">
             <div className="flex justify-between text-sm">
@@ -147,7 +142,7 @@ export default function CargoBooking() {
               <span className="font-semibold">{requestDetails?.weightKg} kg</span>
             </div>
             <div className="flex justify-between text-sm border-t border-slate-100 pt-3 mt-1">
-              <span className="text-slate-500 font-bold">{t('cargoBooking.totalPaid')}</span>
+              <span className="text-slate-500 font-bold">{quoteResult.totalFCFA === 0 ? 'Quoted total' : 'Payment total'}</span>
               <span className="font-bold text-xl text-[#0A1628]">{quoteResult.totalFCFA.toLocaleString()} FCFA</span>
             </div>
           </div>

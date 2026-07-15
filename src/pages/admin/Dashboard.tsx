@@ -81,7 +81,6 @@ interface AdminUser {
 type Tab = 'overview' | 'users' | 'tickets' | 'cargo' | 'schedules' | 'reports' | 'settings';
 
 // ─── Admin emails ─────────────────────────────────────────────────────────────
-const ADMIN_EMAILS = ['testuser3@afrique-con.com', 'admin@afrique-con.com', 'ayodelesodiya@gmail.com'];
 
 // ─── Role helpers ─────────────────────────────────────────────────────────────
 type AdminRole = 'agent' | 'manager' | 'super_admin';
@@ -111,7 +110,11 @@ export default function AdminDashboard() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [routesList, setRoutesList] = useState<Route[]>([]);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
-  const [currentAdminRole, setCurrentAdminRole] = useState<AdminRole>('agent');
+  const [currentAdminRole, setCurrentAdminRole] = useState<AdminRole | null>(null);
+  const [authorizing, setAuthorizing] = useState(true);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [newAdminName, setNewAdminName] = useState('');
+  const [newAdminRole, setNewAdminRole] = useState<AdminRole>('agent');
 
   // Cargo Update Modal State
   const [updatingCargo, setUpdatingCargo] = useState<CargoBooking | null>(null);
@@ -135,7 +138,7 @@ export default function AdminDashboard() {
   const [newSchedFare, setNewSchedFare] = useState('');
   const [addSchedLoading, setAddSchedLoading] = useState(false);
 
-  const isAdmin = user && ADMIN_EMAILS.includes(user.email ?? '');
+  const isAdmin = currentAdminRole !== null;
 
   // ─── Role permission helpers ──────────────────────────────────────────────
   const canManageSchedules = currentAdminRole === 'manager' || currentAdminRole === 'super_admin';
@@ -166,33 +169,48 @@ export default function AdminDashboard() {
     setRefreshing(false);
   };
 
-  // Detect current user's role from admin_users table
+  // The database resolves roles through a SECURITY DEFINER RPC. This keeps
+  // authorization decisions out of the browser and works with RLS enabled.
   useEffect(() => {
-    if (!user?.email) return;
-    supabase
-      .from('admin_users')
-      .select('role')
-      .eq('email', user.email)
-      .eq('active', true)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (ADMIN_EMAILS.includes(user.email ?? '')) {
-          setCurrentAdminRole('super_admin');
-        } else if (data?.role) {
-          setCurrentAdminRole(data.role as AdminRole);
-        } else {
-          setCurrentAdminRole('agent'); // fallback if not found
+    let active = true;
+
+    async function resolveRole() {
+      setAuthorizing(true);
+      if (!user) {
+        if (active) {
+          setCurrentAdminRole(null);
+          setAuthorizing(false);
         }
-      });
+        return;
+      }
+
+      const { data, error } = await supabase.rpc('current_admin_role');
+      const role = !error && ['agent', 'manager', 'super_admin'].includes(data)
+        ? data as AdminRole
+        : null;
+
+      if (active) {
+        setCurrentAdminRole(role);
+        setAuthorizing(false);
+      }
+    }
+
+    resolveRole();
+    return () => { active = false; };
   }, [user]);
 
   useEffect(() => {
+    if (authorizing) return;
     if (!user) { navigate('/login'); return; }
     if (!isAdmin) { navigate('/'); return; }
     fetchAll();
-  }, [user, navigate]);
+  }, [authorizing, user, isAdmin, navigate]);
 
-  if (!user || !isAdmin) return null;
+  if (authorizing) {
+    return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-white"><Loader2 className="w-7 h-7 animate-spin" /></div>;
+  }
+
+  if (!user || !isAdmin || !currentAdminRole) return null;
 
   // ─── Stats ─────────────────────────────────────────────────────────────────
   const totalRevenue = [
@@ -522,10 +540,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const [newAdminEmail, setNewAdminEmail] = useState('');
-  const [newAdminName, setNewAdminName] = useState('');
-  const [newAdminRole, setNewAdminRole] = useState('agent');
-  
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -1104,7 +1118,7 @@ export default function AdminDashboard() {
                           className="flex-1 min-w-[140px] bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
                         />
                         <select
-                          value={newAdminRole} onChange={e => setNewAdminRole(e.target.value)}
+                          value={newAdminRole} onChange={e => setNewAdminRole(e.target.value as AdminRole)}
                           className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
                         >
                           <option value="agent">Agent</option>

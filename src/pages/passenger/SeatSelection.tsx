@@ -24,7 +24,8 @@ export default function SeatSelection() {
       const { data, error } = await supabase
         .from('passenger_tickets')
         .select('seat_number')
-        .eq('schedule_id', trip.scheduleId);
+        .eq('schedule_id', trip.scheduleId)
+        .or(`payment_status.eq.paid,reservation_expires_at.gt.${new Date().toISOString()}`);
       if (!error && data) {
         setOccupiedSeats(data.map(t => parseInt(t.seat_number, 10)).filter(n => !isNaN(n)));
       }
