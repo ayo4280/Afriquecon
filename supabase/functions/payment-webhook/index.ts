@@ -18,6 +18,30 @@ async function isPaystackSignatureValid(body: string, signature: string | null) 
   return toHex(digest) === signature;
 }
 
+async function isFlutterwaveSignatureValid(body: string, req: Request) {
+  const secret = Deno.env.get('FLUTTERWAVE_WEBHOOK_HASH');
+  if (!secret) return false;
+
+  // Flutterwave's current webhook format signs the raw request body with the
+  // dashboard Secret Hash. Keep the legacy `verif-hash` fallback so existing
+  // dashboard configurations continue to work during the transition.
+  const signature = req.headers.get('flutterwave-signature');
+  if (signature) {
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign'],
+    );
+    const digest = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(body));
+    const expected = btoa(String.fromCharCode(...new Uint8Array(digest)));
+    return expected === signature;
+  }
+
+  return req.headers.get('verif-hash') === secret;
+}
+
 async function verifyPayment(provider: string, reference: string, transactionId?: string) {
   if (provider === 'paystack') {
     const secret = Deno.env.get('PAYSTACK_SECRET_KEY');
@@ -48,7 +72,7 @@ serve(async (req) => {
     if (provider === 'paystack' && !await isPaystackSignatureValid(rawBody, req.headers.get('x-paystack-signature'))) {
       return new Response('Unauthorized', { status: 401 });
     }
-    if (provider === 'flutterwave' && req.headers.get('verif-hash') !== Deno.env.get('FLUTTERWAVE_WEBHOOK_HASH')) {
+    if (provider === 'flutterwave' && !await isFlutterwaveSignatureValid(rawBody, req)) {
       return new Response('Unauthorized', { status: 401 });
     }
 

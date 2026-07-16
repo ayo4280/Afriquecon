@@ -84,6 +84,7 @@ type Tab = 'overview' | 'users' | 'tickets' | 'cargo' | 'schedules' | 'reports' 
 
 // ─── Role helpers ─────────────────────────────────────────────────────────────
 type AdminRole = 'agent' | 'manager' | 'super_admin';
+type AccountRole = 'client' | AdminRole;
 const ROLE_LABELS: Record<AdminRole, string> = {
   agent: 'Agent',
   manager: 'Manager',
@@ -112,9 +113,13 @@ export default function AdminDashboard() {
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [currentAdminRole, setCurrentAdminRole] = useState<AdminRole | null>(null);
   const [authorizing, setAuthorizing] = useState(true);
-  const [newAdminEmail, setNewAdminEmail] = useState('');
-  const [newAdminName, setNewAdminName] = useState('');
-  const [newAdminRole, setNewAdminRole] = useState<AdminRole>('agent');
+  const [newAccountEmail, setNewAccountEmail] = useState('');
+  const [newAccountName, setNewAccountName] = useState('');
+  const [newAccountPassword, setNewAccountPassword] = useState('');
+  const [newAccountPhone, setNewAccountPhone] = useState('');
+  const [newAccountCountry, setNewAccountCountry] = useState<'CM' | 'NG'>('CM');
+  const [newAccountRole, setNewAccountRole] = useState<AccountRole>('client');
+  const [creatingAccount, setCreatingAccount] = useState(false);
 
   // Cargo Update Modal State
   const [updatingCargo, setUpdatingCargo] = useState<CargoBooking | null>(null);
@@ -540,22 +545,33 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleAddAdmin = async (e: React.FormEvent) => {
+  const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
+    setCreatingAccount(true);
     try {
-      const { error } = await supabase.from('admin_users').insert({
-        email: newAdminEmail,
-        full_name: newAdminName,
-        role: newAdminRole,
-        active: true
+      const { error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email: newAccountEmail,
+          fullName: newAccountName,
+          password: newAccountPassword,
+          phone: newAccountPhone,
+          country: newAccountCountry,
+          role: newAccountRole,
+        },
       });
       if (error) throw error;
-      alert('Admin added successfully');
-      setNewAdminEmail('');
-      setNewAdminName('');
+      alert('Account created successfully. Give the user their password securely.');
+      setNewAccountEmail('');
+      setNewAccountName('');
+      setNewAccountPassword('');
+      setNewAccountPhone('');
+      setNewAccountCountry('CM');
+      setNewAccountRole('client');
       fetchAll();
     } catch (err: any) {
-      alert('Failed to add admin: ' + err.message);
+      alert('Failed to create account: ' + err.message);
+    } finally {
+      setCreatingAccount(false);
     }
   };
 
@@ -1102,31 +1118,51 @@ export default function AdminDashboard() {
                     <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
                       <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                         <Shield className="w-5 h-5 text-teal-400" />
-                        {t('admin.staffManagement', 'Staff Account Management')}
+                        User Account Management
                       </h3>
 
                       {/* Add Admin Form */}
-                      <form onSubmit={handleAddAdmin} className="mb-6 flex flex-wrap gap-3">
+                      <p className="text-sm text-gray-400 mb-4">Create client or staff accounts. Accounts are confirmed immediately, so give each password to its user securely.</p>
+                      <form onSubmit={handleCreateAccount} className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-3">
                         <input 
                           type="email" required placeholder="Email"
-                          value={newAdminEmail} onChange={e => setNewAdminEmail(e.target.value)}
-                          className="flex-1 min-w-[140px] bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                          value={newAccountEmail} onChange={e => setNewAccountEmail(e.target.value)}
+                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
                         />
                         <input 
                           type="text" required placeholder="Full Name"
-                          value={newAdminName} onChange={e => setNewAdminName(e.target.value)}
-                          className="flex-1 min-w-[140px] bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                          value={newAccountName} onChange={e => setNewAccountName(e.target.value)}
+                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                        />
+                        <input
+                          type="password" required minLength={8} placeholder="Temporary password (8+ characters)"
+                          value={newAccountPassword} onChange={e => setNewAccountPassword(e.target.value)}
+                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                        />
+                        <input
+                          type="tel" placeholder="Phone (optional)"
+                          value={newAccountPhone} onChange={e => setNewAccountPhone(e.target.value)}
+                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
                         />
                         <select
-                          value={newAdminRole} onChange={e => setNewAdminRole(e.target.value as AdminRole)}
+                          value={newAccountRole} onChange={e => setNewAccountRole(e.target.value as AccountRole)}
                           className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
                         >
+                          <option value="client">Client</option>
                           <option value="agent">Agent</option>
                           <option value="manager">Manager</option>
                           <option value="super_admin">Super Admin</option>
                         </select>
-                        <button type="submit" className="bg-teal-600 hover:bg-teal-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                          <Plus className="w-4 h-4" /> {t('admin.addAdmin', 'Add')}
+                        <select
+                          value={newAccountCountry} onChange={e => setNewAccountCountry(e.target.value as 'CM' | 'NG')}
+                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                        >
+                          <option value="CM">Cameroon</option>
+                          <option value="NG">Nigeria</option>
+                        </select>
+                        <button type="submit" disabled={creatingAccount} className="bg-teal-600 hover:bg-teal-500 disabled:opacity-60 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 md:col-span-2">
+                          {creatingAccount ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                          Create account
                         </button>
                       </form>
 
