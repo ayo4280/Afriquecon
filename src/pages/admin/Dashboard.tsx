@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import {
   Users, Package, Ticket, Bus, TrendingUp, LogOut,
   Loader2, ArrowRight, RefreshCw, Shield,
-  MapPin, Calendar, Phone, Mail, Plus, BarChart3, Download, Settings
+  MapPin, Calendar, Phone, Mail, Plus, Eye, EyeOff, BarChart3, Download, Settings
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -116,6 +116,7 @@ export default function AdminDashboard() {
   const [newAccountEmail, setNewAccountEmail] = useState('');
   const [newAccountName, setNewAccountName] = useState('');
   const [newAccountPassword, setNewAccountPassword] = useState('');
+  const [showNewAccountPassword, setShowNewAccountPassword] = useState(false);
   const [newAccountPhone, setNewAccountPhone] = useState('');
   const [newAccountCountry, setNewAccountCountry] = useState<'CM' | 'NG'>('CM');
   const [newAccountRole, setNewAccountRole] = useState<AccountRole>('client');
@@ -1134,11 +1135,21 @@ export default function AdminDashboard() {
                           value={newAccountName} onChange={e => setNewAccountName(e.target.value)}
                           className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
                         />
-                        <input
-                          type="password" required minLength={8} placeholder="Temporary password (8+ characters)"
-                          value={newAccountPassword} onChange={e => setNewAccountPassword(e.target.value)}
-                          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
-                        />
+                        <div className="relative">
+                          <input
+                            type={showNewAccountPassword ? 'text' : 'password'} required minLength={8} placeholder="Temporary password (8+ characters)"
+                            value={newAccountPassword} onChange={e => setNewAccountPassword(e.target.value)}
+                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 pr-10 text-sm text-white"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewAccountPassword(!showNewAccountPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                            aria-label={showNewAccountPassword ? 'Hide password' : 'Show password'}
+                          >
+                            {showNewAccountPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
                         <input
                           type="tel" placeholder="Phone (optional)"
                           value={newAccountPhone} onChange={e => setNewAccountPhone(e.target.value)}
