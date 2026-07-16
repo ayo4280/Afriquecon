@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { supabase } from '../../lib/supabase';
 import { passengerService } from '../../services/passengerService';
 import type { TripSchedule, TicketType, PassengerPricingResponse } from '../../services/passengerService';

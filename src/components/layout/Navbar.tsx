@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Navigation, UserCircle, LogOut, Shield, Menu, X, Package, Users, Search } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 

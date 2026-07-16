@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { supabase } from '../lib/supabase';
 import { Package, Bus, LogOut, Loader2, Ticket, ArrowRight, MapPin, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
