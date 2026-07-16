@@ -21,8 +21,7 @@ payment-secret, Telegram-bot, or AI-provider keys in Vite variables.
 
 ## Supabase deployment order
 
-Apply the historical schema/data scripts required by your environment first.
-For the hardened application, then apply these migrations in order:
+For supported production changes, apply these migrations in order:
 
 1. `supabase/migrations/20260715_security_hardening.sql`
 2. `supabase/migrations/20260715_payment_webhooks.sql`
@@ -30,6 +29,9 @@ For the hardened application, then apply these migrations in order:
 4. `supabase/migrations/20260715_cargo_status_notifications.sql`
 
 Review [Security deployment](supabase/SECURITY_DEPLOYMENT.md) and [Payment deployment](supabase/PAYMENT_DEPLOYMENT.md) before applying them. Use a staging Supabase project first.
+
+Older one-off setup and test scripts are retained under `supabase/archive/` for
+reference only. Do not run them against production without review.
 
 ## Edge Functions
 
