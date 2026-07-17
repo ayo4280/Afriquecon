@@ -7,6 +7,8 @@ import { AuthProvider } from './context/AuthContext';
 const Home = lazy(() => import('./pages/Home'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
 const CargoBooking = lazy(() => import('./pages/cargo/Booking'));
 const TripResults = lazy(() => import('./pages/passenger/TripResults'));
 const SeatSelection = lazy(() => import('./pages/passenger/SeatSelection'));
@@ -35,6 +37,8 @@ function App() {
               <Route path="/passenger" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/about" element={<About />} />

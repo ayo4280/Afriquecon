@@ -112,6 +112,9 @@ export default function Login() {
                   className={inputCls}
                 />
               </div>
+              <div className="mt-2 text-right">
+                <Link to="/forgot-password" className="text-sm font-semibold text-amber-600 hover:text-amber-500">Forgot password?</Link>
+              </div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">{t('auth.password')}</label>
