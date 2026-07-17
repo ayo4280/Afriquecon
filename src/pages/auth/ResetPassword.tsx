@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, KeyRound, Loader2, Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useTranslation } from 'react-i18next';
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -12,6 +13,7 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     let active = true;
@@ -31,11 +33,11 @@ export default function ResetPassword() {
     event.preventDefault();
     setError(null);
     if (password.length < 8) {
-      setError('Use a password with at least 8 characters.');
+      setError(t('auth.resetPasswordShort'));
       return;
     }
     if (password !== confirmation) {
-      setError('The passwords do not match.');
+      setError(t('auth.resetPasswordsMismatch'));
       return;
     }
 
@@ -43,7 +45,7 @@ export default function ResetPassword() {
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (updateError) {
-      setError('Your reset link is invalid or expired. Request a new link and try again.');
+      setError(t('auth.resetExpired'));
       return;
     }
     await supabase.auth.signOut();
@@ -55,9 +57,9 @@ export default function ResetPassword() {
       <div className="flex-grow flex items-center justify-center py-12 px-6 bg-[#F4F6FA]">
         <div className="w-full max-w-md bg-white rounded-3xl p-10 shadow-xl border border-slate-100 text-center">
           <div className="w-16 h-16 bg-teal-400/15 rounded-2xl flex items-center justify-center mx-auto mb-5"><CheckCircle2 className="w-9 h-9 text-teal-500" /></div>
-          <h1 className="text-2xl font-display font-bold text-slate-900 mb-3">Password updated</h1>
-          <p className="text-slate-500 mb-6">Your password has been changed. Sign in with your new password.</p>
-          <button onClick={() => navigate('/login')} className="w-full bg-[#0A1628] text-white py-3.5 rounded-xl font-bold">Go to sign in</button>
+          <h1 className="text-2xl font-display font-bold text-slate-900 mb-3">{t('auth.resetSuccessTitle')}</h1>
+          <p className="text-slate-500 mb-6">{t('auth.resetSuccessMessage')}</p>
+          <button onClick={() => navigate('/login')} className="w-full bg-[#0A1628] text-white py-3.5 rounded-xl font-bold">{t('auth.resetSuccessAction')}</button>
         </div>
       </div>
     );
@@ -66,16 +68,16 @@ export default function ResetPassword() {
   return (
     <div className="flex-grow flex items-center justify-center py-12 px-6 bg-[#F4F6FA]">
       <div className="w-full max-w-md bg-white rounded-3xl p-8 sm:p-10 shadow-xl border border-slate-100">
-        <Link to="/login" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-800 mb-8"><ArrowLeft className="w-4 h-4" /> Back to sign in</Link>
+        <Link to="/login" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-800 mb-8"><ArrowLeft className="w-4 h-4" /> {t('auth.forgotBack')}</Link>
         <div className="w-14 h-14 bg-amber-400/15 rounded-2xl flex items-center justify-center mb-5"><KeyRound className="w-7 h-7 text-amber-500" /></div>
-        <h1 className="text-3xl font-display font-bold text-slate-900 mb-2">Choose a new password</h1>
-        <p className="text-slate-500 mb-7">Use at least 8 characters and keep it private.</p>
+        <h1 className="text-3xl font-display font-bold text-slate-900 mb-2">{t('auth.resetTitle')}</h1>
+        <p className="text-slate-500 mb-7">{t('auth.resetSubtitle')}</p>
 
-        {!ready && <div className="mb-5 p-4 bg-amber-50 text-amber-800 rounded-xl text-sm border border-amber-100">Open this page from the password-reset link sent to your email. If the link has expired, request a new one.</div>}
+        {!ready && <div className="mb-5 p-4 bg-amber-50 text-amber-800 rounded-xl text-sm border border-amber-100">{t('auth.resetInvalidLink')}</div>}
         {error && <div className="mb-5 p-4 bg-red-50 text-red-700 rounded-xl text-sm border border-red-100">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {['New password', 'Confirm new password'].map((label, index) => {
+          {[t('auth.resetNewPassword'), t('auth.resetConfirmPassword')].map((label, index) => {
             const value = index === 0 ? password : confirmation;
             const setValue = index === 0 ? setPassword : setConfirmation;
             return (

@@ -113,7 +113,7 @@ export default function Login() {
                 />
               </div>
               <div className="mt-2 text-right">
-                <Link to="/forgot-password" className="text-sm font-semibold text-amber-600 hover:text-amber-500">Forgot password?</Link>
+                <Link to="/forgot-password" className="text-sm font-semibold text-amber-600 hover:text-amber-500">{t('auth.forgotPassword')}</Link>
               </div>
             </div>
             <div>
@@ -132,7 +132,7 @@ export default function Login() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>

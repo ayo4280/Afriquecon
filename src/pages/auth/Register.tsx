@@ -106,7 +106,7 @@ export default function Register() {
 
           <div className="mb-8">
             <h1 className="text-3xl font-display font-bold text-slate-900 mb-1">{t('auth.createAccount')}</h1>
-            <p className="text-slate-500">Fill in your details to get started</p>
+            <p className="text-slate-500">{t('auth.registerDetails')}</p>
           </div>
 
           {error && (
@@ -122,7 +122,7 @@ export default function Register() {
                 <label className={labelCls}>{t('auth.fullName')}</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                  <input type="text" required value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" className={inputCls} />
+                  <input type="text" required value={fullName} onChange={e => setFullName(e.target.value)} placeholder={t('auth.yourFullName')} className={inputCls} />
                 </div>
               </div>
               <div className="sm:col-span-2">
@@ -153,12 +153,12 @@ export default function Register() {
                 <label className={labelCls}>{t('auth.password')}</label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                  <input type={showPassword ? 'text' : 'password'} required minLength={6} value={password} onChange={e => setPassword(e.target.value)} placeholder="Minimum 6 characters" className={`${inputCls} pr-12`} />
+                  <input type={showPassword ? 'text' : 'password'} required minLength={6} value={password} onChange={e => setPassword(e.target.value)} placeholder={t('auth.minimumCharacters')} className={`${inputCls} pr-12`} />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>

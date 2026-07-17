@@ -144,11 +144,11 @@ export default function Profile() {
           <div className="relative mt-6 grid grid-cols-2 gap-4">
             <div className="bg-white/8 border border-white/10 rounded-2xl p-4">
               <div className="text-2xl font-display font-extrabold text-amber-400">{tickets.length}</div>
-              <div className="text-xs text-slate-400 font-medium">Tickets Booked</div>
+              <div className="text-xs text-slate-400 font-medium">{t('profile.myTickets')}</div>
             </div>
             <div className="bg-white/8 border border-white/10 rounded-2xl p-4">
               <div className="text-2xl font-display font-extrabold text-teal-400">{cargoBookings.length}</div>
-              <div className="text-xs text-slate-400 font-medium">Cargo Shipments</div>
+              <div className="text-xs text-slate-400 font-medium">{t('profile.cargoShipments')}</div>
             </div>
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function Profile() {
         {loading ? (
           <div className="flex justify-center items-center py-20 gap-3 text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin text-amber-400" />
-            <span className="font-medium">Loading your history...</span>
+            <span className="font-medium">{t('admin.loading')}</span>
           </div>
         ) : activeTab === 'tickets' ? (
           <div className="space-y-4 animate-fade-up">

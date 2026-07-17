@@ -126,7 +126,7 @@ export default function TrackShipment() {
             <div className="bg-gradient-to-r from-[#0A1628] to-[#1a2d4e] text-white p-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                  <div className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Tracking ID</div>
+                  <div className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">{t('track.trackingId')}</div>
                   <div className="text-xl font-mono font-bold text-amber-400">{cargo.booking_id}</div>
                 </div>
                 <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold ${statusMeta.bg} ${statusMeta.colour} ${statusMeta.border} border shadow-md ${statusMeta.glow}`}>
@@ -137,21 +137,21 @@ export default function TrackShipment() {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <div className="text-slate-400 text-xs mb-1 flex items-center gap-1"><MapPin className="w-3 h-3" /> Route</div>
+                  <div className="text-slate-400 text-xs mb-1 flex items-center gap-1"><MapPin className="w-3 h-3" /> {t('track.route')}</div>
                   <div className="font-bold flex items-center gap-1 text-white">
                     {cargo.origin} <ArrowRight className="w-3 h-3 text-amber-400" /> {cargo.destination}
                   </div>
                 </div>
                 <div>
-                  <div className="text-slate-400 text-xs mb-1 flex items-center gap-1"><Package className="w-3 h-3" /> Cargo Details</div>
+                  <div className="text-slate-400 text-xs mb-1 flex items-center gap-1"><Package className="w-3 h-3" /> {t('track.cargoDetails')}</div>
                   <div className="font-semibold text-slate-200">{cargo.weight_kg} kg · {cargo.cargo_type.replace('_', ' ')}</div>
                 </div>
                 <div>
-                  <div className="text-slate-400 text-xs mb-1">Sender</div>
+                  <div className="text-slate-400 text-xs mb-1">{t('track.sender')}</div>
                   <div className="font-semibold text-slate-200">{cargo.customer_name}</div>
                 </div>
                 <div>
-                  <div className="text-slate-400 text-xs mb-1">Recipient</div>
+                  <div className="text-slate-400 text-xs mb-1">{t('track.recipient')}</div>
                   <div className="font-semibold text-slate-200">{cargo.recipient_name}</div>
                 </div>
               </div>
