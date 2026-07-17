@@ -7,7 +7,11 @@
     "login": "Connexion",
     "signup": "S'inscrire",
     "signOut": "Déconnexion",
-    "language": "English"
+    "language": "English",
+    "admin": "Administration",
+    "profile": "Profil",
+    "toggleMenu": "Afficher ou masquer le menu",
+    "switchLanguage": "Changer de langue"
   },
   "footer": {
     "tagline": "Connecter le Cameroun & le Nigeria grâce à un transport numérique fiable.",
@@ -22,7 +26,14 @@
     "legal": "Mentions légales",
     "privacy": "Politique de confidentialité",
     "terms": "Conditions d'utilisation",
-    "copyright": "© 2025 Afrique-con Plc. Tous droits réservés."
+    "copyright": "© 2025 Afrique-con Plc. Tous droits réservés.",
+    "supportDescription": "Recevez des mises à jour instantanées et une assistance 24h/24, 7j/7 via notre canal Telegram.",
+    "supportAvailability": "Support Telegram 24h/24, 7j/7",
+    "branches": "Nos agences et succursales",
+    "loadingBranches": "Chargement des agences...",
+    "about": "À propos de nous",
+    "contact": "Contact",
+    "operational": "Tous les services sont opérationnels"
   },
   "home": {
     "heroTitle": "Connecter le Cameroun & le Nigeria",
@@ -86,7 +97,27 @@
     "trackTitle": "Suivre votre Envoi",
     "trackSubtitle": "Saisissez votre numéro de suivi pour obtenir des mises à jour en temps réel.",
     "trackPlaceholder": "ex. AFCON-20240629-0001",
-    "trackBtn": "Suivre"
+    "trackBtn": "Suivre",
+    "busSchedule": "Horaires de bus",
+    "quoteReference": "Référence du devis",
+    "expires": "Expire le",
+    "priorityHandling": "Traitement prioritaire et livraison plus rapide (maximum 50 kg)",
+    "fromNigeria": "Depuis le Nigéria",
+    "fromCameroon": "Depuis le Cameroun",
+    "days": "Jours",
+    "time": "Heure",
+    "checkOffice": "Renseignez-vous auprès de l'agence",
+    "noSchedulesDirection": "Aucun horaire n'est disponible dans ce sens.",
+    "proceedToBooking": "Passer à la réservation",
+    "runsOn": "Cette liaison circule {{days}}.",
+    "adult": "Adulte",
+    "childAge": "Enfant (2-5 ans)",
+    "coverage": "Couverture",
+    "customerStories": "Témoignages clients",
+    "statsDelivered": "Envois livrés",
+    "statsOnTime": "Ponctualité",
+    "statsCountries": "Pays reliés",
+    "statsSupport": "Support Telegram"
   },
   "auth": {
     "loginTitle": "Bon Retour",
@@ -395,6 +426,8 @@
     "thinking": "Réflexion en cours...",
     "send": "Envoyer",
     "minimize": "Réduire",
-    "poweredBy": "Propulsé par l'IA"
+    "poweredBy": "Propulsé par l'IA",
+    "loadingData": "Chargement des données...",
+    "loadingLiveData": "Chargement des données en direct..."
   }
 }

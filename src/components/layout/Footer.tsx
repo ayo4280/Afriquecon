@@ -105,12 +105,12 @@ export default function Footer() {
               {t('footer.support')}
             </h4>
             <p className="text-sm text-slate-500 mb-4 leading-relaxed">
-              Get instant shipment updates and 24/7 support via our Telegram channel.
+              {t('footer.supportDescription')}
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-slate-400">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
-                24/7 Telegram Support
+                {t('footer.supportAvailability')}
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-400">
                 <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
@@ -133,11 +133,11 @@ export default function Footer() {
         <div className="mb-10">
           <h4 className="font-semibold text-white mb-6 flex items-center gap-2 text-base">
             <MapPin className="w-5 h-5 text-amber-400" />
-            Our Branches &amp; Agencies
+            {t('footer.branches')}
           </h4>
 
           {agencies.length === 0 ? (
-            <p className="text-slate-600 text-sm italic">Loading branches...</p>
+            <p className="text-slate-600 text-sm italic">{t('footer.loadingBranches')}</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Cameroon */}
@@ -199,16 +199,16 @@ export default function Footer() {
         <div className="border-t border-white/8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
           <span>{t('footer.copyright')}</span>
           <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-2 sm:mt-0">
-            <Link to="/about" className="hover:text-amber-400 transition-colors">{t('info.about.title', 'About Us')}</Link>
-            <Link to="/contact" className="hover:text-amber-400 transition-colors">{t('info.contact.title', 'Contact')}</Link>
-            <Link to="/terms" className="hover:text-amber-400 transition-colors">Terms</Link>
-            <Link to="/privacy" className="hover:text-amber-400 transition-colors">Privacy Policy</Link>
-            <Link to="/faq" className="hover:text-amber-400 transition-colors">FAQs</Link>
+            <Link to="/about" className="hover:text-amber-400 transition-colors">{t('footer.about')}</Link>
+            <Link to="/contact" className="hover:text-amber-400 transition-colors">{t('footer.contact')}</Link>
+            <Link to="/terms" className="hover:text-amber-400 transition-colors">{t('footer.terms')}</Link>
+            <Link to="/privacy" className="hover:text-amber-400 transition-colors">{t('footer.privacy')}</Link>
+            <Link to="/faq" className="hover:text-amber-400 transition-colors">{t('footer.faqs')}</Link>
           </div>
           <div className="flex items-center gap-4 mt-4 sm:mt-0">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              All services operational
+              {t('footer.operational')}
             </span>
           </div>
         </div>

@@ -146,7 +146,7 @@ export default function AIChatWidget() {
                 <div className="text-white font-semibold text-sm leading-none">{t("ai.assistant")}</div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className={`w-1.5 h-1.5 rounded-full ${isReady ? "bg-green-400 animate-pulse" : "bg-amber-400 animate-pulse"}`} />
-                  <span className="text-blue-200 text-xs">{isReady ? t("ai.poweredBy") : "Loading data..."}</span>
+                  <span className="text-blue-200 text-xs">{isReady ? t("ai.poweredBy") : t("ai.loadingData")}</span>
                 </div>
               </div>
             </div>
@@ -198,7 +198,7 @@ export default function AIChatWidget() {
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder={isReady ? t("ai.placeholder") : "Loading live data..."}
+                    placeholder={isReady ? t("ai.placeholder") : t("ai.loadingLiveData")}
                     disabled={loading || !isReady}
                     className="flex-1 bg-transparent text-white text-sm outline-none placeholder-gray-500 disabled:opacity-50"
                   />

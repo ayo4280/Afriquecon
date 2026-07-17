@@ -14,17 +14,16 @@ import AIChatWidget from '../components/AIChatWidget';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-const STATS = [
-  { value: '2,400+', label: 'Shipments Delivered', icon: <Package className="w-5 h-5" /> },
-  { value: '98%',    label: 'On-Time Rate',        icon: <Clock className="w-5 h-5" /> },
-  { value: '2',      label: 'Countries Connected', icon: <TrendingUp className="w-5 h-5" /> },
-  { value: '24/7',   label: 'Telegram Support',    icon: <Shield className="w-5 h-5" /> },
-];
-
 export default function Home() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const stats = [
+    { value: '2,400+', label: t('home.statsDelivered'), icon: <Package className="w-5 h-5" /> },
+    { value: '98%', label: t('home.statsOnTime'), icon: <Clock className="w-5 h-5" /> },
+    { value: '2', label: t('home.statsCountries'), icon: <TrendingUp className="w-5 h-5" /> },
+    { value: '24/7', label: t('home.statsSupport'), icon: <Shield className="w-5 h-5" /> },
+  ];
 
   const initialMode = location.pathname.includes('passenger') ? 'passenger' : 'cargo';
   const [serviceMode, setServiceMode] = useState<'cargo' | 'passenger' | 'schedule'>(initialMode);
@@ -186,7 +185,7 @@ export default function Home() {
               className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all duration-300 ${serviceMode === 'schedule' ? 'text-[#0A1628]' : 'text-slate-300 hover:text-white'}`}
             >
               <Calendar className="w-4 h-4" />
-              Bus Schedule
+              {t('home.busSchedule')}
             </button>
             <button
               onClick={() => setServiceMode('passenger')}
@@ -219,9 +218,9 @@ export default function Home() {
                       <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-amber-400/20">
                         <div className="flex justify-between items-start mb-5">
                           <div>
-                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-1">Quote Reference</p>
+                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-1">{t('home.quoteReference')}</p>
                             <h3 className="text-lg font-bold text-white font-mono">{quoteResult.quoteId}</h3>
-                            <p className="text-xs text-slate-500 mt-1">Expires: {new Date(quoteResult.expiresAt).toLocaleString()}</p>
+                            <p className="text-xs text-slate-500 mt-1">{t('home.expires')}: {new Date(quoteResult.expiresAt).toLocaleString()}</p>
                           </div>
                           <span className={`px-3 py-1 rounded-full text-xs font-bold ${quoteResult.isExpress ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'bg-teal-400/20 text-teal-300 border border-teal-400/30'}`}>
                             {quoteResult.isExpress ? <><Zap className="w-3 h-3 inline mr-1" />{t('home.express')}</> : t('home.standard')}
@@ -280,14 +279,14 @@ export default function Home() {
                           <div className="relative">
                             <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4" />
                             <select value={cargoOrigin} onChange={e => setCargoOrigin(e.target.value)} className={`${inputCls} pl-10`}>
-                              <optgroup label="Cameroon">
+                              <optgroup label={t('admin.cameroon')}>
                                 <option>Douala</option>
                                 <option>Yaoundé</option>
                                 <option>Buea</option>
                                 <option>Kumba</option>
                                 <option>Mamfe</option>
                               </optgroup>
-                              <optgroup label="Nigeria">
+                              <optgroup label={t('admin.nigeria')}>
                                 <option>Lagos</option>
                                 <option>Abuja</option>
                                 <option>Ikom</option>
@@ -303,14 +302,14 @@ export default function Home() {
                           <div className="relative">
                             <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-500 w-4 h-4" />
                             <select value={cargoDestination} onChange={e => setCargoDestination(e.target.value)} className={`${inputCls} pl-10`}>
-                              <optgroup label="Cameroon">
+                              <optgroup label={t('admin.cameroon')}>
                                 <option>Douala</option>
                                 <option>Yaoundé</option>
                                 <option>Buea</option>
                                 <option>Kumba</option>
                                 <option>Mamfe</option>
                               </optgroup>
-                              <optgroup label="Nigeria">
+                              <optgroup label={t('admin.nigeria')}>
                                 <option>Lagos</option>
                                 <option>Abuja</option>
                                 <option>Ikom</option>
@@ -353,7 +352,7 @@ export default function Home() {
                             <Zap className="w-4 h-4 text-amber-500" />
                             {t('home.expressBooking')}
                           </label>
-                          <p className="text-xs text-slate-500">Priority handling &amp; faster delivery (Max 50kg)</p>
+                          <p className="text-xs text-slate-500">{t('home.priorityHandling')}</p>
                         </div>
                       </div>
 
@@ -370,7 +369,7 @@ export default function Home() {
                     <div className="w-10 h-10 rounded-xl bg-amber-400/15 flex items-center justify-center">
                       <Calendar className="w-5 h-5 text-amber-500" />
                     </div>
-                    <h2 className="text-2xl font-display font-bold text-slate-900">Bus Schedule</h2>
+                    <h2 className="text-2xl font-display font-bold text-slate-900">{t('home.busSchedule')}</h2>
                   </div>
 
                   <div className="mb-6 flex bg-slate-100 p-1 rounded-xl">
@@ -378,13 +377,13 @@ export default function Home() {
                       onClick={() => setScheduleDirection('from_ng')}
                       className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${scheduleDirection === 'from_ng' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                      From Nigeria
+                      {t('home.fromNigeria')}
                     </button>
                     <button
                       onClick={() => setScheduleDirection('from_cm')}
                       className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${scheduleDirection === 'from_cm' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                      From Cameroon
+                      {t('home.fromCameroon')}
                     </button>
                   </div>
 
@@ -398,10 +397,10 @@ export default function Home() {
                         <table className="w-full text-left border-collapse">
                           <thead className="bg-slate-100/80 sticky top-0 backdrop-blur-sm z-10 text-xs uppercase text-slate-500 font-semibold">
                             <tr>
-                              <th className="px-4 py-3 border-b border-slate-200">Origin</th>
-                              <th className="px-4 py-3 border-b border-slate-200">Destination</th>
-                              <th className="px-4 py-3 border-b border-slate-200">Days</th>
-                              <th className="px-4 py-3 border-b border-slate-200">Time</th>
+                              <th className="px-4 py-3 border-b border-slate-200">{t('home.origin')}</th>
+                              <th className="px-4 py-3 border-b border-slate-200">{t('home.destination')}</th>
+                              <th className="px-4 py-3 border-b border-slate-200">{t('home.days')}</th>
+                              <th className="px-4 py-3 border-b border-slate-200">{t('home.time')}</th>
                             </tr>
                           </thead>
                           <tbody className="text-sm text-slate-700 divide-y divide-slate-100">
@@ -411,14 +410,14 @@ export default function Home() {
                                 <tr key={route.id} className="hover:bg-white transition-colors">
                                   <td className="px-4 py-3 font-medium text-slate-900">{route.origin}</td>
                                   <td className="px-4 py-3">{route.destination}</td>
-                                  <td className="px-4 py-3 text-teal-600 font-medium">{route.departure_days || 'Check office'}</td>
+                                  <td className="px-4 py-3 text-teal-600 font-medium">{route.departure_days || t('home.checkOffice')}</td>
                                   <td className="px-4 py-3">{route.departure_time || '-'}</td>
                                 </tr>
                               ))}
                             {scheduleRoutes.filter(r => scheduleDirection === 'from_ng' ? NIGERIA_CITIES.includes(r.origin) : CAMEROON_CITIES.includes(r.origin)).length === 0 && (
                               <tr>
                                 <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
-                                  No schedules found for this direction.
+                                  {t('home.noSchedulesDirection')}
                                 </td>
                               </tr>
                             )}
@@ -434,7 +433,7 @@ export default function Home() {
                       className="w-full bg-teal-500 hover:bg-teal-400 text-white py-4 rounded-xl font-bold text-base transition-all flex justify-center items-center gap-2 shadow-xl shadow-teal-500/20 group"
                     >
                       <Users className="w-5 h-5" />
-                      Proceed to Booking
+                      {t('home.proceedToBooking')}
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </div>
@@ -460,14 +459,14 @@ export default function Home() {
                         <div className="relative">
                           <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-500 w-4 h-4" />
                           <select value={passengerOrigin} onChange={e => { setPassengerOrigin(e.target.value); setPassengerError(null); }} className={`${inputCls} pl-10`}>
-                            <optgroup label="Cameroon">
+                            <optgroup label={t('admin.cameroon')}>
                               <option>Douala</option>
                               <option>Yaoundé</option>
                               <option>Buea</option>
                               <option>Kumba</option>
                               <option>Mamfe</option>
                             </optgroup>
-                            <optgroup label="Nigeria">
+                            <optgroup label={t('admin.nigeria')}>
                               <option>Lagos</option>
                               <option>Abuja</option>
                               <option>Ikom</option>
@@ -483,14 +482,14 @@ export default function Home() {
                         <div className="relative">
                           <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500 w-4 h-4" />
                           <select value={passengerDestination} onChange={e => { setPassengerDestination(e.target.value); setPassengerError(null); }} className={`${inputCls} pl-10`}>
-                            <optgroup label="Cameroon">
+                            <optgroup label={t('admin.cameroon')}>
                               <option>Douala</option>
                               <option>Yaoundé</option>
                               <option>Buea</option>
                               <option>Kumba</option>
                               <option>Mamfe</option>
                             </optgroup>
-                            <optgroup label="Nigeria">
+                            <optgroup label={t('admin.nigeria')}>
                               <option>Lagos</option>
                               <option>Abuja</option>
                               <option>Ikom</option>
@@ -530,7 +529,7 @@ export default function Home() {
                         <label className={labelCls}>{t('home.passengers')}</label>
                         <div className="space-y-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-slate-700">Adult</span>
+                            <span className="text-sm font-medium text-slate-700">{t('home.adult')}</span>
                             <div className="flex items-center gap-3">
                               <button type="button" onClick={() => setAdultCount(Math.max(1, adultCount - 1))} className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors">-</button>
                               <span className="w-4 text-center text-sm font-bold text-slate-800">{adultCount}</span>
@@ -538,7 +537,7 @@ export default function Home() {
                             </div>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-slate-700">Child (2-5 yrs)</span>
+                            <span className="text-sm font-medium text-slate-700">{t('home.childAge')}</span>
                             <div className="flex items-center gap-3">
                               <button type="button" onClick={() => setChildCount(Math.max(0, childCount - 1))} className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-700 transition-colors">-</button>
                               <span className="w-4 text-center text-sm font-bold text-slate-800">{childCount}</span>
@@ -578,7 +577,7 @@ export default function Home() {
       <section className="py-16 px-4 lg:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {STATS.map((stat, i) => (
+            {stats.map((stat, i) => (
               <div key={i} className="bg-white rounded-2xl p-5 text-center border border-slate-100 shadow-sm card-hover">
                 <div className="w-10 h-10 rounded-xl bg-amber-400/10 flex items-center justify-center mx-auto mb-3 text-amber-500">
                   {stat.icon}
@@ -596,7 +595,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-amber-400/10 border border-amber-400/20 text-amber-600 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
-              <MapPin className="w-4 h-4" /> Coverage
+              <MapPin className="w-4 h-4" /> {t('home.coverage')}
             </div>
             <h2 className="text-3xl md:text-4xl font-display font-extrabold text-slate-900 mb-4">{t('home.mapTitle')}</h2>
             <p className="text-slate-500 max-w-xl mx-auto">{t('home.mapSubtitle')}</p>
@@ -610,7 +609,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-teal-400/10 border border-teal-400/20 text-teal-600 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
-              <Star className="w-4 h-4 fill-teal-500" /> Customer Stories
+              <Star className="w-4 h-4 fill-teal-500" /> {t('home.customerStories')}
             </div>
             <h2 className="text-3xl md:text-4xl font-display font-extrabold text-slate-900 mb-4">{t('home.testimonialsTitle')}</h2>
             <p className="text-slate-500 max-w-xl mx-auto">{t('home.testimonialsSubtitle')}</p>
