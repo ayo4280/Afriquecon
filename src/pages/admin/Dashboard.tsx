@@ -137,8 +137,8 @@ export default function AdminDashboard() {
 
   // Add Schedule Modal State
   const [addingSchedule, setAddingSchedule] = useState(false);
-  const [newSchedOrigin, setNewSchedOrigin] = useState('Douala');
-  const [newSchedDest, setNewSchedDest] = useState('Yaoundé');
+  const [newSchedOrigin, setNewSchedOrigin] = useState('');
+  const [newSchedDest, setNewSchedDest] = useState('');
   const [newSchedDep, setNewSchedDep] = useState('');
   const [newSchedArr, setNewSchedArr] = useState('');
   const [newSchedFare, setNewSchedFare] = useState('');
@@ -150,6 +150,12 @@ export default function AdminDashboard() {
   const canManageSchedules = currentAdminRole === 'manager' || currentAdminRole === 'super_admin';
   const canNegotiatePrice  = currentAdminRole === 'manager' || currentAdminRole === 'super_admin';
   const isSuperAdmin       = currentAdminRole === 'super_admin';
+  const scheduleOrigins = [...new Set(routesList.filter(route => route.active).map(route => route.origin))].sort();
+  const scheduleDestinations = [...new Set(
+    routesList
+      .filter(route => route.active && route.origin === newSchedOrigin)
+      .map(route => route.destination),
+  )].sort();
 
   const fetchAll = async (showRefresh = false) => {
     if (showRefresh) setRefreshing(true);
@@ -407,6 +413,8 @@ export default function AdminDashboard() {
 
       await fetchAll();
       setAddingSchedule(false);
+      setNewSchedOrigin('');
+      setNewSchedDest('');
       setNewSchedDep('');
       setNewSchedArr('');
       setNewSchedFare('');
@@ -1335,17 +1343,34 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">Origin</label>
-                  <input
-                    required type="text" value={newSchedOrigin} onChange={e => setNewSchedOrigin(e.target.value)}
+                  <select
+                    required value={newSchedOrigin}
+                    onChange={e => {
+                      setNewSchedOrigin(e.target.value);
+                      setNewSchedDest('');
+                      setNewSchedFare('');
+                    }}
                     className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
-                  />
+                  >
+                    <option value="">Select origin</option>
+                    {scheduleOrigins.map(origin => <option key={origin} value={origin}>{origin}</option>)}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">Destination</label>
-                  <input
-                    required type="text" value={newSchedDest} onChange={e => setNewSchedDest(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
-                  />
+                  <select
+                    required value={newSchedDest} disabled={!newSchedOrigin}
+                    onChange={e => {
+                      const destination = e.target.value;
+                      setNewSchedDest(destination);
+                      const route = routesList.find(item => item.active && item.origin === newSchedOrigin && item.destination === destination);
+                      if (route) setNewSchedFare(String(route.base_rate_fcfa));
+                    }}
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none disabled:opacity-50"
+                  >
+                    <option value="">{newSchedOrigin ? 'Select destination' : 'Select origin first'}</option>
+                    {scheduleDestinations.map(destination => <option key={destination} value={destination}>{destination}</option>)}
+                  </select>
                 </div>
               </div>
 
