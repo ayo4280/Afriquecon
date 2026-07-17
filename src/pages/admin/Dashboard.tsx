@@ -1088,7 +1088,7 @@ export default function AdminDashboard() {
                     {!isSuperAdmin && (
                       <span className="flex items-center gap-2 text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-lg px-4 py-2 text-sm">
                         <Shield className="w-4 h-4" />
-                        Only Super Admins can modify settings
+                        {t('admin.superAdminOnly')}
                       </span>
                     )}
                   </div>
@@ -1105,9 +1105,9 @@ export default function AdminDashboard() {
                         <table className="w-full text-left text-sm text-gray-300">
                           <thead className="text-xs uppercase bg-gray-800 text-gray-400">
                             <tr>
-                              <th className="px-4 py-3">Route</th>
+                              <th className="px-4 py-3">{t('admin.route')}</th>
                               <th className="px-4 py-3">{t('admin.baseRate', 'Base Rate (FCFA)')}</th>
-                              <th className="px-4 py-3 text-right">Action</th>
+                              <th className="px-4 py-3 text-right">{t('admin.action')}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-gray-800">
@@ -1127,12 +1127,12 @@ export default function AdminDashboard() {
                                   />
                                 </td>
                                 <td className="px-4 py-3 text-right text-xs text-gray-500">
-                                  Auto-saves on blur
+                                  {t('admin.autosavesOnBlur')}
                                 </td>
                               </tr>
                             ))}
                             {routesList.length === 0 && (
-                              <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-500">No routes found</td></tr>
+                              <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-500">{t('admin.noRoutes')}</td></tr>
                             )}
                           </tbody>
                         </table>
@@ -1145,25 +1145,25 @@ export default function AdminDashboard() {
                     <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
                       <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                         <Shield className="w-5 h-5 text-teal-400" />
-                        User Account Management
+                        {t('admin.accountManagement')}
                       </h3>
 
                       {/* Add Admin Form */}
-                      <p className="text-sm text-gray-400 mb-4">Create client or staff accounts. Accounts are confirmed immediately, so give each password to its user securely.</p>
+                      <p className="text-sm text-gray-400 mb-4">{t('admin.accountManagementDescription')}</p>
                       <form onSubmit={handleCreateAccount} className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-3">
                         <input 
-                          type="email" required placeholder="Email"
+                          type="email" required placeholder={t('admin.email')}
                           value={newAccountEmail} onChange={e => setNewAccountEmail(e.target.value)}
                           className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
                         />
                         <input 
-                          type="text" required placeholder="Full Name"
+                          type="text" required placeholder={t('admin.fullName')}
                           value={newAccountName} onChange={e => setNewAccountName(e.target.value)}
                           className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
                         />
                         <div className="relative">
                           <input
-                            type={showNewAccountPassword ? 'text' : 'password'} required minLength={8} placeholder="Temporary password (8+ characters)"
+                            type={showNewAccountPassword ? 'text' : 'password'} required minLength={8} placeholder={t('admin.temporaryPassword')}
                             value={newAccountPassword} onChange={e => setNewAccountPassword(e.target.value)}
                             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 pr-10 text-sm text-white"
                           />
@@ -1177,7 +1177,7 @@ export default function AdminDashboard() {
                           </button>
                         </div>
                         <input
-                          type="tel" placeholder="Phone (optional)"
+                          type="tel" placeholder={t('admin.phoneOptional')}
                           value={newAccountPhone} onChange={e => setNewAccountPhone(e.target.value)}
                           className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
                         />
@@ -1185,21 +1185,21 @@ export default function AdminDashboard() {
                           value={newAccountRole} onChange={e => setNewAccountRole(e.target.value as AccountRole)}
                           className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
                         >
-                          <option value="client">Client</option>
-                          <option value="agent">Agent</option>
-                          <option value="manager">Manager</option>
-                          <option value="super_admin">Super Admin</option>
+                          <option value="client">{t('admin.client')}</option>
+                          <option value="agent">{t('admin.agent')}</option>
+                          <option value="manager">{t('admin.manager')}</option>
+                          <option value="super_admin">{t('admin.superAdmin')}</option>
                         </select>
                         <select
                           value={newAccountCountry} onChange={e => setNewAccountCountry(e.target.value as 'CM' | 'NG')}
                           className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
                         >
-                          <option value="CM">Cameroon</option>
-                          <option value="NG">Nigeria</option>
+                          <option value="CM">{t('admin.cameroon')}</option>
+                          <option value="NG">{t('admin.nigeria')}</option>
                         </select>
                         <button type="submit" disabled={creatingAccount} className="bg-teal-600 hover:bg-teal-500 disabled:opacity-60 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 md:col-span-2">
                           {creatingAccount ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                          Create account
+                          {t('admin.createAccount')}
                         </button>
                       </form>
 
@@ -1209,7 +1209,7 @@ export default function AdminDashboard() {
                         <table className="w-full text-left text-sm text-gray-300">
                           <thead className="text-xs uppercase bg-gray-800 text-gray-400">
                             <tr>
-                              <th className="px-4 py-3">Admin</th>
+                              <th className="px-4 py-3">{t('admin.admin')}</th>
                               <th className="px-4 py-3">Role</th>
                               <th className="px-4 py-3 text-right">Status</th>
                             </tr>
@@ -1237,7 +1237,7 @@ export default function AdminDashboard() {
                               </tr>
                             ))}
                             {adminUsers.length === 0 && (
-                              <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-500">No admins found</td></tr>
+                              <tr><td colSpan={3} className="px-4 py-8 text-center text-gray-500">{t('admin.noAdmins')}</td></tr>
                             )}
                           </tbody>
                         </table>
@@ -1256,7 +1256,7 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-md p-6">
             <h3 className="text-xl font-bold text-white mb-2">{t('admin.updateCargoStatus')}</h3>
-            <p className="text-gray-400 text-sm mb-6">Booking ID: <span className="font-mono text-purple-400">{updatingCargo.booking_id}</span></p>
+            <p className="text-gray-400 text-sm mb-6">{t('admin.bookingId')}: <span className="font-mono text-purple-400">{updatingCargo.booking_id}</span></p>
 
             <form onSubmit={handleUpdateCargo} className="space-y-4">
               <div>
@@ -1266,11 +1266,11 @@ export default function AdminDashboard() {
                   onChange={(e) => setNewStatus(e.target.value)}
                   className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                 >
-                  <option value="pending">Pending</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="in_transit">In Transit</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="pending">{t('admin.pending')}</option>
+                  <option value="confirmed">{t('admin.confirmed')}</option>
+                  <option value="in_transit">{t('admin.inTransit')}</option>
+                  <option value="delivered">{t('admin.delivered')}</option>
+                  <option value="cancelled">{t('admin.cancelled')}</option>
                 </select>
               </div>
 
@@ -1342,7 +1342,7 @@ export default function AdminDashboard() {
             <form onSubmit={handleAddSchedule} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Origin</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">{t('admin.origin')}</label>
                   <select
                     required value={newSchedOrigin}
                     onChange={e => {
@@ -1352,12 +1352,12 @@ export default function AdminDashboard() {
                     }}
                     className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
                   >
-                    <option value="">Select origin</option>
+                    <option value="">{t('admin.selectOrigin')}</option>
                     {scheduleOrigins.map(origin => <option key={origin} value={origin}>{origin}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Destination</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">{t('admin.destination')}</label>
                   <select
                     required value={newSchedDest} disabled={!newSchedOrigin}
                     onChange={e => {
@@ -1368,14 +1368,14 @@ export default function AdminDashboard() {
                     }}
                     className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none disabled:opacity-50"
                   >
-                    <option value="">{newSchedOrigin ? 'Select destination' : 'Select origin first'}</option>
+                    <option value="">{newSchedOrigin ? t('admin.selectDestination') : t('admin.selectOriginFirst')}</option>
                     {scheduleDestinations.map(destination => <option key={destination} value={destination}>{destination}</option>)}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Departure Time</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">{t('admin.departureTime')}</label>
                 <input
                   required type="datetime-local" value={newSchedDep} onChange={e => setNewSchedDep(e.target.value)}
                   className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
@@ -1384,7 +1384,7 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Arrival Time</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">{t('admin.arrivalTime')}</label>
                 <input
                   required type="datetime-local" value={newSchedArr} onChange={e => setNewSchedArr(e.target.value)}
                   className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
@@ -1393,10 +1393,10 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Base Fare (FCFA)</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">{t('admin.baseRate')}</label>
                 <input
                   required type="number" min="0" value={newSchedFare} onChange={e => setNewSchedFare(e.target.value)}
-                  placeholder="e.g. 15000"
+                  placeholder={t('admin.farePlaceholder')}
                   className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
                 />
               </div>
