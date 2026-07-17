@@ -550,7 +550,16 @@ export default function AdminDashboard() {
     e.preventDefault();
     setCreatingAccount(true);
     try {
+      // Fetch a fresh session rather than relying on the client library's
+      // implicit function header. The Edge Function authorizes this action
+      // from the signed-in Super Admin's access token.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Your sign-in session has expired. Please sign out and sign in again.');
+      }
+
       const { error } = await supabase.functions.invoke('admin-create-user', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
         body: {
           email: newAccountEmail,
           fullName: newAccountName,
