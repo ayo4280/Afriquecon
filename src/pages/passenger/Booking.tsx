@@ -270,7 +270,7 @@ export default function PassengerBooking() {
                           type="text" 
                           value={p.idNumber}
                           onChange={e => handleDetailChange(index, 'idNumber', e.target.value)}
-                          placeholder="National ID / Passport"
+                          placeholder={t('passengerBooking.idPlaceholder')}
                           className="w-full px-4 py-2 bg-white border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary" 
                         />
                       </div>
@@ -281,15 +281,15 @@ export default function PassengerBooking() {
                           onChange={e => handleDetailChange(index, 'ticketType', e.target.value)}
                           className="w-full px-4 py-2 bg-white border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
                         >
-                          <option value="adult">Adult</option>
-                          <option value="student">Student</option>
-                          <option value="senior">Senior</option>
-                          <option value="child_under_5">Child (2-5 years) - 30% Off</option>
-                          <option value="child_under_2">Child (Under 2) - Free</option>
+                          <option value="adult">{t('passengerBooking.adult')}</option>
+                          <option value="student">{t('passengerBooking.student')}</option>
+                          <option value="senior">{t('passengerBooking.senior')}</option>
+                          <option value="child_under_5">{t('passengerBooking.childUnder5')}</option>
+                          <option value="child_under_2">{t('passengerBooking.childUnder2')}</option>
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('passengerBooking.luggageKg', 'Luggage (kg)')}</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('passengerBooking.luggageKg')}</label>
                         <input 
                           type="number"
                           min={0}
@@ -297,7 +297,7 @@ export default function PassengerBooking() {
                           onChange={e => handleDetailChange(index, 'extraLuggage', parseInt(e.target.value) || 0)}
                           className="w-full px-4 py-2 bg-white border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary" 
                         />
-                        <p className="text-xs text-gray-500 mt-1">20kg free, +1000 FCFA/kg above</p>
+                        <p className="text-xs text-gray-500 mt-1">{t('passengerBooking.luggageAllowance')}</p>
                       </div>
                     </div>
                     <div className="mt-3 flex items-center">
@@ -308,7 +308,7 @@ export default function PassengerBooking() {
                         onChange={e => handleDetailChange(index, 'isNigerian', e.target.checked)}
                         className="mr-2 h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                       />
-                      <label htmlFor={`isNigerian-${index}`} className="text-sm font-medium text-gray-700">Passenger is a Nigerian Citizen</label>
+                      <label htmlFor={`isNigerian-${index}`} className="text-sm font-medium text-gray-700">{t('passengerBooking.nigerianCitizen')}</label>
                     </div>
                     
                     {index === 0 && (
@@ -317,13 +317,13 @@ export default function PassengerBooking() {
                         <div className="mb-3 flex items-start gap-3 bg-amber-50 border border-amber-300 rounded-xl p-3.5">
                           <span className="text-2xl leading-none mt-0.5">📣</span>
                           <div>
-                            <p className="text-sm font-bold text-amber-800">Action Required for Telegram Updates</p>
+                            <p className="text-sm font-bold text-amber-800">{t('passengerBooking.telegramAction')}</p>
                             <p className="text-xs text-amber-700 mt-0.5">
-                              To receive your booking confirmation and tracking updates on Telegram, you must first{' '}
+                              {t('passengerBooking.telegramNotice').split('(@Afriquecon_bot)')[0]}
                               <a href="https://t.me/Afriquecon_bot" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-amber-900 hover:text-amber-700">
-                                open our Telegram bot (@Afriquecon_bot) and press Start
+                                @Afriquecon_bot
                               </a>{' '}
-                              before booking.
+                              {t('passengerBooking.telegramNotice').split('(@Afriquecon_bot)')[1]}
                             </p>
                           </div>
                         </div>
@@ -334,7 +334,7 @@ export default function PassengerBooking() {
                             type="text" 
                             value={p.telegramId || ''} 
                             onChange={(e) => handleDetailChange(index, 'telegramId', e.target.value)} 
-                            placeholder="your_telegram_username" 
+                            placeholder={t('passengerBooking.telegramUsername')}
                             className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary" 
                           />
                         </div>
