@@ -112,6 +112,11 @@ export default function PassengerBooking() {
     setError(null);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Your sign-in session has expired. Please sign out and sign in again.');
+      }
+
       // Create ticket records
       const recordsToInsert = passengerDetails.map((p, i) => {
         const ticketId = `TKT-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
@@ -140,6 +145,7 @@ export default function PassengerBooking() {
       });
 
       const { error: dbError } = await supabase.functions.invoke('create-passenger-reservation', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
         body: { paymentReference, tickets: recordsToInsert },
       });
 
@@ -158,6 +164,7 @@ export default function PassengerBooking() {
       };
 
       const { data: intent, error: intentError } = await supabase.functions.invoke('create-payment-intent', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
         body: { provider: paymentMethod, bookingType: 'passenger', reference: paymentReference, ticketIds },
       });
       if (intentError) throw intentError;
