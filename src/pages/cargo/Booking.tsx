@@ -69,6 +69,11 @@ export default function CargoBooking() {
     setIsSubmitting(true);
     setError(null);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Your sign-in session has expired. Please sign out and sign in again.');
+      }
+
       const newBookingId = `AFCON-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
       const { error: dbError } = await supabase.from('cargo_bookings').insert([{
         booking_id: newBookingId, user_id: user.id, quote_id: quoteResult.quoteId,
@@ -97,6 +102,7 @@ export default function CargoBooking() {
       }
 
       const { data: intent, error: intentError } = await supabase.functions.invoke('create-payment-intent', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
         body: { provider: paymentMethod, bookingType: 'cargo', reference: paymentReference, bookingId: newBookingId },
       });
       if (intentError) throw intentError;

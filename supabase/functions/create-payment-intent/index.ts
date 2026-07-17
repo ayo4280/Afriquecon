@@ -1,43 +1,50 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://afrique-con.com",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const allowedOrigins = new Set([
+  "https://afriquecon.vercel.app",
+  "https://afrique-con.com",
+  "https://www.afrique-con.com",
+  "http://localhost:5173",
+]);
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const admin = createClient(supabaseUrl, serviceRoleKey);
 
-function reply(body: unknown, status = 200) {
+function responseHeaders(req: Request) {
+  const origin = req.headers.get("Origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "https://afriquecon.vercel.app",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Vary": "Origin",
+  };
+}
+
+function reply(req: Request, body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...responseHeaders(req), "Content-Type": "application/json" },
   });
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
+  if (req.method === "OPTIONS") return new Response("ok", { headers: responseHeaders(req) });
+  if (req.method !== "POST") return reply(req, { error: "Method not allowed" }, 405);
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return reply({ error: "Authentication required" }, 401);
+    const accessToken = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "").trim();
+    if (!accessToken) return reply(req, { error: "Authentication required" }, 401);
 
-    const client = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user }, error: authError } = await client.auth.getUser();
-    if (authError || !user) return reply({ error: "Authentication required" }, 401);
+    const { data: { user }, error: authError } = await admin.auth.getUser(accessToken);
+    if (authError || !user) return reply(req, { error: "Authentication required" }, 401);
 
     const { provider, bookingType, reference, bookingId, ticketIds } = await req.json();
     if (!['paystack', 'flutterwave'].includes(provider) || !['cargo', 'passenger'].includes(bookingType)) {
-      return reply({ error: "Invalid payment request" }, 400);
+      return reply(req, { error: "Invalid payment request" }, 400);
     }
     if (typeof reference !== 'string' || !/^AC-[a-zA-Z0-9-]{10,80}$/.test(reference)) {
-      return reply({ error: "Invalid payment reference" }, 400);
+      return reply(req, { error: "Invalid payment reference" }, 400);
     }
 
     let totalFcfa = 0;
@@ -49,12 +56,12 @@ serve(async (req) => {
         .eq('user_id', user.id)
         .single();
       if (error || !booking || booking.payment_status !== 'pending' || booking.payment_reference !== reference) {
-        return reply({ error: "Cargo booking is not eligible for payment" }, 409);
+        return reply(req, { error: "Cargo booking is not eligible for payment" }, 409);
       }
       totalFcfa = Number(booking.total_fcfa);
     } else {
       if (!Array.isArray(ticketIds) || ticketIds.length === 0 || ticketIds.length > 48) {
-        return reply({ error: "Invalid ticket selection" }, 400);
+        return reply(req, { error: "Invalid ticket selection" }, 400);
       }
       const { data: tickets, error } = await admin
         .from('passenger_tickets')
@@ -62,7 +69,7 @@ serve(async (req) => {
         .eq('user_id', user.id)
         .in('ticket_id', ticketIds);
       if (error || !tickets || tickets.length !== ticketIds.length || tickets.some((ticket) => ticket.payment_status !== 'pending' || ticket.payment_reference !== reference)) {
-        return reply({ error: "Tickets are not eligible for payment" }, 409);
+        return reply(req, { error: "Tickets are not eligible for payment" }, 409);
       }
       totalFcfa = tickets.reduce((sum, ticket) => sum + Number(ticket.total_fcfa), 0);
     }
@@ -110,12 +117,12 @@ serve(async (req) => {
       });
       const checkout = await checkoutResponse.json();
       if (!checkoutResponse.ok || !checkout?.data?.link) throw new Error('Flutterwave checkout could not be created');
-      return reply({ reference, amount, currency, checkoutUrl: checkout.data.link });
+      return reply(req, { reference, amount, currency, checkoutUrl: checkout.data.link });
     }
 
-    return reply({ reference, amount, currency });
+    return reply(req, { reference, amount, currency });
   } catch (error) {
     console.error('create-payment-intent error', error);
-    return reply({ error: 'Unable to initialize payment' }, 500);
+    return reply(req, { error: 'Unable to initialize payment' }, 500);
   }
 });

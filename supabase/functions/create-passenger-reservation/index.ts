@@ -1,37 +1,46 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://afrique-con.com",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const allowedOrigins = new Set([
+  "https://afriquecon.vercel.app",
+  "https://afrique-con.com",
+  "https://www.afrique-con.com",
+  "http://localhost:5173",
+]);
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const admin = createClient(supabaseUrl, serviceRoleKey);
 
-function reply(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+function responseHeaders(req: Request) {
+  const origin = req.headers.get("Origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "https://afriquecon.vercel.app",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Vary": "Origin",
+  };
+}
+
+function reply(req: Request, body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), { status, headers: { ...responseHeaders(req), "Content-Type": "application/json" } });
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
+  if (req.method === "OPTIONS") return new Response("ok", { headers: responseHeaders(req) });
+  if (req.method !== "POST") return reply(req, { error: "Method not allowed" }, 405);
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return reply({ error: "Authentication required" }, 401);
-    const client = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
-    const { data: { user } } = await client.auth.getUser();
-    if (!user) return reply({ error: "Authentication required" }, 401);
+    const accessToken = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "").trim();
+    if (!accessToken) return reply(req, { error: "Authentication required" }, 401);
+    const { data: { user }, error: authError } = await admin.auth.getUser(accessToken);
+    if (authError || !user) return reply(req, { error: "Authentication required" }, 401);
 
     const { paymentReference, tickets } = await req.json();
     if (typeof paymentReference !== 'string' || !/^AC-[a-zA-Z0-9-]{10,80}$/.test(paymentReference) || !Array.isArray(tickets) || tickets.length < 1 || tickets.length > 48) {
-      return reply({ error: "Invalid reservation request" }, 400);
+      return reply(req, { error: "Invalid reservation request" }, 400);
     }
     const scheduleId = tickets[0]?.schedule_id;
     if (typeof scheduleId !== 'string' || tickets.some((ticket: any) => ticket.schedule_id !== scheduleId)) {
-      return reply({ error: "Tickets must use one schedule" }, 400);
+      return reply(req, { error: "Tickets must use one schedule" }, 400);
     }
 
     const { data: schedule, error: scheduleError } = await admin
@@ -41,12 +50,12 @@ serve(async (req) => {
       .eq('status', 'scheduled')
       .single();
     if (scheduleError || !schedule || new Date(schedule.departure_time) <= new Date()) {
-      return reply({ error: "This schedule is no longer available" }, 409);
+      return reply(req, { error: "This schedule is no longer available" }, 409);
     }
 
     const seats = tickets.map((ticket: any) => String(ticket.seat_number));
     if (new Set(seats).size !== seats.length || seats.some((seat) => !/^(?:[1-9]|[1-4][0-9])$/.test(seat))) {
-      return reply({ error: "Invalid seat selection" }, 400);
+      return reply(req, { error: "Invalid seat selection" }, 400);
     }
 
     // Clear expired holds before the unique schedule/seat index reserves seats.
@@ -86,17 +95,17 @@ serve(async (req) => {
       };
     });
     if (records.some((record) => !record.ticket_id || !record.passenger_name || !['adult', 'student', 'senior', 'child_under_5', 'child_under_2'].includes(record.ticket_type))) {
-      return reply({ error: "Incomplete passenger details" }, 400);
+      return reply(req, { error: "Incomplete passenger details" }, 400);
     }
 
     const { data, error } = await admin.from('passenger_tickets').insert(records).select('ticket_id, total_fcfa');
     if (error) {
-      if (error.code === '23505') return reply({ error: "One or more selected seats were just reserved. Please choose different seats." }, 409);
+      if (error.code === '23505') return reply(req, { error: "One or more selected seats were just reserved. Please choose different seats." }, 409);
       throw error;
     }
-    return reply({ tickets: data, expiresAt });
+    return reply(req, { tickets: data, expiresAt });
   } catch (error) {
     console.error('create-passenger-reservation error', error);
-    return reply({ error: 'Unable to reserve seats' }, 500);
+    return reply(req, { error: 'Unable to reserve seats' }, 500);
   }
 });
