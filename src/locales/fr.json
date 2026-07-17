@@ -267,7 +267,59 @@
     "departure": "Départ",
     "seats": "Sièges",
     "totalFCFA": "Total (FCFA)",
-    "totalNGN": "Équiv. (NGN)"
+    "totalNGN": "Équiv. (NGN)",
+    "backToSearch": "Retour à la recherche",
+    "from": "Départ",
+    "to": "Arrivée",
+    "direct": "Direct",
+    "passengerCount": "{{count}} passager",
+    "passengerCount_other": "{{count}} passagers",
+    "searchingTrips": "Recherche de trajets disponibles...",
+    "noTrips": "Aucun trajet trouvé",
+    "noTripsDescription": "Aucune liaison n'a été trouvée de {{origin}} à {{destination}} à cette date. Essayez une autre date ou un autre itinéraire.",
+    "modifySearch": "Modifier la recherche",
+    "availableTrips": "{{count}} trajet disponible",
+    "availableTrips_other": "{{count}} trajets disponibles",
+    "onlySeats": "Plus que {{count}} places !",
+    "seatsAvailable": "{{count}} places disponibles",
+    "selectSeats": "Choisir les places",
+    "backToResults": "Retour aux résultats",
+    "bus": "Bus",
+    "allSeatsSelected": "Les {{count}} places sont sélectionnées !",
+    "selectMoreSeats": "Sélectionnez encore {{count}} place",
+    "selectMoreSeats_other": "Sélectionnez encore {{count}} places",
+    "available": "Disponible",
+    "occupied": "Occupée",
+    "selected": "Sélectionnée",
+    "driver": "Conducteur",
+    "back": "Arrière",
+    "yourSelection": "Votre sélection",
+    "selectSeatsHint": "Sélectionnez {{count}} places sur le plan pour continuer",
+    "adults": "Adultes",
+    "children": "Enfants (2-5 ans)",
+    "subtotal": "Sous-total",
+    "proceedCheckout": "Passer au paiement",
+    "ticketNotFound": "Billet introuvable",
+    "ticketNotFoundDescription": "Nous n'avons pas trouvé de billet portant cet identifiant.",
+    "returnProfile": "Retour au profil",
+    "backToProfile": "Retour au profil",
+    "printSave": "Imprimer / enregistrer en PDF",
+    "boardingPass": "Carte d'embarquement",
+    "confirmed": "Confirmé",
+    "scheduleId": "ID de l'horaire",
+    "class": "Classe",
+    "bookingDate": "Date de réservation",
+    "totalAmount": "Montant total",
+    "scanVerify": "Scanner pour vérifier",
+    "arrivalNotice": "Veuillez arriver 30 minutes avant le départ. Ce billet est non transférable. Présentez ce code QR à l'embarquement."
+    ,"childUnder5": "Enfant (2-5 ans) - réduction de 30 %"
+    ,"childUnder2": "Enfant (moins de 2 ans) - gratuit"
+    ,"luggageKg": "Bagages (kg)"
+    ,"luggageAllowance": "20 kg gratuits, puis 1 000 FCFA/kg au-delà"
+    ,"nigerianCitizen": "Le passager est de nationalité nigériane"
+    ,"telegramAction": "Action requise pour les mises à jour Telegram"
+    ,"telegramNotice": "Pour recevoir votre confirmation de réservation et vos mises à jour de suivi sur Telegram, ouvrez d'abord notre bot Telegram (@Afriquecon_bot) et appuyez sur Démarrer avant la réservation."
+    ,"telegramUsername": "votre_nom_utilisateur_telegram"
   },
   "admin": {
     "title": "Tableau de Bord Admin",

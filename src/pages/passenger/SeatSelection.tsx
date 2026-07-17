@@ -3,10 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { TripSchedule } from '../../services/passengerService';
 import { supabase } from '../../lib/supabase';
 import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function SeatSelection() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const trip = location.state?.trip as TripSchedule;
   const passengers = location.state?.passengers as number || 1;
@@ -64,7 +66,7 @@ export default function SeatSelection() {
               key={seatNumber}
               disabled={isOccupied}
               onClick={() => handleSeatClick(seatNumber)}
-              title={isOccupied ? 'Occupied' : `Seat ${seatNumber}`}
+              title={isOccupied ? t('passengerBooking.occupied') : `${t('passengerBooking.seat')} ${seatNumber}`}
               className={`w-10 h-10 rounded-t-xl rounded-b-md flex items-center justify-center font-bold text-xs transition-all duration-200 border-2 relative ${
                 isOccupied
                   ? 'bg-slate-200 border-slate-300 text-slate-400 cursor-not-allowed'
@@ -90,7 +92,7 @@ export default function SeatSelection() {
       <div className="container mx-auto px-4 max-w-5xl">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-[#0A1628] font-semibold mb-6 transition-colors group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-          Back to Results
+          {t('passengerBooking.backToResults')}
         </button>
 
         {/* Trip header */}
@@ -113,15 +115,15 @@ export default function SeatSelection() {
             <div className="flex justify-center gap-6 mb-8 bg-slate-50 rounded-xl p-4">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 bg-teal-50 border-2 border-teal-300 rounded-lg" />
-                <span className="text-xs font-semibold text-slate-600">Available</span>
+                <span className="text-xs font-semibold text-slate-600">{t('passengerBooking.available')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 bg-slate-200 border-2 border-slate-300 rounded-lg" />
-                <span className="text-xs font-semibold text-slate-600">Occupied</span>
+                <span className="text-xs font-semibold text-slate-600">{t('passengerBooking.occupied')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 bg-amber-400 border-2 border-amber-500 rounded-lg" />
-                <span className="text-xs font-semibold text-slate-600">Selected</span>
+                <span className="text-xs font-semibold text-slate-600">{t('passengerBooking.selected')}</span>
               </div>
             </div>
 
@@ -134,11 +136,11 @@ export default function SeatSelection() {
                 {/* Bus windshield */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 w-24 h-8 bg-slate-200 rounded-t-full border-2 border-slate-300" />
                 <div className="flex justify-center mb-5 mt-2">
-                  <div className="bg-[#0A1628] text-white text-xs font-bold py-1.5 px-5 rounded-full tracking-widest">DRIVER</div>
+                  <div className="bg-[#0A1628] text-white text-xs font-bold py-1.5 px-5 rounded-full tracking-widest">{t('passengerBooking.driver')}</div>
                 </div>
                 {Array.from({ length: 12 }).map((_, i) => renderSeatRow(i + 1))}
                 <div className="flex justify-center mt-5">
-                  <div className="bg-slate-400 text-white text-xs font-bold py-1.5 px-5 rounded-full tracking-widest">BACK</div>
+                  <div className="bg-slate-400 text-white text-xs font-bold py-1.5 px-5 rounded-full tracking-widest">{t('passengerBooking.back')}</div>
                 </div>
               </div>
             )}
@@ -149,7 +151,7 @@ export default function SeatSelection() {
             <div className="bg-[#0A1628] text-white p-7 rounded-3xl shadow-xl sticky top-24 animate-fade-up">
               <h3 className="text-xl font-display font-bold mb-5 flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-amber-400" />
-                Your Selection
+                {t('passengerBooking.yourSelection')}
               </h3>
 
               {selectedSeats.length === 0 ? (
@@ -157,7 +159,7 @@ export default function SeatSelection() {
                   <div className="w-14 h-14 bg-white/8 rounded-2xl flex items-center justify-center mx-auto mb-3">
                     <span className="text-2xl">💺</span>
                   </div>
-                  <p className="text-slate-400 text-sm">Select {passengers} seat{passengers > 1 ? 's' : ''} from the map to continue</p>
+                  <p className="text-slate-400 text-sm">{t('passengerBooking.selectSeatsHint', { count: passengers })}</p>
                 </div>
               ) : (
                 <div className="space-y-5">
@@ -171,17 +173,17 @@ export default function SeatSelection() {
 
                   <div className="border-t border-white/10 pt-5 space-y-2.5 text-sm text-slate-300">
                     <div className="flex justify-between">
-                      <span>Adults</span>
+                      <span>{t('passengerBooking.adults')}</span>
                       <span>{adults} × {trip.baseFareFCFA.toLocaleString()} FCFA</span>
                     </div>
                     {children > 0 && (
                       <div className="flex justify-between">
-                        <span>Children (2-5)</span>
+                        <span>{t('passengerBooking.children')}</span>
                         <span>{children} × {(trip.baseFareFCFA * 0.7).toLocaleString()} FCFA</span>
                       </div>
                     )}
                     <div className="border-t border-white/10 pt-2 mt-2 flex justify-between font-bold text-xl text-white">
-                      <span>Subtotal</span>
+                      <span>{t('passengerBooking.subtotal')}</span>
                       <span>{total.toLocaleString()} FCFA</span>
                     </div>
                     <div className="text-right text-xs text-slate-500">≈ ₦{(total * 2.5).toLocaleString()}</div>
@@ -193,7 +195,7 @@ export default function SeatSelection() {
                     className="w-full bg-amber-400 hover:bg-amber-300 disabled:opacity-50 disabled:cursor-not-allowed text-[#0A1628] py-3.5 rounded-xl font-extrabold transition-all shadow-lg shadow-amber-400/20 flex items-center justify-center gap-2 group"
                   >
                     {selectedSeats.length === passengers
-                       ? <><CheckCircle className="w-5 h-5" /> Proceed to Checkout</>
+                       ? <><CheckCircle className="w-5 h-5" /> {t('passengerBooking.proceedCheckout')}</>
                        : `Select ${passengers - selectedSeats.length} more seat${passengers - selectedSeats.length !== 1 ? 's' : ''}`
                     }
                   </button>

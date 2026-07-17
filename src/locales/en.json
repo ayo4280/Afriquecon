@@ -267,7 +267,59 @@
     "departure": "Departure",
     "seats": "Seats",
     "totalFCFA": "Total (FCFA)",
-    "totalNGN": "Equiv. (NGN)"
+    "totalNGN": "Equiv. (NGN)",
+    "backToSearch": "Back to search",
+    "from": "From",
+    "to": "To",
+    "direct": "Direct",
+    "passengerCount": "{{count}} passenger",
+    "passengerCount_other": "{{count}} passengers",
+    "searchingTrips": "Searching for available trips...",
+    "noTrips": "No trips found",
+    "noTripsDescription": "No route was found from {{origin}} to {{destination}} on that date. Try another date or route.",
+    "modifySearch": "Modify search",
+    "availableTrips": "{{count}} available trip",
+    "availableTrips_other": "{{count}} available trips",
+    "onlySeats": "Only {{count}} seats!",
+    "seatsAvailable": "{{count}} seats available",
+    "selectSeats": "Select seats",
+    "backToResults": "Back to results",
+    "bus": "Bus",
+    "allSeatsSelected": "All {{count}} seats selected!",
+    "selectMoreSeats": "Select {{count}} more seat",
+    "selectMoreSeats_other": "Select {{count}} more seats",
+    "available": "Available",
+    "occupied": "Occupied",
+    "selected": "Selected",
+    "driver": "Driver",
+    "back": "Back",
+    "yourSelection": "Your selection",
+    "selectSeatsHint": "Select {{count}} seats from the map to continue",
+    "adults": "Adults",
+    "children": "Children (2-5 years)",
+    "subtotal": "Subtotal",
+    "proceedCheckout": "Proceed to checkout",
+    "ticketNotFound": "Ticket not found",
+    "ticketNotFoundDescription": "We could not find a ticket with that ID.",
+    "returnProfile": "Return to profile",
+    "backToProfile": "Back to profile",
+    "printSave": "Print / Save PDF",
+    "boardingPass": "Boarding pass",
+    "confirmed": "Confirmed",
+    "scheduleId": "Schedule ID",
+    "class": "Class",
+    "bookingDate": "Booking date",
+    "totalAmount": "Total amount",
+    "scanVerify": "Scan to verify",
+    "arrivalNotice": "Please arrive 30 minutes before departure. This ticket is non-transferable. Present this QR code at boarding."
+    ,"childUnder5": "Child (2-5 years) - 30% off"
+    ,"childUnder2": "Child (under 2) - free"
+    ,"luggageKg": "Luggage (kg)"
+    ,"luggageAllowance": "20 kg free, then 1,000 FCFA/kg above"
+    ,"nigerianCitizen": "Passenger is a Nigerian citizen"
+    ,"telegramAction": "Action required for Telegram updates"
+    ,"telegramNotice": "To receive your booking confirmation and tracking updates on Telegram, first open our Telegram bot (@Afriquecon_bot) and press Start before booking."
+    ,"telegramUsername": "your_telegram_username"
   },
   "admin": {
     "title": "Admin Dashboard",

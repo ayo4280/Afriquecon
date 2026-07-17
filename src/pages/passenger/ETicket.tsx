@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Printer, ArrowLeft, Loader2, CheckCircle2, MapPin, Calendar } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface TicketDetails {
   ticket_id: string;
@@ -16,6 +17,7 @@ interface TicketDetails {
 
 export default function ETicket() {
   const { ticket_id } = useParams();
+  const { t } = useTranslation();
   const [ticket, setTicket] = useState<TicketDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -32,20 +34,20 @@ export default function ETicket() {
         if (error) throw error;
         setTicket(data);
       } catch (err: any) {
-        setError(err.message || 'Ticket not found');
+        setError(err.message || t('passengerBooking.ticketNotFound'));
       } finally {
         setLoading(false);
       }
     }
     fetchTicket();
-  }, [ticket_id]);
+  }, [ticket_id, t]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F4F6FA] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-10 h-10 text-amber-400 animate-spin" />
-          <p className="text-slate-500 font-medium">Loading your ticket...</p>
+          <p className="text-slate-500 font-medium">{t('admin.loading')}</p>
         </div>
       </div>
     );
@@ -58,10 +60,10 @@ export default function ETicket() {
           <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">🎫</span>
           </div>
-          <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">Ticket Not Found</h2>
-          <p className="text-slate-500 mb-6">We couldn't find a ticket with that ID.</p>
+          <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">{t('passengerBooking.ticketNotFound')}</h2>
+          <p className="text-slate-500 mb-6">{t('passengerBooking.ticketNotFoundDescription')}</p>
           <Link to="/profile" className="bg-[#0A1628] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1a2d4e] transition-colors inline-block">
-            Return to Profile
+            {t('passengerBooking.returnProfile')}
           </Link>
         </div>
       </div>
@@ -79,14 +81,14 @@ export default function ETicket() {
       <div className="max-w-2xl mx-auto mb-6 flex justify-between items-center print:hidden animate-fade-up">
         <Link to="/profile" className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors font-medium group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-          Back to Profile
+          {t('passengerBooking.backToProfile')}
         </Link>
         <button
           onClick={() => window.print()}
           className="flex items-center gap-2 bg-[#0A1628] hover:bg-[#1a2d4e] text-white px-5 py-2.5 rounded-xl font-semibold transition-all shadow-lg group"
         >
           <Printer className="w-4 h-4" />
-          Print / Save PDF
+          {t('passengerBooking.printSave')}
         </button>
       </div>
 
@@ -104,14 +106,14 @@ export default function ETicket() {
               <div className="flex items-center gap-4">
                 <img src="/logo.png" alt="Afrique-con" className="h-10 object-contain bg-white px-2 py-1 rounded-lg" />
                 <div>
-                  <div className="text-amber-400 text-xs font-bold uppercase tracking-widest">Boarding Pass</div>
+                  <div className="text-amber-400 text-xs font-bold uppercase tracking-widest">{t('passengerBooking.boardingPass')}</div>
                   <div className="text-white text-xl font-display font-extrabold mt-0.5">Afrique-con PLC</div>
                 </div>
               </div>
               {isPaid && (
                 <div className="flex items-center gap-1.5 bg-teal-400/20 border border-teal-400/40 text-teal-300 px-3 py-1.5 rounded-xl text-xs font-bold">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  CONFIRMED
+                  {t('passengerBooking.confirmed')}
                 </div>
               )}
             </div>
@@ -122,7 +124,7 @@ export default function ETicket() {
                 <div className="text-4xl font-display font-extrabold text-white">
                   {ticket.schedule_id.split('-')[0] || 'DLA'}
                 </div>
-                <div className="text-slate-400 text-xs mt-1 uppercase tracking-wider">Origin</div>
+                <div className="text-slate-400 text-xs mt-1 uppercase tracking-wider">{t('home.origin')}</div>
               </div>
               <div className="flex-1 flex flex-col items-center gap-1 max-w-[120px]">
                 <div className="text-amber-400 text-xs font-semibold">✈ Direct</div>
@@ -132,7 +134,7 @@ export default function ETicket() {
                 <div className="text-4xl font-display font-extrabold text-white">
                   {ticket.schedule_id.split('-')[1] || 'LOS'}
                 </div>
-                <div className="text-slate-400 text-xs mt-1 uppercase tracking-wider">Destination</div>
+                <div className="text-slate-400 text-xs mt-1 uppercase tracking-wider">{t('home.destination')}</div>
               </div>
             </div>
           </div>
@@ -150,11 +152,11 @@ export default function ETicket() {
             <div className="flex-1 space-y-5">
               <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Passenger</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('passengerBooking.passenger')}</p>
                   <p className="font-bold text-slate-900 text-lg">{ticket.passenger_name}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Seat</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('passengerBooking.seat')}</p>
                   <p className="font-extrabold text-amber-500 text-3xl font-display">{ticket.seat_number}</p>
                 </div>
               </div>
@@ -163,11 +165,11 @@ export default function ETicket() {
 
               <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Schedule ID</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('passengerBooking.scheduleId')}</p>
                   <p className="font-mono font-bold text-slate-800 text-sm">{ticket.schedule_id}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Class</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('passengerBooking.class')}</p>
                   <p className="font-bold text-slate-800 capitalize">{ticket.ticket_type}</p>
                 </div>
               </div>
@@ -177,12 +179,12 @@ export default function ETicket() {
               <div className="grid grid-cols-2 gap-5">
                 <div>
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                    <Calendar className="w-3 h-3" /> Booking Date
+                    <Calendar className="w-3 h-3" /> {t('passengerBooking.bookingDate')}
                   </p>
                   <p className="font-semibold text-slate-700 text-sm">{new Date(ticket.created_at).toLocaleDateString()}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Payment</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('profile.payment')}</p>
                   {isPaid ? (
                     <span className="inline-flex items-center gap-1 bg-teal-50 text-teal-700 font-bold text-sm px-3 py-1 rounded-full border border-teal-200">
                       <CheckCircle2 className="w-3.5 h-3.5" /> PAID
@@ -194,7 +196,7 @@ export default function ETicket() {
               </div>
 
               <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 flex items-center justify-between">
-                <span className="text-slate-500 text-sm font-medium">Total Amount</span>
+                <span className="text-slate-500 text-sm font-medium">{t('passengerBooking.totalAmount')}</span>
                 <span className="text-xl font-display font-extrabold text-[#0A1628]">{ticket.total_fcfa?.toLocaleString()} FCFA</span>
               </div>
             </div>
@@ -205,7 +207,7 @@ export default function ETicket() {
                 <img src={qrUrl} alt="Ticket QR Code" className="w-40 h-40 rounded-xl" crossOrigin="anonymous" />
               </div>
               <div className="text-center">
-                <p className="text-xs text-slate-400 font-mono">Scan to verify</p>
+                <p className="text-xs text-slate-400 font-mono">{t('passengerBooking.scanVerify')}</p>
                 <p className="text-xs text-slate-300 font-mono mt-0.5">{ticket.ticket_id.slice(0, 12)}...</p>
               </div>
             </div>
