@@ -8,7 +8,6 @@ const allowedOrigins = new Set([
   "http://localhost:5173",
 ]);
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const admin = createClient(supabaseUrl, serviceRoleKey);
 
@@ -33,17 +32,24 @@ serve(async (req) => {
   if (req.method !== "POST") return reply(req, { error: "Method not allowed" }, 405);
 
   try {
-    const authorization = req.headers.get("Authorization");
-    if (!authorization) return reply(req, { error: "Authentication required" }, 401);
+    const accessToken = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "").trim();
+    if (!accessToken) return reply(req, { error: "Authentication required" }, 401);
 
-    const caller = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authorization } },
-    });
-    const { data: { user }, error: userError } = await caller.auth.getUser();
+    // Verify the caller's supplied JWT with the service client. This avoids
+    // depending on legacy anon-key environment variables in Edge Functions.
+    const { data: { user }, error: userError } = await admin.auth.getUser(accessToken);
     if (userError || !user) return reply(req, { error: "Authentication required" }, 401);
 
-    const { data: role, error: roleError } = await caller.rpc("current_admin_role");
-    if (roleError || role !== "super_admin") return reply(req, { error: "Super Admin access required" }, 403);
+    const { data: callerAdmin, error: roleError } = await admin
+      .from("admin_users")
+      .select("role")
+      .eq("email", user.email ?? "")
+      .eq("active", true)
+      .in("role", ["super_admin"])
+      .maybeSingle();
+    if (roleError || callerAdmin?.role !== "super_admin") {
+      return reply(req, { error: "Super Admin access required" }, 403);
+    }
 
     const payload = await req.json();
     const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
