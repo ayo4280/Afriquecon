@@ -107,7 +107,7 @@ export default function Navbar() {
             <button
               onClick={toggleLanguage}
               className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2.5 rounded-xl text-base font-bold transition-all"
-              title="Switch Language"
+              title={t('nav.switchLanguage')}
             >
               <span className="text-xl">{i18n.language === 'en' ? '🇫🇷' : '🇬🇧'}</span>
               <span className="hidden lg:inline">{i18n.language === 'en' ? 'Français' : 'English'}</span>
@@ -129,11 +129,11 @@ export default function Navbar() {
                   {isAdmin && (
                     <Link
                       to="/admin"
-                      title="Admin Dashboard"
+                      title={t('admin.title')}
                       className="flex items-center gap-1 bg-amber-400/20 hover:bg-amber-400/30 text-amber-400 px-2 py-1 rounded text-xs font-bold transition-colors border border-amber-400/30"
                     >
                       <Shield className="w-3.5 h-3.5" />
-                      Admin
+                      {t('nav.admin')}
                     </Link>
                   )}
                   <button
@@ -167,7 +167,7 @@ export default function Navbar() {
           <button
             className="md:hidden p-2 text-slate-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
             onClick={() => setMobileOpen(v => !v)}
-            aria-label="Toggle menu"
+            aria-label={t('nav.toggleMenu')}
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -226,14 +226,14 @@ export default function Navbar() {
                     className="flex-1 flex items-center justify-center gap-2 bg-white/8 border border-white/15 text-slate-300 px-3 py-2.5 rounded-xl text-sm font-medium"
                   >
                     <UserCircle className="w-4 h-4 text-amber-400" />
-                    Profile
+                    {t('nav.profile')}
                   </Link>
                   <button
                     onClick={signOut}
                     className="flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2.5 rounded-xl text-sm font-medium"
                   >
                     <LogOut className="w-4 h-4" />
-                    Sign Out
+                    {t('nav.signOut')}
                   </button>
                 </div>
               ) : (

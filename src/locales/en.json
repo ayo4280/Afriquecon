@@ -7,7 +7,11 @@
     "login": "Login",
     "signup": "Sign Up",
     "signOut": "Sign Out",
-    "language": "French"
+    "language": "French",
+    "admin": "Admin",
+    "profile": "Profile",
+    "toggleMenu": "Toggle menu",
+    "switchLanguage": "Switch language"
   },
   "footer": {
     "tagline": "Connecting Cameroon & Nigeria through reliable, digital transport.",
@@ -22,7 +26,14 @@
     "legal": "Legal",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
-    "copyright": "© 2025 Afrique-con Plc. All rights reserved."
+    "copyright": "© 2025 Afrique-con Plc. All rights reserved.",
+    "supportDescription": "Get instant shipment updates and 24/7 support via our Telegram channel.",
+    "supportAvailability": "24/7 Telegram Support",
+    "branches": "Our Branches & Agencies",
+    "loadingBranches": "Loading branches...",
+    "about": "About Us",
+    "contact": "Contact",
+    "operational": "All services operational"
   },
   "home": {
     "heroTitle": "Connecting Cameroon & Nigeria",
@@ -86,7 +97,27 @@
     "trackTitle": "Track Your Shipment",
     "trackSubtitle": "Enter your tracking ID to get real-time status updates.",
     "trackPlaceholder": "e.g. AFCON-20240629-0001",
-    "trackBtn": "Track"
+    "trackBtn": "Track",
+    "busSchedule": "Bus Schedule",
+    "quoteReference": "Quote Reference",
+    "expires": "Expires",
+    "priorityHandling": "Priority handling and faster delivery (maximum 50 kg)",
+    "fromNigeria": "From Nigeria",
+    "fromCameroon": "From Cameroon",
+    "days": "Days",
+    "time": "Time",
+    "checkOffice": "Check office",
+    "noSchedulesDirection": "No schedules found for this direction.",
+    "proceedToBooking": "Proceed to Booking",
+    "runsOn": "This route runs on {{days}}.",
+    "adult": "Adult",
+    "childAge": "Child (2-5 years)",
+    "coverage": "Coverage",
+    "customerStories": "Customer Stories",
+    "statsDelivered": "Shipments Delivered",
+    "statsOnTime": "On-Time Rate",
+    "statsCountries": "Countries Connected",
+    "statsSupport": "Telegram Support"
   },
   "auth": {
     "loginTitle": "Welcome Back",
@@ -395,6 +426,8 @@
     "thinking": "Thinking...",
     "send": "Send",
     "minimize": "Minimize",
-    "poweredBy": "Powered by AI"
+    "poweredBy": "Powered by AI",
+    "loadingData": "Loading data...",
+    "loadingLiveData": "Loading live data..."
   }
 }
