@@ -560,7 +560,16 @@ export default function AdminDashboard() {
           role: newAccountRole,
         },
       });
-      if (error) throw error;
+      if (error) {
+        // Supabase wraps non-2xx Edge Function responses in a FunctionsHttpError.
+        // Read the response body so administrators see the actionable server error.
+        const response = (error as { context?: Response }).context;
+        if (response) {
+          const body = await response.clone().json().catch(() => null) as { error?: string } | null;
+          if (body?.error) throw new Error(body.error);
+        }
+        throw error;
+      }
       alert('Account created successfully. Give the user their password securely.');
       setNewAccountEmail('');
       setNewAccountName('');
