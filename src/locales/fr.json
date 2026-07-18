@@ -235,7 +235,14 @@
     "weight": "Poids",
     "totalPaid": "Total payé",
     "error": "Une erreur s'est produite lors de l'enregistrement de la réservation.",
-    "approvalRequested": "Votre demande de fret volumineux a été envoyée à la direction. Nous vous informerons par Telegram et e-mail lorsque votre devis négocié sera approuvé."
+    "approvalRequested": "Votre demande de fret volumineux a été envoyée à la direction. Nous vous informerons par Telegram et e-mail lorsque votre devis négocié sera approuvé.",
+    "payApprovedQuote": "Payer le devis approuvé",
+    "approvedQuoteUnavailable": "Ce devis n'est pas encore prêt pour le paiement. Attendez l'approbation de la direction ou contactez l'assistance.",
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+    "paymentStartError": "Impossible de démarrer le paiement. Veuillez réessayer.",
+    "paymentSubmitted": "Paiement envoyé",
+    "paymentSubmittedHint": "Votre paiement est en cours de vérification. Le statut de votre envoi sera mis à jour automatiquement après confirmation.",
+    "backToShipments": "Retour aux envois"
   },
   "passengerBooking": {
     "back": "Retour à la sélection des sièges",

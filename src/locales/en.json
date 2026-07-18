@@ -235,7 +235,14 @@
     "weight": "Weight",
     "totalPaid": "Total Paid",
     "error": "An error occurred while saving the booking.",
-    "approvalRequested": "Your large-cargo request has been sent to management. We will notify you by Telegram and email when your negotiated quote is approved."
+    "approvalRequested": "Your large-cargo request has been sent to management. We will notify you by Telegram and email when your negotiated quote is approved.",
+    "payApprovedQuote": "Pay approved quote",
+    "approvedQuoteUnavailable": "This quote is not ready for payment. Please wait for management approval or contact support.",
+    "sessionExpired": "Your sign-in session has expired. Please sign in again.",
+    "paymentStartError": "Unable to start payment. Please try again.",
+    "paymentSubmitted": "Payment submitted",
+    "paymentSubmittedHint": "Your payment is being verified. Your shipment status will update automatically once confirmation is received.",
+    "backToShipments": "Back to shipments"
   },
   "passengerBooking": {
     "back": "Back to Seat Selection",

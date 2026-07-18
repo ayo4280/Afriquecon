@@ -51,11 +51,11 @@ serve(async (req) => {
     if (bookingType === 'cargo') {
       const { data: booking, error } = await admin
         .from('cargo_bookings')
-        .select('id, total_fcfa, payment_status, payment_reference')
+        .select('id, total_fcfa, weight_kg, status, payment_status, payment_reference')
         .eq('booking_id', bookingId)
         .eq('user_id', user.id)
         .single();
-      if (error || !booking || booking.payment_status !== 'pending' || booking.payment_reference !== reference) {
+      if (error || !booking || Number(booking.total_fcfa) <= 0 || booking.payment_status !== 'pending' || booking.payment_reference !== reference || (Number(booking.weight_kg) >= 100 && booking.status !== 'confirmed')) {
         return reply(req, { error: "Cargo booking is not eligible for payment" }, 409);
       }
       totalFcfa = Number(booking.total_fcfa);
