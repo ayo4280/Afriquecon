@@ -234,7 +234,8 @@
     "route": "Route",
     "weight": "Weight",
     "totalPaid": "Total Paid",
-    "error": "An error occurred while saving the booking."
+    "error": "An error occurred while saving the booking.",
+    "approvalRequested": "Your large-cargo request has been sent to management. We will notify you by Telegram and email when your negotiated quote is approved."
   },
   "passengerBooking": {
     "back": "Back to Seat Selection",

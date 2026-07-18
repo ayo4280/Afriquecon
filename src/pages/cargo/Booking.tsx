@@ -130,7 +130,7 @@ export default function CargoBooking() {
           <h2 className="text-3xl font-display font-bold mb-2 text-slate-900">{t('cargoBooking.successTitle')}</h2>
           <p className="text-slate-500 mb-6">
             {quoteResult.totalFCFA === 0
-              ? t('cargoBooking.successMsg')
+              ? t('cargoBooking.approvalRequested')
               : 'Your payment was submitted and will be confirmed automatically after verification.'}
           </p>
 

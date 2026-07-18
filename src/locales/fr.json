@@ -234,7 +234,8 @@
     "route": "Itinéraire",
     "weight": "Poids",
     "totalPaid": "Total payé",
-    "error": "Une erreur s'est produite lors de l'enregistrement de la réservation."
+    "error": "Une erreur s'est produite lors de l'enregistrement de la réservation.",
+    "approvalRequested": "Votre demande de fret volumineux a été envoyée à la direction. Nous vous informerons par Telegram et e-mail lorsque votre devis négocié sera approuvé."
   },
   "passengerBooking": {
     "back": "Retour à la sélection des sièges",

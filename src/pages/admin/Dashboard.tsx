@@ -265,6 +265,10 @@ export default function AdminDashboard() {
   const handleUpdateCargo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!updatingCargo) return;
+    if (updatingCargo.weight_kg >= 100 && newStatus === 'confirmed' && (!negotiatedPrice || parseFloat(negotiatedPrice) <= 0)) {
+      alert('Enter the negotiated price before confirming a large cargo quote.');
+      return;
+    }
     setUpdateLoading(true);
     try {
       // 1. Build update payload
