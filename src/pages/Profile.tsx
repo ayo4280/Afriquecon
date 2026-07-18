@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
 import { supabase } from '../lib/supabase';
-import { Package, Bus, LogOut, Loader2, Ticket, ArrowRight, MapPin, Search } from 'lucide-react';
+import { Package, Bus, LogOut, Loader2, Ticket, ArrowRight, MapPin, Search, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface Profile {
@@ -264,6 +264,12 @@ export default function Profile() {
                         <Search className="w-3.5 h-3.5" />
                         {t('profile.track')}
                       </Link>
+                      {booking.status === 'confirmed' && booking.payment_status === 'pending' && Number(booking.total_fcfa) > 0 && (
+                        <Link to={`/cargo/pay/${booking.booking_id}`} className="flex items-center gap-1.5 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-2 rounded-xl transition-colors">
+                          <CreditCard className="w-3.5 h-3.5" />
+                          {t('cargoBooking.payApprovedQuote')}
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>
