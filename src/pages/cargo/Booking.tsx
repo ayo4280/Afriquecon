@@ -88,7 +88,7 @@ export default function CargoBooking() {
       }]);
       if (dbError) throw dbError;
 
-      if (quoteResult.totalFCFA === 0 && Number(requestDetails?.weightKg) >= 100) {
+      if (quoteResult.totalFCFA === 0 && (Number(requestDetails?.weightKg) >= 100 || quoteResult.isExpress)) {
         const { error: notificationError } = await supabase.functions.invoke('notify-large-cargo-approval', {
           headers: { Authorization: `Bearer ${session.access_token}` },
           body: { bookingId: newBookingId },

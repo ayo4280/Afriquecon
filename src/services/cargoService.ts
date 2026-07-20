@@ -29,6 +29,10 @@ function isValidRoute(origin: string, destination: string) {
 export const cargoService = {
   calculateQuote: (request: CargoQuoteRequest): CargoQuoteResponse => {
     const routeKey = `${request.origin}-${request.destination}`;
+
+    if (request.isExpress && request.weightKg > 50) {
+      throw new Error('Express cargo weight cannot exceed 50kg.');
+    }
     
     if (!isValidRoute(request.origin, request.destination)) {
       throw new Error(`Route not supported: ${routeKey}`);
@@ -49,9 +53,10 @@ export const cargoService = {
 
     if (request.isExpress) {
       status = 'PENDING_REVIEW';
-      message = message
-        ? message + ' Also, express booking requires management approval.'
-        : 'Your express booking requires management approval. Express surcharge will be determined based on urgency and capacity. Expect response within 24 hours.';
+      baseFCFA = 0;
+      message = request.weightKg >= 100
+        ? 'Your quote requires management approval. Express service and the final price will be determined based on urgency and capacity. Expect response within 24 hours.'
+        : 'Your express cargo booking requires management approval. The final price and surcharge will be determined based on urgency and capacity. Expect response within 24 hours.';
     }
 
     const totalFCFA = baseFCFA;

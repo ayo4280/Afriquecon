@@ -255,7 +255,7 @@ export default function Home() {
                             {t('home.recalculate')}
                           </button>
                           <button
-                            onClick={() => navigate('/cargo/booking', { state: { quote: quoteResult, request: { origin: cargoOrigin, destination: cargoDestination, weightKg: parseFloat(cargoWeight), cargoType } } })}
+                            onClick={() => navigate('/cargo/booking', { state: { quote: quoteResult, request: { origin: cargoOrigin, destination: cargoDestination, weightKg: parseFloat(cargoWeight), cargoType, isExpress } } })}
                             className="flex-1 bg-amber-400 hover:bg-amber-300 text-[#0A1628] py-3 rounded-xl font-bold transition-all flex justify-center items-center gap-2 shadow-lg shadow-amber-400/30"
                           >
                             {t('home.bookNow')}

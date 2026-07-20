@@ -46,22 +46,25 @@ serve(async (req) => {
 
     const { data: booking, error: bookingError } = await admin
       .from("cargo_bookings")
-      .select("booking_id, origin, destination, weight_kg, total_fcfa, customer_name, customer_phone, status")
+      .select("booking_id, origin, destination, weight_kg, is_express, total_fcfa, customer_name, customer_phone, status")
       .eq("booking_id", bookingId)
       .eq("user_id", user.id)
       .single();
 
-    if (bookingError || !booking || Number(booking.weight_kg) < 100 || Number(booking.total_fcfa) > 0) {
-      return reply(req, { error: "Booking is not awaiting large-cargo approval" }, 409);
+    const requiresApproval = Boolean(booking?.is_express) || Number(booking?.weight_kg) >= 100;
+    if (bookingError || !booking || !requiresApproval || Number(booking.total_fcfa) > 0) {
+      return reply(req, { error: "Booking is not awaiting management approval" }, 409);
     }
     if (!botToken || !/^\d+$/.test(managementChatId)) {
       return reply(req, { error: "Management Telegram alerts are not configured" }, 500);
     }
 
-    const message = "Large cargo approval required\n\n" +
+    const approvalTitle = booking.is_express ? "Express cargo approval required" : "Large cargo approval required";
+    const message = `${approvalTitle}\n\n` +
       `Booking: ${booking.booking_id}\n` +
       `Route: ${booking.origin} -> ${booking.destination}\n` +
       `Weight: ${booking.weight_kg} kg\n` +
+      (booking.is_express ? "Service: Express\n" : "") +
       `Customer: ${booking.customer_name}\n` +
       `Phone: ${booking.customer_phone}\n\n` +
       "Open the Afriquecon dashboard to set the negotiated price and confirm.";

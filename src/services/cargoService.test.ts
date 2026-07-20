@@ -32,7 +32,14 @@ describe('cargo quoting', () => {
     });
 
     expect(quote.status).toBe('PENDING_REVIEW');
-    expect(quote.message).toContain('express booking requires management approval');
+    expect(quote.totalFCFA).toBe(0);
+    expect(quote.message).toContain('express cargo booking requires management approval');
+  });
+
+  it('enforces the 50 kg express limit in the quote service', () => {
+    expect(() => cargoService.calculateQuote({
+      origin: 'Douala', destination: 'Lagos', weightKg: 51, cargoType: 'general', isExpress: true,
+    })).toThrow('Express cargo weight cannot exceed 50kg.');
   });
 
   it('rejects routes outside the supported countries', () => {
