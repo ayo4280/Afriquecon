@@ -88,6 +88,17 @@ export default function CargoBooking() {
       }]);
       if (dbError) throw dbError;
 
+      if (quoteResult.totalFCFA === 0 && Number(requestDetails?.weightKg) >= 100) {
+        const { error: notificationError } = await supabase.functions.invoke('notify-large-cargo-approval', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          body: { bookingId: newBookingId },
+        });
+        if (notificationError) {
+          // The booking remains valid; management can still see it in the dashboard.
+          console.error('Large cargo management notification failed', notificationError);
+        }
+      }
+
       const onSuccess = async () => {
         setBookingId(newBookingId);
         setSuccess(true);
