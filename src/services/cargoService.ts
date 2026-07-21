@@ -30,6 +30,10 @@ export const cargoService = {
   calculateQuote: (request: CargoQuoteRequest): CargoQuoteResponse => {
     const routeKey = `${request.origin}-${request.destination}`;
 
+    if (!Number.isFinite(request.weightKg) || request.weightKg <= 0) {
+      throw new Error('Cargo weight must be greater than 0kg.');
+    }
+
     if (request.isExpress && request.weightKg > 50) {
       throw new Error('Express cargo weight cannot exceed 50kg.');
     }
