@@ -86,7 +86,6 @@ serve(async (req) => {
 
     const { data: payment, error } = await supabase.from('payments').select('*').eq('reference', reference).single();
     if (error || !payment) return new Response('Unknown payment', { status: 404 });
-    if (payment.status === 'paid') return Response.json({ ok: true });
     if (payment.provider !== provider) return new Response('Provider mismatch', { status: 400 });
 
     const verification = await verifyPayment(provider, reference, transactionId);
@@ -100,18 +99,17 @@ serve(async (req) => {
       throw new Error('Payment verification mismatch');
     }
 
-    const { error: updatePaymentError } = await supabase.from('payments').update({
-      status: 'paid', provider_transaction_id: String(verified.id), provider_payload: verification,
-      verified_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-    }).eq('id', payment.id).eq('status', 'pending');
-    if (updatePaymentError) throw updatePaymentError;
-
-    const table = payment.booking_type === 'cargo' ? 'cargo_bookings' : 'passenger_tickets';
-    const bookingUpdate = payment.booking_type === 'passenger'
-      ? { payment_status: 'paid', reservation_expires_at: null }
-      : { payment_status: 'paid' };
-    const { error: bookingError } = await supabase.from(table).update(bookingUpdate).eq('payment_reference', reference);
-    if (bookingError) throw bookingError;
+    // Complete the payment and its related booking/tickets in one Postgres
+    // transaction. This prevents a verified payment from being left paid while
+    // its shipment or ticket remains pending after a transient error.
+    const { error: completionError } = await supabase.rpc('complete_verified_payment', {
+      p_payment_id: payment.id,
+      p_reference: reference,
+      p_booking_type: payment.booking_type,
+      p_provider_transaction_id: String(verified.id),
+      p_provider_payload: verification,
+    });
+    if (completionError) throw completionError;
 
     return Response.json({ ok: true });
   } catch (error) {

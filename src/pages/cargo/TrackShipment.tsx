@@ -19,9 +19,6 @@ interface CargoDetails {
   weight_kg: number;
   cargo_type: string;
   status: string;
-  payment_status: string;
-  customer_name: string;
-  recipient_name: string;
   created_at: string;
   logs: CargoStatusLog[];
 }
@@ -145,14 +142,6 @@ export default function TrackShipment() {
                 <div>
                   <div className="text-slate-400 text-xs mb-1 flex items-center gap-1"><Package className="w-3 h-3" /> {t('track.cargoDetails')}</div>
                   <div className="font-semibold text-slate-200">{cargo.weight_kg} kg · {cargo.cargo_type.replace('_', ' ')}</div>
-                </div>
-                <div>
-                  <div className="text-slate-400 text-xs mb-1">{t('track.sender')}</div>
-                  <div className="font-semibold text-slate-200">{cargo.customer_name}</div>
-                </div>
-                <div>
-                  <div className="text-slate-400 text-xs mb-1">{t('track.recipient')}</div>
-                  <div className="font-semibold text-slate-200">{cargo.recipient_name}</div>
                 </div>
               </div>
             </div>

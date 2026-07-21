@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
 const webhookSecret = Deno.env.get("TELEGRAM_WEBHOOK_SECRET");
+const appUrl = (Deno.env.get("APP_URL") ?? "https://afriquecon.vercel.app").replace(/\/$/, "");
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const supabase = createClient(supabaseUrl, serviceRoleKey);
@@ -22,11 +23,11 @@ async function sendMessage(chatId: number, text: string) {
 function helpMessage() {
   return `*Afrique-con Support*
 
-/track [booking ID] — track a shipment
-/quote — open the cargo calculator
-/ticket — book passenger travel
-/contact — speak to support
-/help — show this menu`;
+/track [booking ID] - track a shipment
+/quote - open the cargo calculator
+/ticket - book passenger travel
+/contact - speak to support
+/help - show this menu`;
 }
 
 serve(async (req) => {
@@ -35,7 +36,6 @@ serve(async (req) => {
   }
 
   // Telegram supplies this header only when secret_token was set with setWebhook.
-  // A missing configuration never falls back to a source-controlled secret.
   if (!webhookSecret || req.headers.get("x-telegram-bot-api-secret-token") !== webhookSecret) {
     return new Response("Unauthorized", { status: 401 });
   }
@@ -48,7 +48,6 @@ serve(async (req) => {
     const chatId = message.chat?.id as number;
     const username = message.from?.username as string | undefined;
     const text = String(message.text).trim();
-
     if (!chatId) return Response.json({ ok: true });
 
     if (text.startsWith("/start")) {
@@ -57,19 +56,18 @@ serve(async (req) => {
           .from("telegram_users")
           .upsert({ username: username.replace(/^@/, ""), chat_id: chatId }, { onConflict: "username" });
         if (error) throw error;
-
-        await sendMessage(chatId, "✅ Your Telegram account is linked to Afrique-con. You will receive booking updates here.");
+        await sendMessage(chatId, "Your Telegram account is linked to Afrique-con. You will receive booking updates here.");
       } else {
         await sendMessage(chatId, "Please set a Telegram username, then send /start again so we can link your booking updates.");
       }
     } else if (text.startsWith("/help")) {
       await sendMessage(chatId, helpMessage());
     } else if (text.startsWith("/quote")) {
-      await sendMessage(chatId, "💵 Get an instant cargo quote at https://afrique-con.com/cargo");
+      await sendMessage(chatId, `Get an instant cargo quote at ${appUrl}/cargo`);
     } else if (text.startsWith("/ticket")) {
-      await sendMessage(chatId, "🎫 Search and book passenger travel at https://afrique-con.com/passenger");
+      await sendMessage(chatId, `Search and book passenger travel at ${appUrl}/passenger`);
     } else if (text.startsWith("/contact")) {
-      await sendMessage(chatId, "📞 Cameroon: +237 678197361\nNigeria: +234 9029072330\nEmail: support@afriquecon.com");
+      await sendMessage(chatId, "Cameroon: +237 678197361\nNigeria: +234 9029072330\nEmail: support@afriquecon.com");
     } else if (text.startsWith("/track")) {
       const bookingId = text.split(/\s+/, 2)[1];
       if (!bookingId) {
@@ -81,7 +79,7 @@ serve(async (req) => {
           await sendMessage(chatId, `No shipment was found for *${bookingId}*.`);
         } else {
           const status = String(shipment.status ?? "pending").replaceAll("_", " ").toUpperCase();
-          await sendMessage(chatId, `📦 *${shipment.booking_id}*\n${shipment.origin} → ${shipment.destination}\nStatus: *${status}*`);
+          await sendMessage(chatId, `*${shipment.booking_id}*\n${shipment.origin} -> ${shipment.destination}\nStatus: *${status}*`);
         }
       }
     } else {
