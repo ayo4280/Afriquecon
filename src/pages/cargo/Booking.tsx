@@ -88,7 +88,9 @@ export default function CargoBooking() {
       }]);
       if (dbError) throw dbError;
 
-      if (quoteResult.totalFCFA === 0 && (Number(requestDetails?.weightKg) >= 100 || quoteResult.isExpress)) {
+      const requiresApproval = quoteResult.status === 'PENDING_REVIEW' || quoteResult.totalFCFA === 0;
+
+      if (requiresApproval && (Number(requestDetails?.weightKg) >= 100 || quoteResult.isExpress)) {
         try {
           const { error: notificationError } = await supabase.functions.invoke('notify-large-cargo-approval', {
             headers: { Authorization: `Bearer ${session.access_token}` },
@@ -110,7 +112,7 @@ export default function CargoBooking() {
       };
       const onClose = () => setIsSubmitting(false);
 
-      if (quoteResult.totalFCFA === 0) {
+      if (requiresApproval) {
         // Requires management approval — skip payment gateways
         setBookingId(newBookingId);
         setSuccess(true);
