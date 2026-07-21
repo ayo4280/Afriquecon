@@ -52,7 +52,7 @@ serve(async (req) => {
       .single();
 
     const requiresApproval = Boolean(booking?.is_express) || Number(booking?.weight_kg) >= 100;
-    if (bookingError || !booking || !requiresApproval || Number(booking.total_fcfa) > 0) {
+    if (bookingError || !booking || !requiresApproval || (!booking.is_express && Number(booking.total_fcfa) > 0)) {
       return reply(req, { error: "Booking is not awaiting management approval" }, 409);
     }
     if (!botToken || !/^\d+$/.test(managementChatId)) {
