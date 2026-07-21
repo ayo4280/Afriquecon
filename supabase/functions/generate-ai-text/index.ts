@@ -1,109 +1,115 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const allowedOrigins = new Set([
+  "https://afriquecon.vercel.app",
+  "https://afrique-con.com",
+  "https://www.afrique-con.com",
+  "http://localhost:5173",
+  "http://localhost:4173",
+]);
+
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL") ?? "",
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+);
+
+function headersFor(req: Request) {
+  const origin = req.headers.get("origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "https://afriquecon.vercel.app",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-forwarded-for",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+    "Content-Type": "application/json",
+  };
+}
+
+function json(req: Request, body: unknown, status: number) {
+  return new Response(JSON.stringify(body), { status, headers: headersFor(req) });
+}
+
+async function hashClientKey(req: Request) {
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const ip = forwarded || req.headers.get("x-real-ip") || "anonymous";
+  const bytes = new TextEncoder().encode(ip);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest)).map((value) => value.toString(16).padStart(2, "0")).join("");
+}
+
+async function callGemini(apiKey: string, prompt: string) {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+  });
+  if (!response.ok) throw new Error("Gemini request failed");
+  const data = await response.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+}
+
+async function callOpenRouter(apiKey: string, prompt: string) {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://afriquecon.vercel.app",
+      "X-Title": "Afrique-con PLC",
+    },
+    body: JSON.stringify({ model: "openrouter/auto", messages: [{ role: "user", content: prompt }] }),
+  });
+  if (!response.ok) throw new Error("OpenRouter request failed");
+  const data = await response.json();
+  return data?.choices?.[0]?.message?.content || "";
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+  const headers = headersFor(req);
+  if (req.method === "OPTIONS") return new Response("ok", { headers });
+  if (req.method !== "POST") return json(req, { error: "Method not allowed" }, 405);
+
+  const origin = req.headers.get("origin");
+  if (origin && !allowedOrigins.has(origin)) return json(req, { error: "Origin not allowed" }, 403);
 
   try {
-    const { prompt } = await req.json()
+    const payload = await req.json();
+    const prompt = typeof payload?.prompt === "string" ? payload.prompt.trim() : "";
+    if (!prompt) return json(req, { error: "Missing prompt" }, 400);
+    if (prompt.length > 1200) return json(req, { error: "Prompt is too long" }, 413);
 
-    if (!prompt) {
-      throw new Error("Missing prompt")
+    const key = `ai:${await hashClientKey(req)}`;
+    const { data: allowed, error: rateError } = await supabase.rpc("consume_ai_rate_limit", {
+      p_key: key,
+      p_limit: 10,
+      p_window_seconds: 600,
+    });
+    if (rateError) {
+      console.error("AI rate-limit check failed", rateError);
+      return json(req, { error: "AI service temporarily unavailable" }, 503);
     }
+    if (!allowed) return new Response(JSON.stringify({ error: "Too many AI requests. Please try again later." }), {
+      status: 429,
+      headers: { ...headers, "Retry-After": "600" },
+    });
 
-    const primaryKey = Deno.env.get('GEMINI_3_5_FLASH_KEY')
-    const secondaryKey = Deno.env.get('GEMINI_3_FLASH_KEY')
-    const openRouterKey = Deno.env.get('OPENROUTER_API_KEY')
-
-    let text = "";
-    let provider = "";
-
-    // Helper for Gemini
-    const callGemini = async (apiKey: string) => {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Gemini API Error: ${response.status}`);
-      }
-      const data = await response.json();
-      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    };
-
-    // Helper for OpenRouter
-    const callOpenRouter = async (apiKey: string) => {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://afrique-con.com",
-          "X-Title": "Afrique-con PLC",
-        },
-        body: JSON.stringify({
-          model: "openrouter/auto",
-          messages: [{ role: "user", content: prompt }],
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`OpenRouter API Error: ${response.status}`);
-      }
-      const data = await response.json();
-      return data?.choices?.[0]?.message?.content || "";
-    };
-
-    let primaryGeminiError = "";
-    let secondaryGeminiError = "";
-    let openRouterError = "";
-
-    // Try Primary Gemini
-    try {
-      if (!primaryKey) throw new Error("Missing primary key");
-      text = await callGemini(primaryKey);
-      provider = "Gemini (Primary Key)";
-    } catch (err: any) {
-      primaryGeminiError = err.message;
-      // Try Secondary Gemini
+    const keys = [Deno.env.get("GEMINI_3_5_FLASH_KEY"), Deno.env.get("GEMINI_3_FLASH_KEY")].filter(Boolean) as string[];
+    for (const key of keys) {
       try {
-         if (!secondaryKey) throw new Error("Missing secondary key");
-         text = await callGemini(secondaryKey);
-         provider = "Gemini (Secondary Key)";
-      } catch (err2: any) {
-         secondaryGeminiError = err2.message;
-         // Try OpenRouter
-         try {
-           if (!openRouterKey) throw new Error("Missing OpenRouter key");
-           text = await callOpenRouter(openRouterKey);
-           provider = "OpenRouter (Fallback)";
-         } catch (err3: any) {
-           openRouterError = err3.message;
-           throw new Error(`All providers failed. Primary: ${primaryGeminiError}, Secondary: ${secondaryGeminiError}, OpenRouter: ${openRouterError}`);
-         }
-      }
+        const text = await callGemini(key, prompt);
+        if (text) return json(req, { text, provider: "Gemini" }, 200);
+      } catch (error) { console.warn("Gemini provider failed", error); }
     }
 
-    return new Response(
-      JSON.stringify({ text, provider }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    )
-  } catch (error: any) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-    )
+    const openRouterKey = Deno.env.get("OPENROUTER_API_KEY");
+    if (openRouterKey) {
+      const text = await callOpenRouter(openRouterKey, prompt);
+      return json(req, { text, provider: "OpenRouter" }, 200);
+    }
+    return json(req, { error: "AI providers are not configured" }, 503);
+  } catch (error) {
+    console.error("AI request failed", error);
+    return json(req, { error: "Unable to generate a response" }, 502);
   }
-})
+});
