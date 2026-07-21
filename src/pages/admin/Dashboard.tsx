@@ -40,6 +40,7 @@ interface CargoBooking {
   origin: string;
   destination: string;
   weight_kg: number;
+  is_express: boolean;
   cargo_type: string;
   total_fcfa: number;
   status: string;
@@ -265,8 +266,8 @@ export default function AdminDashboard() {
   const handleUpdateCargo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!updatingCargo) return;
-    if (updatingCargo.weight_kg >= 100 && newStatus === 'confirmed' && (!negotiatedPrice || parseFloat(negotiatedPrice) <= 0)) {
-      alert('Enter the negotiated price before confirming a large cargo quote.');
+    if ((updatingCargo.weight_kg >= 100 || updatingCargo.is_express) && newStatus === 'confirmed' && (!negotiatedPrice || parseFloat(negotiatedPrice) <= 0)) {
+      alert('Enter the negotiated price before confirming an approval-required cargo booking.');
       return;
     }
     setUpdateLoading(true);
@@ -1279,7 +1280,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Negotiated Price — shown for large shipments; Manager+ only */}
-              {updatingCargo && (updatingCargo.weight_kg >= 100 || !updatingCargo.total_fcfa) && canNegotiatePrice && (
+              {updatingCargo && (updatingCargo.weight_kg >= 100 || updatingCargo.is_express || !updatingCargo.total_fcfa) && canNegotiatePrice && (
                 <div>
                   <label className="block text-sm font-medium text-amber-400 mb-1">⚖️ Negotiated Price (FCFA) <span className="text-gray-500 font-normal">— required for ≥100kg</span></label>
                   <input
