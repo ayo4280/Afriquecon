@@ -11,7 +11,7 @@ const allowedOrigins = new Set([
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
-const managementChatId = Deno.env.get("TELEGRAM_ADMIN_CHAT_ID") ?? "";
+const managementChatId = (Deno.env.get("TELEGRAM_ADMIN_CHAT_ID") ?? "").trim();
 const admin = createClient(supabaseUrl, serviceRoleKey);
 
 function headers(req: Request) {
@@ -56,6 +56,10 @@ serve(async (req) => {
       return reply(req, { error: "Booking is not awaiting management approval" }, 409);
     }
     if (!botToken || !/^\d+$/.test(managementChatId)) {
+      console.error("Management Telegram alert is not configured", {
+        hasBotToken: Boolean(botToken),
+        hasNumericChatId: /^\d+$/.test(managementChatId),
+      });
       return reply(req, { error: "Management Telegram alerts are not configured" }, 500);
     }
 

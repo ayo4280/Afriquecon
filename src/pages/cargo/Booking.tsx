@@ -89,13 +89,18 @@ export default function CargoBooking() {
       if (dbError) throw dbError;
 
       if (quoteResult.totalFCFA === 0 && (Number(requestDetails?.weightKg) >= 100 || quoteResult.isExpress)) {
-        const { error: notificationError } = await supabase.functions.invoke('notify-large-cargo-approval', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-          body: { bookingId: newBookingId },
-        });
-        if (notificationError) {
-          // The booking remains valid; management can still see it in the dashboard.
-          console.error('Large cargo management notification failed', notificationError);
+        try {
+          const { error: notificationError } = await supabase.functions.invoke('notify-large-cargo-approval', {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            body: { bookingId: newBookingId },
+          });
+          if (notificationError) {
+            // The booking remains valid; management can still see it in the dashboard.
+            console.error('Cargo management notification failed', notificationError);
+          }
+        } catch (notificationError) {
+          // A notification outage must never make a saved cargo booking appear to fail.
+          console.error('Cargo management notification request failed', notificationError);
         }
       }
 
