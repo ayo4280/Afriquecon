@@ -50,7 +50,7 @@ serve(async (req) => {
     }
 
     const payload = await req.json().catch(() => ({}));
-    const ticketId = typeof payload.ticketId === "string" ? payload.ticketId.trim() : "";
+    const ticketId = typeof payload.ticketId === "string" ? payload.ticketId.trim().toUpperCase() : "";
     if (!/^(?:AFCON|TKT)-\d{8}-\d{4}$/i.test(ticketId)) {
       return reply(req, invalid("Ticket ID is not valid"));
     }
