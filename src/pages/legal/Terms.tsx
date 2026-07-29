@@ -182,7 +182,7 @@ export default function Terms() {
 
         {/* Footer note */}
         <p className="text-center text-xs text-slate-600 mt-8">
-          Last updated: July 2026. For questions, contact <a href="mailto:support@afrique-con.com" className="text-amber-400 hover:underline">support@afrique-con.com</a>
+          Last updated: July 2026. For questions, contact <a href="mailto:support@afriquecon.com" className="text-amber-400 hover:underline">support@afriquecon.com</a>
         </p>
       </div>
     </div>

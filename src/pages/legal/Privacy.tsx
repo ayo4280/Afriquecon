@@ -169,7 +169,7 @@ export default function Privacy() {
           <Section icon={<Mail className="w-5 h-5 text-blue-400" />} title="7. Contact Us">
             <p>For any privacy-related questions, data access requests, or deletion requests, please contact our Data Protection team:</p>
             <div className="mt-4 bg-blue-500/10 border border-blue-500/20 rounded-xl px-5 py-4 space-y-2">
-              <p><strong className="text-slate-200">Email:</strong> <a href="mailto:support@afrique-con.com" className="text-blue-400 hover:underline">support@afrique-con.com</a></p>
+              <p><strong className="text-slate-200">Email:</strong> <a href="mailto:support@afriquecon.com" className="text-blue-400 hover:underline">support@afriquecon.com</a></p>
               <p><strong className="text-slate-200">Telegram:</strong> <a href="https://t.me/Afriquecon_bot" target="_blank" rel="noreferrer" className="text-teal-400 hover:underline">@Afriquecon_bot</a></p>
               <p><strong className="text-slate-200">Jurisdiction:</strong> Afrique-con PLC, South West Region, Cameroon.</p>
             </div>
