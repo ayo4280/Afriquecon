@@ -17,6 +17,7 @@ const PassengerBooking = lazy(() => import('./pages/passenger/Booking'));
 const ETicket = lazy(() => import('./pages/passenger/ETicket'));
 const Profile = lazy(() => import('./pages/Profile'));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
+const ScanTicket = lazy(() => import('./pages/admin/ScanTicket'));
 const TrackShipment = lazy(() => import('./pages/cargo/TrackShipment'));
 const Terms = lazy(() => import('./pages/legal/Terms'));
 const Privacy = lazy(() => import('./pages/legal/Privacy'));
@@ -54,6 +55,7 @@ function App() {
               <Route path="/ticket/:ticket_id" element={<ETicket />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/scan" element={<ScanTicket />} />
               </Routes>
             </Suspense>
           </main>

@@ -29,6 +29,7 @@ try {
       "create-payment-intent",
       "generate-ai-text",
       "notify-large-cargo-approval",
+      "verify-ticket",
       "telegram-webhook"
     )
 
