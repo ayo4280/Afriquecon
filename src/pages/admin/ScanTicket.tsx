@@ -36,9 +36,11 @@ export default function ScanTicket() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<IScannerControls | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [authorizing, setAuthorizing] = useState(true);
   const [cameraError, setCameraError] = useState('');
   const [cameraActive, setCameraActive] = useState(false);
+  const [startingCamera, setStartingCamera] = useState(false);
   const [manualId, setManualId] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
@@ -58,8 +60,11 @@ export default function ScanTicket() {
   const stopCamera = useCallback(() => {
     controlsRef.current?.stop();
     controlsRef.current = null;
+    streamRef.current?.getTracks().forEach(track => track.stop());
+    streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraActive(false);
+    setStartingCamera(false);
   }, []);
 
   const verify = useCallback(async (rawValue: string) => {
@@ -90,17 +95,32 @@ export default function ScanTicket() {
   const startCamera = async () => {
     setCameraError('');
     setResult(null);
+    setStartingCamera(true);
     try {
-      if (!videoRef.current) return;
+      if (!videoRef.current || !navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Camera access is unavailable in this browser. Enter the ticket ID manually instead.');
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play();
       const reader = new BrowserQRCodeReader();
-      setCameraActive(true);
-      controlsRef.current = await reader.decodeFromVideoDevice(undefined, videoRef.current, async (result) => {
+      controlsRef.current = await reader.decodeFromStream(stream, videoRef.current, async (result) => {
         if (result) await verify(result.getText());
       });
+      setCameraActive(true);
+      setStartingCamera(false);
     } catch (error) {
       setCameraError(error instanceof DOMException && error.name === 'NotAllowedError'
-        ? 'Camera access was denied. Allow camera access or enter the ticket ID manually.'
-        : 'Unable to start the camera. Enter the ticket ID manually instead.');
+        ? 'Camera access was denied. Allow camera access in the browser address-bar settings, then try again.'
+        : error instanceof DOMException && error.name === 'NotFoundError'
+          ? 'No camera was found on this device. Enter the ticket ID manually instead.'
+          : error instanceof Error && error.message.includes('unavailable')
+            ? error.message
+            : 'Unable to start the camera. Enter the ticket ID manually instead.');
       stopCamera();
     }
   };
@@ -120,9 +140,10 @@ export default function ScanTicket() {
           <section className="bg-gray-900 border border-gray-800 rounded-2xl p-5 space-y-4">
             <div className="flex items-center justify-between"><h2 className="font-bold flex items-center gap-2"><Camera className="w-5 h-5 text-teal-400" /> Camera scanner</h2>{cameraActive && <button onClick={stopCamera} className="text-sm text-red-400 hover:text-red-300">Stop</button>}</div>
             <div className="aspect-video rounded-xl bg-gray-950 overflow-hidden border border-gray-800 flex items-center justify-center">
-              {cameraActive ? <video ref={videoRef} muted playsInline className="w-full h-full object-cover" /> : <div className="text-center text-gray-500 px-6"><Camera className="w-10 h-10 mx-auto mb-2 opacity-60" /><p>Start the camera and point it at the QR code.</p></div>}
+              <video ref={videoRef} muted playsInline className={`w-full h-full object-cover ${cameraActive ? '' : 'hidden'}`} />
+              {!cameraActive && <div className="text-center text-gray-500 px-6"><Camera className="w-10 h-10 mx-auto mb-2 opacity-60" /><p>Start the camera and point it at the QR code.</p></div>}
             </div>
-            {!cameraActive && <button onClick={startCamera} className="w-full bg-teal-500 hover:bg-teal-400 text-white font-bold py-3 rounded-xl">Start camera</button>}
+            {!cameraActive && <button disabled={startingCamera} onClick={startCamera} className="w-full bg-teal-500 hover:bg-teal-400 disabled:opacity-60 text-white font-bold py-3 rounded-xl">{startingCamera ? 'Starting camera…' : 'Start camera'}</button>}
             {cameraError && <p className="text-sm text-amber-300 bg-amber-400/10 border border-amber-400/30 rounded-lg p-3">{cameraError}</p>}
           </section>
 
