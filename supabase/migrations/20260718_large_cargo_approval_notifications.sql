@@ -43,7 +43,7 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  app_url := coalesce(nullif(rtrim(app_url, '/'), ''), 'https://afriquecon.vercel.app');
+  app_url := coalesce(nullif(rtrim(app_url, '/'), ''), 'https://www.afriquecon.com');
   api_url := 'https://api.telegram.org/bot' || bot_token || '/sendMessage';
   message := 'Large cargo approval required' || E'\n\n' ||
     'Booking: ' || NEW.booking_id || E'\n' ||

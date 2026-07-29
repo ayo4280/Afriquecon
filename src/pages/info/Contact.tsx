@@ -85,7 +85,7 @@ export default function Contact() {
                 <Mail className="w-5 h-5 text-blue-400" />
                 {t('info.contact.emailSupport')}
               </h3>
-              <a href="mailto:support@afrique-con.com" className="text-blue-400 hover:text-blue-300 font-medium">
+              <a href="mailto:support@afriquecon.com" className="text-blue-400 hover:text-blue-300 font-medium">
                 {t('info.contact.emailAddress')}
               </a>
             </div>

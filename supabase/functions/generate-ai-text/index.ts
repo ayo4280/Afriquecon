@@ -3,8 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const allowedOrigins = new Set([
   "https://afriquecon.vercel.app",
-  "https://afrique-con.com",
-  "https://www.afrique-con.com",
+  "https://afriquecon.com",
+  "https://www.afriquecon.com",
   "http://localhost:5173",
   "http://localhost:4173",
 ]);
@@ -17,7 +17,7 @@ const supabase = createClient(
 function headersFor(req: Request) {
   const origin = req.headers.get("origin") ?? "";
   return {
-    "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "https://afriquecon.vercel.app",
+    "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "https://www.afriquecon.com",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-forwarded-for",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Vary": "Origin",
@@ -55,7 +55,7 @@ async function callOpenRouter(apiKey: string, prompt: string) {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "https://afriquecon.vercel.app",
+      "HTTP-Referer": "https://www.afriquecon.com",
       "X-Title": "Afrique-con PLC",
     },
     body: JSON.stringify({ model: "openrouter/auto", messages: [{ role: "user", content: prompt }] }),

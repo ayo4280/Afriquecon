@@ -36,7 +36,7 @@ BEGIN
 
   SELECT decrypted_secret INTO app_url
   FROM vault.decrypted_secrets WHERE name = 'app_url' LIMIT 1;
-  app_url := coalesce(nullif(rtrim(app_url, '/'), ''), 'https://afriquecon.vercel.app');
+  app_url := coalesce(nullif(rtrim(app_url, '/'), ''), 'https://www.afriquecon.com');
   payment_url := app_url || '/cargo/pay/' || NEW.booking_id;
 
   telegram_message := 'Your Afriquecon cargo quote has been approved.' || E'\n\n' ||

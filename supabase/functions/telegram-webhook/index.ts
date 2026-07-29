@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
 const webhookSecret = Deno.env.get("TELEGRAM_WEBHOOK_SECRET");
-const appUrl = (Deno.env.get("APP_URL") ?? "https://afriquecon.vercel.app").replace(/\/$/, "");
+const appUrl = (Deno.env.get("APP_URL") ?? "https://www.afriquecon.com").replace(/\/$/, "");
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const supabase = createClient(supabaseUrl, serviceRoleKey);

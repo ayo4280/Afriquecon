@@ -3,8 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const allowedOrigins = new Set([
   "https://afriquecon.vercel.app",
-  "https://afrique-con.com",
-  "https://www.afrique-con.com",
+  "https://afriquecon.com",
+  "https://www.afriquecon.com",
   "http://localhost:5173",
 ]);
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
@@ -14,7 +14,7 @@ const admin = createClient(supabaseUrl, serviceRoleKey);
 function responseHeaders(req: Request) {
   const origin = req.headers.get("Origin") ?? "";
   return {
-    "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "https://afriquecon.vercel.app",
+    "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "https://www.afriquecon.com",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
     "Vary": "Origin",
   };

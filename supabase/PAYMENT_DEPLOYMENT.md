@@ -7,7 +7,7 @@
    - `PAYSTACK_SECRET_KEY`
    - `FLUTTERWAVE_SECRET_KEY`
    - `FLUTTERWAVE_WEBHOOK_HASH`
-   - `APP_URL` (for example, `https://afrique-con.com`)
+   - `APP_URL` (for example, `https://www.afriquecon.com`)
    - `SUPABASE_ANON_KEY` (for authenticated payment-intent calls)
 
 4. Register the provider callback endpoints:
