@@ -48,7 +48,7 @@ export const cargoService = {
 
     if (request.weightKg >= 100) {
       status = 'PENDING_REVIEW';
-      message = 'Your quote >=100kg requires management approval. Expect response within 24hrs.';
+      message = 'Your quote >=100kg requires management approval. Click “Book Now” below to submit your request. Expect a response within 24 hours.';
       baseFCFA = 0; // Management will determine
     } else {
       // Below 100kg: 1,000 FCFA per kg
@@ -59,8 +59,8 @@ export const cargoService = {
       status = 'PENDING_REVIEW';
       baseFCFA = 0;
       message = request.weightKg >= 100
-        ? 'Your quote requires management approval. Express service and the final price will be determined based on urgency and capacity. Expect response within 24 hours.'
-        : 'Your express cargo booking requires management approval. The final price and surcharge will be determined based on urgency and capacity. Expect response within 24 hours.';
+        ? 'Your quote requires management approval. Click “Book Now” below to submit your request. Express service and the final price will be determined based on urgency and capacity. Expect a response within 24 hours.'
+        : 'Your express cargo booking requires management approval. Click “Book Now” below to submit your request. The final price and surcharge will be determined based on urgency and capacity. Expect a response within 24 hours.';
     }
 
     const totalFCFA = baseFCFA;
