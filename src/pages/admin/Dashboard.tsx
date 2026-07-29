@@ -144,6 +144,7 @@ export default function AdminDashboard() {
   const [newSchedArr, setNewSchedArr] = useState('');
   const [newSchedFare, setNewSchedFare] = useState('');
   const [addSchedLoading, setAddSchedLoading] = useState(false);
+  const [generatingSchedules, setGeneratingSchedules] = useState(false);
 
   const isAdmin = currentAdminRole !== null;
 
@@ -428,6 +429,24 @@ export default function AdminDashboard() {
       alert('Failed to add schedule: ' + err.message);
     } finally {
       setAddSchedLoading(false);
+    }
+  };
+
+  const handleGenerateSixMonthSchedules = async () => {
+    if (!isSuperAdmin || generatingSchedules) return;
+    if (!window.confirm('Generate the next six months of schedules from the active route matrix? Existing schedules will not be duplicated.')) return;
+
+    setGeneratingSchedules(true);
+    try {
+      const { data, error } = await supabase.rpc('generate_bus_schedules', { p_days: 180 });
+      if (error) throw error;
+      await fetchAll();
+      alert(`${data ?? 0} new schedule(s) generated for the next six months.`);
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to generate schedules: ' + err.message);
+    } finally {
+      setGeneratingSchedules(false);
     }
   };
 
@@ -931,12 +950,23 @@ export default function AdminDashboard() {
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-white">{t('admin.allBusSchedules')} <span className="text-gray-500 text-lg font-normal">({schedules.length})</span></h2>
                     {canManageSchedules && (
-                      <button
-                        onClick={() => setAddingSchedule(true)}
-                        className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors"
-                      >
-                        <Plus className="w-4 h-4" /> {t('admin.addSchedule')}
-                      </button>
+                      <div className="flex flex-wrap justify-end gap-2">
+                        {isSuperAdmin && (
+                          <button
+                            onClick={handleGenerateSixMonthSchedules}
+                            disabled={generatingSchedules}
+                            className="flex items-center gap-2 bg-amber-500 text-gray-950 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-amber-400 disabled:opacity-60 transition-colors"
+                          >
+                            <Calendar className="w-4 h-4" /> {generatingSchedules ? t('admin.generatingSchedules') : t('admin.generateSixMonths')}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setAddingSchedule(true)}
+                          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors"
+                        >
+                          <Plus className="w-4 h-4" /> {t('admin.addSchedule')}
+                        </button>
+                      </div>
                     )}
                   </div>
                   <div className="space-y-3">

@@ -388,6 +388,8 @@
     "allCargoBookings": "Toutes les Réservations de Fret",
     "allBusSchedules": "Tous les Horaires de Bus",
     "addSchedule": "Ajouter un Horaire",
+    "generateSixMonths": "Générer 6 mois",
+    "generatingSchedules": "Génération...",
     "departure": "Départ",
     "noSchedules": "Aucun horaire trouvé.",
     "reportsAnalytics": "Rapports & Analyses",
