@@ -388,6 +388,8 @@
     "allCargoBookings": "All Cargo Bookings",
     "allBusSchedules": "All Bus Schedules",
     "addSchedule": "Add Schedule",
+    "generateSixMonths": "Generate 6 Months",
+    "generatingSchedules": "Generating...",
     "departure": "Departure",
     "noSchedules": "No schedules found.",
     "reportsAnalytics": "Reports & Analytics",
