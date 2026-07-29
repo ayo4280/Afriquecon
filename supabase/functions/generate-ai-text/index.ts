@@ -99,7 +99,7 @@ serve(async (req) => {
 
   const providers = [
     { key: Deno.env.get("GEMINI_3_5_FLASH_KEY"), model: "gemini-3.5-flash" },
-    { key: Deno.env.get("GEMINI_3_FLASH_KEY"), model: "gemini-3-flash" },
+    { key: Deno.env.get("GEMINI_3_FLASH_KEY"), model: "gemini-3-flash-preview" },
   ].filter((provider): provider is { key: string; model: string } => Boolean(provider.key));
   for (const provider of providers) {
     try {
