@@ -46,7 +46,7 @@ ${buildAgenciesSection(agencies)}
 GENERAL FACTS:
 - Cargo: 1,000 FCFA/kg (>=100 kg negotiated). Heavy equipment: +15%. Express (<48h before departure): +20%.
 - Passenger fares: USE THE LIVE BUS SCHEDULE DATA ABOVE — exact fares are listed per route.
-- Discounts: Student 10%, Senior (60+) 15%, Child (<12) 20% off the listed fare.
+- Passenger discounts: no discount for students or seniors. Children aged 2–5 receive 30% off the listed fare; children under 2 travel free.
 - Free luggage: 20 kg/person. Extra: 1,000 FCFA or 2,500 NGN/kg.
 - Bus capacity: 48 seats. Payment: Paystack (NGN) or Flutterwave (FCFA).
 - Tracking: Telegram @Afriquecon_bot (24/7). Customs clearance: 12-24 hours.
