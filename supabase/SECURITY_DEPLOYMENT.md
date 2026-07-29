@@ -11,12 +11,19 @@ staging project first, then repeat in production.
 3. Set a strong, random `TELEGRAM_WEBHOOK_SECRET` and `TELEGRAM_BOT_TOKEN` as
    Supabase Edge Function secrets. Do not put either value in `.env` files
    that are exposed to Vite.
-4. Deploy the `telegram-webhook` Edge Function. Configure Telegram with
+4. Set the Vault secret `app_url` to `https://www.afriquecon.com`. This is used
+   by database notification triggers when constructing payment and dashboard
+   links.
+5. Deploy the affected production functions with
+   [deploy-production-functions.ps1](./deploy-production-functions.ps1).
+   This prompts for a Supabase access token without saving it.
+6. Configure Telegram with
    `setWebhook`, setting its `secret_token` to the same webhook secret. The
    function accepts only Telegram's `X-Telegram-Bot-Api-Secret-Token` header.
-5. Point Telegram only to the Supabase function URL. The former Vercel
+7. Point Telegram only to the Supabase function URL. The former Vercel
    `api/telegram.ts` handler has been removed to prevent duplicate processing.
-6. Sign in as each role and confirm that dashboard visibility and mutations
+8. Run [SECURITY_PRODUCTION_CHECK.sql](./SECURITY_PRODUCTION_CHECK.sql) in the
+   production SQL Editor, then sign in as each role and confirm that dashboard visibility and mutations
    match the intended permissions before releasing to customers.
 
 The Edge Function is service-role only. The `telegram_users` table is no
