@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import {
   Users, Package, Ticket, Bus, TrendingUp, LogOut,
   Loader2, ArrowRight, RefreshCw, Shield,
-  MapPin, Calendar, Phone, Mail, Plus, Eye, EyeOff, BarChart3, Download, Settings
+  MapPin, Calendar, Phone, Mail, Plus, Eye, EyeOff, BarChart3, Download, Settings, ScanLine
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -79,7 +79,7 @@ interface AdminUser {
   active: boolean;
 }
 
-type Tab = 'overview' | 'users' | 'tickets' | 'cargo' | 'schedules' | 'reports' | 'settings';
+type Tab = 'overview' | 'users' | 'tickets' | 'cargo' | 'schedules' | 'reports' | 'settings' | 'scan';
 
 // ─── Admin emails ─────────────────────────────────────────────────────────────
 
@@ -536,6 +536,7 @@ export default function AdminDashboard() {
     { id: 'schedules',  label: t('admin.schedules'),             icon: <Bus className="w-5 h-5" />,        count: schedules.length, minRole: 'manager' },
     { id: 'reports',    label: t('admin.reports'),               icon: <BarChart3 className="w-5 h-5" />,                           minRole: 'manager' },
     { id: 'settings',   label: t('admin.settings', 'Settings'), icon: <Settings className="w-5 h-5" />,                            minRole: 'super_admin' },
+    { id: 'scan',       label: 'Scan Ticket',                     icon: <ScanLine className="w-5 h-5" /> },
   ];
 
   // Filter tabs by role
@@ -661,7 +662,7 @@ export default function AdminDashboard() {
             {tabs.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => tab.id === 'scan' ? navigate('/admin/scan') : setActiveTab(tab.id)}
                 className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-base font-semibold transition-all duration-200 ${
                   activeTab === tab.id
                     ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-[1.02]'
