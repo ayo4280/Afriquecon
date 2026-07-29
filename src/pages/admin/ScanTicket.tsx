@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Camera, CheckCircle2, Loader2, ScanLine, Search, ShieldCheck, XCircle } from 'lucide-react';
+import { BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/useAuth';
 
@@ -18,16 +19,6 @@ type ScanResult = {
   };
 };
 
-type BarcodeDetectorLike = {
-  detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue?: string }>>;
-};
-
-declare global {
-  interface Window {
-    BarcodeDetector?: new (options?: { formats: string[] }) => BarcodeDetectorLike;
-  }
-}
-
 function extractTicketId(value: string) {
   const trimmed = value.trim();
   try {
@@ -44,9 +35,7 @@ export default function ScanTicket() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const detectorRef = useRef<BarcodeDetectorLike | null>(null);
-  const scanLoopRef = useRef<number | null>(null);
+  const controlsRef = useRef<IScannerControls | null>(null);
   const [authorizing, setAuthorizing] = useState(true);
   const [cameraError, setCameraError] = useState('');
   const [cameraActive, setCameraActive] = useState(false);
@@ -67,10 +56,8 @@ export default function ScanTicket() {
   }, [navigate, user]);
 
   const stopCamera = useCallback(() => {
-    if (scanLoopRef.current !== null) cancelAnimationFrame(scanLoopRef.current);
-    scanLoopRef.current = null;
-    streamRef.current?.getTracks().forEach(track => track.stop());
-    streamRef.current = null;
+    controlsRef.current?.stop();
+    controlsRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraActive(false);
   }, []);
@@ -103,28 +90,13 @@ export default function ScanTicket() {
   const startCamera = async () => {
     setCameraError('');
     setResult(null);
-    if (!window.BarcodeDetector) {
-      setCameraError('QR scanning is not supported by this browser. Enter the ticket ID manually below, or use Chrome on Android/iPhone.');
-      return;
-    }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
-      streamRef.current = stream;
       if (!videoRef.current) return;
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play();
-      detectorRef.current = new window.BarcodeDetector({ formats: ['qr_code'] });
+      const reader = new BrowserQRCodeReader();
       setCameraActive(true);
-      const scan = async () => {
-        if (!videoRef.current || !detectorRef.current || !streamRef.current) return;
-        try {
-          const codes = await detectorRef.current.detect(videoRef.current);
-          const raw = codes[0]?.rawValue;
-          if (raw) { await verify(raw); return; }
-        } catch { /* Keep the camera alive; a frame can be unreadable while moving. */ }
-        scanLoopRef.current = requestAnimationFrame(scan);
-      };
-      scanLoopRef.current = requestAnimationFrame(scan);
+      controlsRef.current = await reader.decodeFromVideoDevice(undefined, videoRef.current, async (result) => {
+        if (result) await verify(result.getText());
+      });
     } catch (error) {
       setCameraError(error instanceof DOMException && error.name === 'NotAllowedError'
         ? 'Camera access was denied. Allow camera access or enter the ticket ID manually.'
