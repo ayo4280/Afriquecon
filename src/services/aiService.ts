@@ -14,8 +14,6 @@ export class AIService {
    */
   public async generateText(prompt: string): Promise<AIResponse> {
     try {
-      console.log("[AIService] Invoking secure Edge Function...");
-      
       const { data, error } = await supabase.functions.invoke('generate-ai-text', {
         body: { prompt }
       });
