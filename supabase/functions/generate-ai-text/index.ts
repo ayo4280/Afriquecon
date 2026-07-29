@@ -37,11 +37,14 @@ async function hashClientKey(req: Request) {
   return Array.from(new Uint8Array(digest)).map((value) => value.toString(16).padStart(2, "0")).join("");
 }
 
-async function callGemini(apiKey: string, prompt: string) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+async function callGemini(apiKey: string, model: string, prompt: string) {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const response = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
+    },
     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
   });
   if (!response.ok) throw new Error("Gemini request failed");
@@ -94,12 +97,15 @@ serve(async (req) => {
       headers: { ...headers, "Retry-After": "600" },
     });
 
-    const keys = [Deno.env.get("GEMINI_3_5_FLASH_KEY"), Deno.env.get("GEMINI_3_FLASH_KEY")].filter(Boolean) as string[];
-    for (const key of keys) {
-      try {
-        const text = await callGemini(key, prompt);
-        if (text) return json(req, { text, provider: "Gemini" }, 200);
-      } catch (error) { console.warn("Gemini provider failed", error); }
+  const providers = [
+    { key: Deno.env.get("GEMINI_3_5_FLASH_KEY"), model: "gemini-3.5-flash" },
+    { key: Deno.env.get("GEMINI_3_FLASH_KEY"), model: "gemini-3-flash" },
+  ].filter((provider): provider is { key: string; model: string } => Boolean(provider.key));
+  for (const provider of providers) {
+    try {
+      const text = await callGemini(provider.key, provider.model, prompt);
+      if (text) return json(req, { text, provider: "Gemini" }, 200);
+    } catch (error) { console.warn(`Gemini ${provider.model} provider failed`, error); }
     }
 
     const openRouterKey = Deno.env.get("OPENROUTER_API_KEY");
