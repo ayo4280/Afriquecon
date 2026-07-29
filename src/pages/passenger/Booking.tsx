@@ -183,7 +183,6 @@ export default function PassengerBooking() {
       console.error("Booking Error:", err);
       const msg = err.message || t('cargoBooking.error', "An error occurred while saving the tickets.");
       setError(msg);
-      alert("Error: " + msg);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setIsSubmitting(false);
     }

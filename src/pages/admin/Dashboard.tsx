@@ -8,6 +8,7 @@ import {
   MapPin, Calendar, Phone, Mail, Plus, Eye, EyeOff, BarChart3, Download, Settings, ScanLine
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import Toast from '../../components/ui/Toast';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Profile {
@@ -114,10 +115,12 @@ export default function AdminDashboard() {
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [currentAdminRole, setCurrentAdminRole] = useState<AdminRole | null>(null);
   const [authorizing, setAuthorizing] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [newAccountEmail, setNewAccountEmail] = useState('');
   const [newAccountName, setNewAccountName] = useState('');
   const [newAccountPassword, setNewAccountPassword] = useState('');
   const [showNewAccountPassword, setShowNewAccountPassword] = useState(false);
+  const notify = (message: string, type: 'success' | 'error' | 'info' = 'info') => setToast({ message, type });
   const [newAccountPhone, setNewAccountPhone] = useState('');
   const [newAccountCountry, setNewAccountCountry] = useState<'CM' | 'NG'>('CM');
   const [newAccountRole, setNewAccountRole] = useState<AccountRole>('client');
@@ -240,7 +243,7 @@ export default function AdminDashboard() {
 
   const exportToCSV = (filename: string, data: any[]) => {
     if (!data || data.length === 0) {
-      alert("No data to export");
+      notify("No data to export");
       return;
     }
     const headers = Object.keys(data[0]);
@@ -268,7 +271,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!updatingCargo) return;
     if ((updatingCargo.weight_kg >= 100 || updatingCargo.is_express) && newStatus === 'confirmed' && (!negotiatedPrice || parseFloat(negotiatedPrice) <= 0)) {
-      alert('Enter the negotiated price before confirming an approval-required cargo booking.');
+      notify('Enter the negotiated price before confirming an approval-required cargo booking.', 'error');
       return;
     }
     setUpdateLoading(true);
@@ -299,7 +302,7 @@ export default function AdminDashboard() {
       setNegotiatedPrice('');
     } catch (err: any) {
       console.error(err);
-      alert('Failed to update status: ' + err.message);
+      notify('Failed to update status: ' + err.message, 'error');
     } finally {
       setUpdateLoading(false);
     }
@@ -317,7 +320,7 @@ export default function AdminDashboard() {
       await fetchAll();
     } catch (err: any) {
       console.error(err);
-      alert('Failed to delete cargo: ' + err.message);
+      notify('Failed to delete cargo: ' + err.message, 'error');
     } finally {
       setDeleteCargoLoading(null);
     }
@@ -335,10 +338,10 @@ export default function AdminDashboard() {
       if (error) throw error;
       if (count === 0) throw new Error('Update blocked — admin RLS policy missing. Run the fix_admin_rls.sql in Supabase SQL Editor.');
       await fetchAll();
-      alert(`✅ Booking ${booking.booking_id} marked as paid!`);
+      notify(`Booking ${booking.booking_id} marked as paid!`, 'success');
     } catch (err: any) {
       console.error(err);
-      alert('Failed to mark as paid: ' + err.message);
+      notify('Failed to mark as paid: ' + err.message, 'error');
     } finally {
       setMarkPaidLoading(null);
     }
@@ -356,10 +359,10 @@ export default function AdminDashboard() {
       if (error) throw error;
       if (!data || data.length === 0) throw new Error('Update blocked — admin RLS policy missing. Run fix_admin_rls.sql in Supabase SQL Editor.');
       await fetchAll();
-      alert(`✅ Ticket ${ticket.ticket_id} marked as paid!`);
+      notify(`Ticket ${ticket.ticket_id} marked as paid!`, 'success');
     } catch (err: any) {
       console.error(err);
-      alert('Failed to mark ticket as paid: ' + err.message);
+      notify('Failed to mark ticket as paid: ' + err.message, 'error');
     } finally {
       setMarkTicketPaidLoading(null);
     }
@@ -377,7 +380,7 @@ export default function AdminDashboard() {
       await fetchAll();
     } catch (err: any) {
       console.error(err);
-      alert('Failed to cancel schedule: ' + err.message);
+      notify('Failed to cancel schedule: ' + err.message, 'error');
     } finally {
       setCancelScheduleLoading(null);
     }
@@ -395,7 +398,7 @@ export default function AdminDashboard() {
       await fetchAll();
     } catch (err: any) {
       console.error(err);
-      alert('Failed to delete schedule: ' + err.message);
+      notify('Failed to delete schedule: ' + err.message, 'error');
     } finally {
       setDeleteScheduleLoading(null);
     }
@@ -426,7 +429,7 @@ export default function AdminDashboard() {
       setNewSchedFare('');
     } catch (err: any) {
       console.error(err);
-      alert('Failed to add schedule: ' + err.message);
+      notify('Failed to add schedule: ' + err.message, 'error');
     } finally {
       setAddSchedLoading(false);
     }
@@ -441,10 +444,10 @@ export default function AdminDashboard() {
       const { data, error } = await supabase.rpc('generate_bus_schedules', { p_days: 180 });
       if (error) throw error;
       await fetchAll();
-      alert(`${data ?? 0} new schedule(s) generated for the next six months.`);
+      notify(`${data ?? 0} new schedule(s) generated for the next six months.`, 'success');
     } catch (err: any) {
       console.error(err);
-      alert('Failed to generate schedules: ' + err.message);
+      notify('Failed to generate schedules: ' + err.message, 'error');
     } finally {
       setGeneratingSchedules(false);
     }
@@ -572,10 +575,10 @@ export default function AdminDashboard() {
       if (isNaN(parsedRate)) throw new Error('Invalid rate');
       const { error } = await supabase.from('routes').update({ base_rate_fcfa: parsedRate }).eq('id', routeId);
       if (error) throw error;
-      alert('Rate updated successfully');
+      notify('Rate updated successfully', 'success');
       fetchAll();
     } catch (err: any) {
-      alert('Failed to update rate: ' + err.message);
+      notify('Failed to update rate: ' + err.message, 'error');
     }
   };
 
@@ -612,7 +615,7 @@ export default function AdminDashboard() {
         }
         throw error;
       }
-      alert('Account created successfully. Give the user their password securely.');
+      notify('Account created successfully. Give the user their password securely.', 'success');
       setNewAccountEmail('');
       setNewAccountName('');
       setNewAccountPassword('');
@@ -621,7 +624,7 @@ export default function AdminDashboard() {
       setNewAccountRole('client');
       fetchAll();
     } catch (err: any) {
-      alert('Failed to create account: ' + err.message);
+      notify('Failed to create account: ' + err.message, 'error');
     } finally {
       setCreatingAccount(false);
     }
@@ -633,13 +636,14 @@ export default function AdminDashboard() {
       if (error) throw error;
       fetchAll();
     } catch (err: any) {
-      alert('Failed to update admin: ' + err.message);
+      notify('Failed to update admin: ' + err.message, 'error');
     }
   };
 
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
       {/* Admin Topbar */}
       <div className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
