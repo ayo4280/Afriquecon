@@ -42,6 +42,25 @@ describe('cargo quoting', () => {
     })).toThrow('Express cargo weight cannot exceed 50kg.');
   });
 
+  it('allows an express shipment at the 50 kg limit but still requires approval', () => {
+    const quote = cargoService.calculateQuote({
+      origin: 'Lagos', destination: 'Douala', weightKg: 50, cargoType: 'general', isExpress: true,
+    });
+
+    expect(quote.status).toBe('PENDING_REVIEW');
+    expect(quote.isExpress).toBe(true);
+  });
+
+  it('rejects missing or non-positive cargo weights', () => {
+    expect(() => cargoService.calculateQuote({
+      origin: 'Lagos', destination: 'Douala', weightKg: 0, cargoType: 'general',
+    })).toThrow('Cargo weight must be greater than 0kg.');
+
+    expect(() => cargoService.calculateQuote({
+      origin: 'Lagos', destination: 'Douala', weightKg: Number.NaN, cargoType: 'general',
+    })).toThrow('Cargo weight must be greater than 0kg.');
+  });
+
   it('rejects routes outside the supported countries', () => {
     expect(() => cargoService.calculateQuote({
       origin: 'Paris', destination: 'Lagos', weightKg: 10, cargoType: 'general',

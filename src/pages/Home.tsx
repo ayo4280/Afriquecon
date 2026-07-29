@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import CoverageMap from '../components/CoverageMap';
+const CoverageMap = lazy(() => import('../components/CoverageMap'));
 import {
   ArrowRight, Package, Users, MapPin, Search,
   AlertCircle, CheckCircle, Star, Zap, Shield,
@@ -600,7 +600,9 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-display font-extrabold text-slate-900 mb-4">{t('home.mapTitle')}</h2>
             <p className="text-slate-500 max-w-xl mx-auto">{t('home.mapSubtitle')}</p>
           </div>
-          <CoverageMap />
+          <Suspense fallback={<div className="h-80 rounded-2xl bg-slate-100 animate-pulse" aria-label="Loading coverage map" />}>
+            <CoverageMap />
+          </Suspense>
         </div>
       </section>
 
