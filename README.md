@@ -45,9 +45,9 @@ Review [Security deployment](supabase/SECURITY_DEPLOYMENT.md) and [Payment deplo
 Older one-off setup and test scripts are retained under `supabase/archive/` for
 reference only. Do not run them against production without review.
 
-Use the live Vercel URL (`https://afriquecon.vercel.app`) for `APP_URL` until the
-permanent domain is ready. Apply migrations in the Supabase SQL Editor or through
-the CLI, and use a staging project first for schema changes.
+Use the production domain (`https://www.afriquecon.com`) for `APP_URL`. Apply
+migrations in the Supabase SQL Editor or through the CLI, and use a staging
+project first for schema changes.
 
 ## Edge Functions
 
