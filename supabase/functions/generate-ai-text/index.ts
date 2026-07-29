@@ -80,7 +80,9 @@ serve(async (req) => {
     const payload = await req.json();
     const prompt = typeof payload?.prompt === "string" ? payload.prompt.trim() : "";
     if (!prompt) return json(req, { error: "Missing prompt" }, 400);
-    if (prompt.length > 1200) return json(req, { error: "Prompt is too long" }, 413);
+    // The assistant sends live route and agency context along with the user's
+    // question. Keep a generous bound while still preventing oversized abuse.
+    if (prompt.length > 12000) return json(req, { error: "Prompt is too long" }, 413);
 
     const key = `ai:${await hashClientKey(req)}`;
     const { data: allowed, error: rateError } = await supabase.rpc("consume_ai_rate_limit", {
