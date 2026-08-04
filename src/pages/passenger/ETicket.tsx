@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Printer, ArrowLeft, Loader2, CheckCircle2, MapPin, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import QRCode from 'qrcode';
 
 interface TicketDetails {
   ticket_id: string;
@@ -21,6 +22,8 @@ export default function ETicket() {
   const [ticket, setTicket] = useState<TicketDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const [qrError, setQrError] = useState('');
 
   useEffect(() => {
     async function fetchTicket() {
@@ -41,6 +44,28 @@ export default function ETicket() {
     }
     fetchTicket();
   }, [ticket_id, t]);
+
+  useEffect(() => {
+    if (!ticket) return;
+
+    const payload = JSON.stringify({
+      id: ticket.ticket_id,
+      name: ticket.passenger_name,
+      seat: ticket.seat_number,
+      status: ticket.payment_status,
+    });
+
+    setQrDataUrl('');
+    setQrError('');
+    QRCode.toDataURL(payload, {
+      width: 320,
+      margin: 2,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#0A1628', light: '#FFFFFF' },
+    })
+      .then(setQrDataUrl)
+      .catch(() => setQrError('QR code could not be generated. Present the ticket ID below for manual verification.'));
+  }, [ticket]);
 
   if (loading) {
     return (
@@ -71,8 +96,6 @@ export default function ETicket() {
   }
 
   const isPaid = ticket.payment_status === 'paid';
-  const qrData = JSON.stringify({ id: ticket.ticket_id, name: ticket.passenger_name, seat: ticket.seat_number, status: ticket.payment_status });
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}&color=0A1628&bgcolor=FFFFFF`;
 
   return (
     <div className="min-h-screen bg-[#F4F6FA] py-10 px-4 print:bg-white print:p-0">
@@ -204,11 +227,17 @@ export default function ETicket() {
             {/* QR code section */}
             <div className="flex flex-col items-center justify-center gap-3 shrink-0">
               <div className="bg-white p-3 rounded-2xl border-2 border-slate-100 shadow-inner animate-pulse-ring">
-                <img src={qrUrl} alt="Ticket QR Code" className="w-40 h-40 rounded-xl" crossOrigin="anonymous" />
+                {qrDataUrl ? (
+                  <img src={qrDataUrl} alt="Ticket QR Code" className="w-40 h-40 rounded-xl" />
+                ) : (
+                  <div className="w-40 h-40 rounded-xl bg-slate-50 flex items-center justify-center text-center text-xs text-slate-400 px-3">
+                    {qrError || 'Generating QR code…'}
+                  </div>
+                )}
               </div>
               <div className="text-center">
                 <p className="text-xs text-slate-400 font-mono">{t('passengerBooking.scanVerify')}</p>
-                <p className="text-xs text-slate-300 font-mono mt-0.5">{ticket.ticket_id.slice(0, 12)}...</p>
+                <p className="text-xs text-slate-300 font-mono mt-0.5">{ticket.ticket_id}</p>
               </div>
             </div>
           </div>
