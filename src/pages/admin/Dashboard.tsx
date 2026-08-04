@@ -138,6 +138,7 @@ export default function AdminDashboard() {
   const [cancelScheduleLoading, setCancelScheduleLoading] = useState<string | null>(null);
   const [deleteScheduleLoading, setDeleteScheduleLoading] = useState<string | null>(null);
   const [deleteCargoLoading, setDeleteCargoLoading] = useState<string | null>(null);
+  const [deleteTicketLoading, setDeleteTicketLoading] = useState<string | null>(null);
 
   // Add Schedule Modal State
   const [addingSchedule, setAddingSchedule] = useState(false);
@@ -365,6 +366,25 @@ export default function AdminDashboard() {
       notify('Failed to mark ticket as paid: ' + err.message, 'error');
     } finally {
       setMarkTicketPaidLoading(null);
+    }
+  };
+
+  const handleDeleteTicket = async (ticket: PassengerTicket) => {
+    if (!window.confirm(`Permanently DELETE ticket ${ticket.ticket_id}? This cannot be undone.`)) return;
+    setDeleteTicketLoading(ticket.id);
+    try {
+      const { error } = await supabase
+        .from('passenger_tickets')
+        .delete()
+        .eq('id', ticket.id);
+      if (error) throw error;
+      setTickets(current => current.filter(item => item.id !== ticket.id));
+      notify(`Ticket ${ticket.ticket_id} deleted.`, 'success');
+    } catch (err: any) {
+      console.error(err);
+      notify('Failed to delete ticket: ' + err.message, 'error');
+    } finally {
+      setDeleteTicketLoading(null);
     }
   };
 
@@ -854,6 +874,15 @@ export default function AdminDashboard() {
                             )}
                             {ticket.payment_status === 'paid' && (
                               <span className="px-3 py-1 bg-green-900/50 text-green-400 rounded text-xs font-semibold text-center">✅ {t('admin.paid')}</span>
+                            )}
+                            {isSuperAdmin && (
+                              <button
+                                onClick={() => handleDeleteTicket(ticket)}
+                                disabled={deleteTicketLoading === ticket.id}
+                                className="px-3 py-1 bg-red-800 hover:bg-red-700 text-red-200 rounded text-xs font-semibold transition-colors disabled:opacity-50"
+                              >
+                                {deleteTicketLoading === ticket.id ? '...' : 'Delete'}
+                              </button>
                             )}
                           </div>
                         </div>
