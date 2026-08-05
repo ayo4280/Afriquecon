@@ -11,7 +11,10 @@ const allowedOrigins = new Set([
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
-const managementChatId = (Deno.env.get("TELEGRAM_ADMIN_CHAT_ID") ?? "").trim();
+const managementChatIds = (Deno.env.get("TELEGRAM_ADMIN_CHAT_ID") ?? "")
+  .split(/[\s,;]+/)
+  .map((id) => id.trim())
+  .filter((id) => /^-?\d+$/.test(id));
 const admin = createClient(supabaseUrl, serviceRoleKey);
 
 function headers(req: Request) {
@@ -55,10 +58,10 @@ serve(async (req) => {
     if (bookingError || !booking || !requiresApproval || (!booking.is_express && Number(booking.total_fcfa) > 0)) {
       return reply(req, { error: "Booking is not awaiting management approval" }, 409);
     }
-    if (!botToken || !/^\d+$/.test(managementChatId)) {
+    if (!botToken || managementChatIds.length === 0) {
       console.error("Management Telegram alert is not configured", {
         hasBotToken: Boolean(botToken),
-        hasNumericChatId: /^\d+$/.test(managementChatId),
+        hasNumericChatIds: managementChatIds.length > 0,
       });
       return reply(req, { error: "Management Telegram alerts are not configured" }, 500);
     }
@@ -73,13 +76,17 @@ serve(async (req) => {
       `Phone: ${booking.customer_phone}\n\n` +
       "Open the Afriquecon dashboard to set the negotiated price and confirm.";
 
-    const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: managementChatId, text: message }),
-    });
-    if (!telegramResponse.ok) {
-      console.error("Telegram management alert failed", await telegramResponse.text());
+    const telegramResponses = await Promise.all(managementChatIds.map((chatId) =>
+      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text: message }),
+      })
+    ));
+    const failedResponses = telegramResponses.filter((response) => !response.ok);
+    if (failedResponses.length > 0) {
+      const failures = await Promise.all(failedResponses.map((response) => response.text()));
+      console.error("Telegram management alert failed", failures);
       return reply(req, { error: "Unable to notify management" }, 502);
     }
 
