@@ -19,7 +19,31 @@ export default function PassengerBooking() {
   const passengersCount = location.state?.passengers as number || 1;
   const adults = location.state?.adults as number || 1;
   const children = location.state?.children as number || 0;
-  const selectedSeats = location.state?.selectedSeats as number[];
+
+  const SEAT_CAPACITY = 48;
+  const [assignedSeats, setAssignedSeats] = useState<number[]>([]);
+  const [seatsLoading, setSeatsLoading] = useState(true);
+  const [seatsError, setSeatsError] = useState<string | null>(null);
+
+  const assignSeats = async () => {
+    if (!trip) return;
+    setSeatsLoading(true);
+    const { data, error } = await supabase
+      .from('passenger_tickets')
+      .select('seat_number')
+      .eq('schedule_id', trip.scheduleId)
+      .or(`payment_status.eq.paid,reservation_expires_at.gt.${new Date().toISOString()}`);
+    const occupied = !error && data
+      ? data.map(row => parseInt(row.seat_number, 10)).filter(n => !isNaN(n))
+      : [];
+    const picked: number[] = [];
+    for (let seat = 1; seat <= SEAT_CAPACITY && picked.length < passengersCount; seat++) {
+      if (!occupied.includes(seat)) picked.push(seat);
+    }
+    setAssignedSeats(picked);
+    setSeatsError(picked.length < passengersCount ? 'Not enough seats are currently available on this trip. Please go back and choose another trip.' : null);
+    setSeatsLoading(false);
+  };
 
   const [paymentMethod, setPaymentMethod] = useState<'paystack' | 'flutterwave'>('paystack');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -34,11 +58,17 @@ export default function PassengerBooking() {
   const [pricingResults, setPricingResults] = useState<PassengerPricingResponse[]>([]);
 
   useEffect(() => {
-    if (!trip || !selectedSeats || selectedSeats.length === 0) {
+    if (!trip) {
       navigate('/');
       return;
     }
-    
+    assignSeats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trip?.scheduleId]);
+
+  useEffect(() => {
+    if (!trip) return;
+
     // Initialize passenger details based on count
     if (passengerDetails.length === 0) {
       const initialDetails = Array.from({length: passengersCount}).map((_, index) => ({
@@ -51,7 +81,8 @@ export default function PassengerBooking() {
       }));
       setPassengerDetails(initialDetails);
     }
-  }, [trip, selectedSeats, passengersCount, adults, children, navigate, passengerDetails.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trip, passengersCount, adults, children, navigate, passengerDetails.length]);
 
   // Recalculate pricing whenever passenger details change
   useEffect(() => {
@@ -88,6 +119,29 @@ export default function PassengerBooking() {
   // Payment hooks must run on every render. Only render the booking UI after
   // they have been initialised, so a direct visit without route state is safe.
   if (!trip) return null;
+
+  if (seatsLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-gray-500 font-medium">Assigning your seats…</p>
+      </div>
+    );
+  }
+
+  if (seatsError) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center max-w-lg">
+        <div className="bg-white p-8 rounded-xl shadow-lg border border-red-100">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <p className="text-gray-700 mb-6">{seatsError}</p>
+          <button onClick={() => navigate(-1)} className="bg-[#0A1628] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1a2d4e] transition-colors">
+            {t('passengerBooking.back')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,7 +186,7 @@ export default function PassengerBooking() {
           extra_luggage_kg: p.extraLuggage,
           ticket_type: p.ticketType,
           is_nigerian: p.isNigerian,
-          seat_number: selectedSeats[i].toString(),
+          seat_number: assignedSeats[i].toString(),
           base_fare_fcfa: pricing.baseFareFCFA,
           discount_fcfa: pricing.discountAmountFCFA,
           discount_percent: pricing.discountPercent,
@@ -185,6 +239,8 @@ export default function PassengerBooking() {
       setError(msg);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setIsSubmitting(false);
+      // A seat may have just been taken by another booking; refresh the assignment before the next attempt.
+      assignSeats();
     }
   };
 
@@ -248,7 +304,7 @@ export default function PassengerBooking() {
                 {passengerDetails.map((p, index) => (
                   <div key={index} className="border p-6 rounded-lg bg-gray-50 border-gray-200 relative overflow-hidden">
                     <div className="absolute top-0 right-0 bg-primary text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
-                      {t('passengerBooking.seat')} {selectedSeats[index]}
+                      {t('passengerBooking.seat')} {assignedSeats[index]}
                     </div>
                     <h3 className="text-lg font-bold mb-4 border-b pb-2">{t('passengerBooking.passenger')} {index + 1}</h3>
                     
@@ -398,7 +454,7 @@ export default function PassengerBooking() {
               <div className="space-y-4 text-sm text-gray-300">
                 {pricingResults.map((pr, i) => (
                   <div key={i} className="mb-4">
-                    <div className="font-bold text-white mb-1">{t('passengerBooking.passenger')} {i+1} ({t('passengerBooking.seat')} {selectedSeats[i]})</div>
+                    <div className="font-bold text-white mb-1">{t('passengerBooking.passenger')} {i+1} ({t('passengerBooking.seat')} {assignedSeats[i]})</div>
                     <div className="flex justify-between">
                       <span>{t('passengerBooking.baseFare')}</span>
                       <span>{pr.baseFareFCFA.toLocaleString()}</span>

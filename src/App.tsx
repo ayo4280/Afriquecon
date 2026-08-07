@@ -12,7 +12,6 @@ const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
 const CargoBooking = lazy(() => import('./pages/cargo/Booking'));
 const ApprovedQuotePayment = lazy(() => import('./pages/cargo/ApprovedQuotePayment'));
 const TripResults = lazy(() => import('./pages/passenger/TripResults'));
-const SeatSelection = lazy(() => import('./pages/passenger/SeatSelection'));
 const PassengerBooking = lazy(() => import('./pages/passenger/Booking'));
 const ETicket = lazy(() => import('./pages/passenger/ETicket'));
 const Profile = lazy(() => import('./pages/Profile'));
@@ -50,7 +49,6 @@ function App() {
               <Route path="/cargo/pay/:bookingId" element={<ApprovedQuotePayment />} />
               <Route path="/track" element={<TrackShipment />} />
               <Route path="/passenger/results" element={<TripResults />} />
-              <Route path="/passenger/seats" element={<SeatSelection />} />
               <Route path="/passenger/booking" element={<PassengerBooking />} />
               <Route path="/ticket/:ticket_id" element={<ETicket />} />
               <Route path="/profile" element={<Profile />} />
