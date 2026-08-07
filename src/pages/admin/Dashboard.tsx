@@ -149,6 +149,10 @@ export default function AdminDashboard() {
   const [addSchedLoading, setAddSchedLoading] = useState(false);
   const [generatingSchedules, setGeneratingSchedules] = useState(false);
 
+  // Reports & Analytics period filter
+  const [reportPeriod, setReportPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'all'>('all');
+  const [reportDate, setReportDate] = useState(() => new Date().toISOString().slice(0, 10));
+
   const isAdmin = currentAdminRole !== null;
 
   // ─── Role permission helpers ──────────────────────────────────────────────
@@ -235,11 +239,57 @@ export default function AdminDashboard() {
     ...cargo.map(c => c.total_fcfa || 0),
   ].reduce((sum, v) => sum + v, 0);
 
-  const cargoRevenue = cargo.reduce((sum, c) => sum + (c.total_fcfa || 0), 0);
-  const ticketRevenue = tickets.reduce((sum, t) => sum + (t.total_fcfa || 0), 0);
 
   const pendingTickets = tickets.filter(t => t.payment_status === 'pending').length;
   const pendingCargo = cargo.filter(c => c.payment_status === 'pending').length;
+
+  // ─── Reports: daily / weekly / monthly period range ───────────────────────
+  const getReportRange = (period: typeof reportPeriod, anchor: string): { start: Date; end: Date } | null => {
+    if (period === 'all') return null;
+    const [y, m, d] = anchor.split('-').map(Number);
+    if (!y || !m || !d) return null;
+    if (period === 'daily') {
+      return { start: new Date(y, m - 1, d, 0, 0, 0, 0), end: new Date(y, m - 1, d, 23, 59, 59, 999) };
+    }
+    if (period === 'weekly') {
+      const anchorDate = new Date(y, m - 1, d);
+      const diffToMonday = (anchorDate.getDay() + 6) % 7; // 0 = Monday
+      const start = new Date(y, m - 1, d - diffToMonday, 0, 0, 0, 0);
+      const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6, 23, 59, 59, 999);
+      return { start, end };
+    }
+    // monthly
+    return { start: new Date(y, m - 1, 1, 0, 0, 0, 0), end: new Date(y, m, 0, 23, 59, 59, 999) };
+  };
+
+  const reportRange = getReportRange(reportPeriod, reportDate);
+  const inReportRange = (iso: string) => {
+    if (!reportRange) return true;
+    const t = new Date(iso).getTime();
+    return t >= reportRange.start.getTime() && t <= reportRange.end.getTime();
+  };
+
+  const reportCargo = cargo.filter(c => inReportRange(c.created_at));
+  const reportTickets = tickets.filter(t => inReportRange(t.created_at));
+  const reportProfiles = profiles.filter(p => inReportRange(p.created_at));
+  const reportCargoRevenue = reportCargo.reduce((sum, c) => sum + (c.total_fcfa || 0), 0);
+  const reportTicketRevenue = reportTickets.reduce((sum, t) => sum + (t.total_fcfa || 0), 0);
+  const reportTotalRevenue = reportCargoRevenue + reportTicketRevenue;
+
+  const isoDate = (dt: Date) => dt.toISOString().slice(0, 10);
+  const reportRangeLabel = (() => {
+    if (!reportRange) return 'All time';
+    const fmt: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+    if (reportPeriod === 'monthly') return reportRange.start.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+    if (reportPeriod === 'daily') return reportRange.start.toLocaleDateString('en-US', fmt);
+    return `${reportRange.start.toLocaleDateString('en-US', fmt)} – ${reportRange.end.toLocaleDateString('en-US', fmt)}`;
+  })();
+  const reportFileSuffix = (() => {
+    if (!reportRange) return 'all-time';
+    if (reportPeriod === 'daily') return isoDate(reportRange.start);
+    if (reportPeriod === 'monthly') return isoDate(reportRange.start).slice(0, 7);
+    return `${isoDate(reportRange.start)}_to_${isoDate(reportRange.end)}`;
+  })();
 
   const exportToCSV = (filename: string, data: any[]) => {
     if (!data || data.length === 0) {
@@ -1052,7 +1102,32 @@ export default function AdminDashboard() {
               {activeTab === 'reports' && (
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-6">{t('admin.reportsAnalytics')}</h2>
-                  
+
+                  {/* Period Filter */}
+                  <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 flex flex-wrap items-center gap-3">
+                    <span className="text-sm text-gray-400 flex items-center gap-2"><Calendar className="w-4 h-4" /> Period</span>
+                    <div className="flex bg-gray-800 rounded-lg p-1">
+                      {(['daily', 'weekly', 'monthly', 'all'] as const).map(p => (
+                        <button
+                          key={p}
+                          onClick={() => setReportPeriod(p)}
+                          className={`px-3 py-1.5 rounded-md text-sm capitalize transition-colors ${reportPeriod === p ? 'bg-primary text-white' : 'text-gray-400 hover:text-gray-200'}`}
+                        >
+                          {p === 'all' ? 'All Time' : p}
+                        </button>
+                      ))}
+                    </div>
+                    {reportPeriod !== 'all' && (
+                      <input
+                        type="date"
+                        value={reportDate}
+                        onChange={(e) => setReportDate(e.target.value)}
+                        className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-gray-200"
+                      />
+                    )}
+                    <span className="text-sm text-gray-500 sm:ml-auto">{reportRangeLabel}</span>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     {/* Revenue Breakdown */}
                     <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
@@ -1063,25 +1138,25 @@ export default function AdminDashboard() {
                       <div className="space-y-4">
                       <div>
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-300">{t('admin.cargoShipping')}</span>
-                            <span className="text-white font-semibold">{cargoRevenue.toLocaleString()} FCFA</span>
+                            <span className="text-gray-300">{t('admin.cargoShipping')} <span className="text-gray-500">({reportCargo.length})</span></span>
+                            <span className="text-white font-semibold">{reportCargoRevenue.toLocaleString()} FCFA</span>
                           </div>
                           <div className="w-full bg-gray-800 rounded-full h-2">
-                            <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${totalRevenue === 0 ? 0 : (cargoRevenue / totalRevenue) * 100}%` }}></div>
+                            <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${reportTotalRevenue === 0 ? 0 : (reportCargoRevenue / reportTotalRevenue) * 100}%` }}></div>
                           </div>
                         </div>
                         <div>
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-300">{t('admin.passengerTravel')}</span>
-                            <span className="text-white font-semibold">{ticketRevenue.toLocaleString()} FCFA</span>
+                            <span className="text-gray-300">{t('admin.passengerTravel')} <span className="text-gray-500">({reportTickets.length})</span></span>
+                            <span className="text-white font-semibold">{reportTicketRevenue.toLocaleString()} FCFA</span>
                           </div>
                           <div className="w-full bg-gray-800 rounded-full h-2">
-                            <div className="bg-red-500 h-2 rounded-full" style={{ width: `${totalRevenue === 0 ? 0 : (ticketRevenue / totalRevenue) * 100}%` }}></div>
+                            <div className="bg-red-500 h-2 rounded-full" style={{ width: `${reportTotalRevenue === 0 ? 0 : (reportTicketRevenue / reportTotalRevenue) * 100}%` }}></div>
                           </div>
                         </div>
                         <div className="pt-4 border-t border-gray-800 flex justify-between items-center">
                           <span className="text-gray-400 text-sm">{t('admin.totalRevenue')}</span>
-                          <span className="text-xl font-bold text-white">{totalRevenue.toLocaleString()} FCFA</span>
+                          <span className="text-xl font-bold text-white">{reportTotalRevenue.toLocaleString()} FCFA</span>
                         </div>
                       </div>
                     </div>
@@ -1093,25 +1168,25 @@ export default function AdminDashboard() {
                         {t('admin.dataExports')}
                       </h3>
                       <div className="space-y-3">
-                        <button 
-                          onClick={() => exportToCSV('cargo_bookings.csv', cargo)}
+                        <button
+                          onClick={() => exportToCSV(`cargo_bookings_${reportFileSuffix}.csv`, reportCargo)}
                           className="w-full flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-200 transition-colors"
                         >
-                          <span className="flex items-center gap-2"><Package className="w-4 h-4" /> Export Cargo Bookings</span>
+                          <span className="flex items-center gap-2"><Package className="w-4 h-4" /> Export Cargo Bookings <span className="text-gray-500">({reportCargo.length})</span></span>
                           <Download className="w-4 h-4 text-gray-400" />
                         </button>
-                        <button 
-                          onClick={() => exportToCSV('passenger_tickets.csv', tickets)}
+                        <button
+                          onClick={() => exportToCSV(`passenger_tickets_${reportFileSuffix}.csv`, reportTickets)}
                           className="w-full flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-200 transition-colors"
                         >
-                          <span className="flex items-center gap-2"><Ticket className="w-4 h-4" /> Export Passenger Tickets</span>
+                          <span className="flex items-center gap-2"><Ticket className="w-4 h-4" /> Export Passenger Tickets <span className="text-gray-500">({reportTickets.length})</span></span>
                           <Download className="w-4 h-4 text-gray-400" />
                         </button>
-                        <button 
-                          onClick={() => exportToCSV('users.csv', profiles)}
+                        <button
+                          onClick={() => exportToCSV(`users_${reportFileSuffix}.csv`, reportProfiles)}
                           className="w-full flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-200 transition-colors"
                         >
-                          <span className="flex items-center gap-2"><Users className="w-4 h-4" /> Export User Data</span>
+                          <span className="flex items-center gap-2"><Users className="w-4 h-4" /> Export User Data <span className="text-gray-500">({reportProfiles.length})</span></span>
                           <Download className="w-4 h-4 text-gray-400" />
                         </button>
                       </div>
