@@ -291,6 +291,7 @@
     "onlySeats": "Only {{count}} seats!",
     "seatsAvailable": "{{count}} seats available",
     "selectSeats": "Select seats",
+    "bookNow": "Book Now",
     "backToResults": "Back to results",
     "bus": "Bus",
     "allSeatsSelected": "All {{count}} seats selected!",

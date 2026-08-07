@@ -162,10 +162,10 @@ export default function TripResults() {
                         {isLow ? `🔥 Only ${seatsLeft} seats!` : `${seatsLeft} seats available`}
                       </div>
                       <button
-                        onClick={() => navigate('/passenger/seats', { state: { trip, passengers, adults, children } })}
+                        onClick={() => navigate('/passenger/booking', { state: { trip, passengers, adults, children } })}
                         className="w-full bg-[#0A1628] hover:bg-[#1a2d4e] text-white py-2.5 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 group shadow-lg shadow-slate-900/10"
                       >
-                        {t('passengerBooking.selectSeats')}
+                        {t('passengerBooking.bookNow')}
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                       </button>
                     </div>

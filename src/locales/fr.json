@@ -291,6 +291,7 @@
     "onlySeats": "Plus que {{count}} places !",
     "seatsAvailable": "{{count}} places disponibles",
     "selectSeats": "Choisir les places",
+    "bookNow": "Réserver",
     "backToResults": "Retour aux résultats",
     "bus": "Bus",
     "allSeatsSelected": "Les {{count}} places sont sélectionnées !",
