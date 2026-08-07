@@ -236,6 +236,7 @@
     "totalPaid": "Total payé",
     "error": "Une erreur s'est produite lors de l'enregistrement de la réservation.",
     "approvalRequested": "Votre demande de fret volumineux a été envoyée à la direction. Nous vous informerons par Telegram et e-mail lorsque votre devis négocié sera approuvé.",
+    "approvalRequestedExpress": "Votre demande de fret express a été envoyée à la direction. Nous vous informerons par Telegram et e-mail lorsque votre devis négocié sera approuvé.",
     "payApprovedQuote": "Payer le devis approuvé",
     "approvedQuoteUnavailable": "Ce devis n'est pas encore prêt pour le paiement. Attendez l'approbation de la direction ou contactez l'assistance.",
     "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
